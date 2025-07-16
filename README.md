@@ -59,3 +59,80 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+## Core Concept & Philosophy
+
+The primary goal is to create a single source of truth for all client, website, and operational data. This system will serve as an internal tool for administrators to track every aspect of the business, from client details to the specific plugins installed on a WordPress site. Security, clarity, and extensibility are the core principles.
+
+## Recommended Technology Stack
+
+- **Backend:** Laravel 12+ (or latest stable)
+- **Frontend:** Inertia.js with React or Vue (for SPA experience), or Laravel Livewire (for rapid development)
+- **Database:** MySQL 8+
+- **UI/CSS:** Tailwind CSS (for uniform, modern styling)
+- **Authentication:** Laravel Breeze (recommended for React/Inertia or Vue/Inertia stacks)
+
+## Getting Started with Breeze, Inertia, React, and Vue
+
+1. **Install Laravel Breeze**  
+   ```
+   composer require laravel/breeze --dev
+   php artisan breeze:install react
+   # or for Vue:
+   php artisan breeze:install vue
+   npm install
+   npm run dev
+   php artisan migrate
+   ```
+
+2. **Uniform Styling**  
+   All components should use Tailwind CSS utility classes for a consistent look.  
+   Example React component:
+   ```jsx
+   // ExampleButton.jsx
+   export default function ExampleButton({ children }) {
+     return (
+       <button className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
+         {children}
+       </button>
+     );
+   }
+   ```
+   Example Vue component:
+   ```vue
+   <!-- ExampleButton.vue -->
+   <template>
+     <button class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
+       <slot />
+     </button>
+   </template>
+   ```
+
+3. **Inertia Pages**  
+   Use Inertia for routing and page transitions.  
+   Example React page:
+   ```jsx
+   import { Inertia } from '@inertiajs/inertia';
+   export default function Dashboard() {
+     return (
+       <div className="p-6">
+         <h1 className="text-2xl font-bold">Dashboard</h1>
+         {/* ... */}
+       </div>
+     );
+   }
+   ```
+
+## Uniform Styling Principle
+
+All UI elements should use Tailwind CSS classes for spacing, color, and typography.  
+Define reusable components for buttons, forms, cards, etc., in your React/Vue directory.
+
+## Breeze + Inertia + React/Vue Setup
+
+- Breeze provides authentication scaffolding.
+- Inertia handles SPA routing.
+- React/Vue for UI components.
+- Tailwind for styling.
+
+See [Laravel Breeze documentation](https://laravel.com/docs/starter-kits#laravel-breeze) for more details.
