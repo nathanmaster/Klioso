@@ -1,6 +1,8 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Link } from '@inertiajs/react';
 import Button from '@/Components/Button';
+import BackButton from '@/Components/BackButton';
+import DeleteButton from '@/Components/DeleteButton';
 
 export default function Show({ hostingProvider }) {
     return (
@@ -19,6 +21,18 @@ export default function Show({ hostingProvider }) {
                 {/* Main Content */}
                 <div className="flex-1">
                     <div className="bg-white rounded-lg shadow p-6 max-w-xl mx-auto">
+                        <div className="flex justify-between items-center mb-4">
+                            <BackButton fallbackRoute="/hosting-providers" />
+                            <div className="flex gap-2">
+                                <Button as={Link} href={`/hosting-providers/${hostingProvider.id}/edit`} size="sm">Edit</Button>
+                                <DeleteButton
+                                    resource={hostingProvider}
+                                    resourceName="hosting provider"
+                                    deleteRoute={`/hosting-providers/${hostingProvider.id}`}
+                                    onSuccess={() => window.location.href = '/hosting-providers'}
+                                />
+                            </div>
+                        </div>
                         <h2 className="text-xl font-bold mb-4">{hostingProvider.name}</h2>
                         <div className="mb-2"><strong>Description:</strong> {hostingProvider.description || '-'}</div>
                         <div className="mb-2">

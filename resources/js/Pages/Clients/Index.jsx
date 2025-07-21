@@ -1,6 +1,7 @@
 import TableLayout from '@/Layouts/TableLayout';
 import { Link } from '@inertiajs/react';
 import Button from '@/Components/Button';
+import DeleteButton from '@/Components/DeleteButton';
 
 // Clients Index Page
 export default function Index({ clients, filters }) {
@@ -15,6 +16,11 @@ export default function Index({ clients, filters }) {
             <div className="flex gap-2">
                 <Button as={Link} href={`/clients/${client.id}`} size="sm" variant="outline">View</Button>
                 <Button as={Link} href={`/clients/${client.id}/edit`} size="sm">Edit</Button>
+                <DeleteButton
+                    resource={client}
+                    resourceName="client"
+                    deleteRoute={`/clients/${client.id}`}
+                />
             </div>
         )}
     ];

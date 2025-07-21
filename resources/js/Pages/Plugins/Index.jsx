@@ -1,6 +1,7 @@
 import TableLayout from '@/Layouts/TableLayout';
 import { Link } from '@inertiajs/react';
 import Button from '@/Components/Button';
+import DeleteButton from '@/Components/DeleteButton';
 
 export default function Index({ plugins, filters }) {
     const columns = [
@@ -13,6 +14,11 @@ export default function Index({ plugins, filters }) {
             <div className="flex gap-2">
                 <Button as={Link} href={`/plugins/${plugin.id}`} size="sm" variant="outline">View</Button>
                 <Button as={Link} href={`/plugins/${plugin.id}/edit`} size="sm">Edit</Button>
+                <DeleteButton
+                    resource={plugin}
+                    resourceName="plugin"
+                    deleteRoute={`/plugins/${plugin.id}`}
+                />
             </div>
         )}
     ];

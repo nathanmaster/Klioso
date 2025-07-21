@@ -1,6 +1,7 @@
 import TableLayout from '@/Layouts/TableLayout';
 import { Link } from '@inertiajs/react';
 import Button from '@/Components/Button';
+import DeleteButton from '@/Components/DeleteButton';
 
 export default function Index({ templates, filters }) {
     const columns = [
@@ -12,6 +13,11 @@ export default function Index({ templates, filters }) {
             <div className="flex gap-2">
                 <Button as={Link} href={`/templates/${template.id}`} size="sm" variant="outline">View</Button>
                 <Button as={Link} href={`/templates/${template.id}/edit`} size="sm">Edit</Button>
+                <DeleteButton
+                    resource={template}
+                    resourceName="template"
+                    deleteRoute={`/templates/${template.id}`}
+                />
             </div>
         )}
     ];

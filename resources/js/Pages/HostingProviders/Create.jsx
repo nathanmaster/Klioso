@@ -2,6 +2,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { useForm } from '@inertiajs/react';
 import Form from '@/Components/Form';
 import Button from '@/Components/Button';
+import BackButton from '@/Components/BackButton';
 
 export default function Create() {
     const { data, setData, post, errors } = useForm({
@@ -16,6 +17,10 @@ export default function Create() {
     return (
         <AuthenticatedLayout header={<h1 className="text-2xl font-bold text-gray-800">Add Hosting Provider</h1>}>
             <div className="max-w-xl mx-auto bg-white rounded-lg shadow p-6 mt-8">
+                <div className="flex justify-between items-center mb-6">
+                    <BackButton fallbackRoute="/hosting-providers" />
+                    <h2 className="text-lg font-semibold">New Hosting Provider</h2>
+                </div>
                 <Form onSubmit={e => { e.preventDefault(); post('/hosting-providers'); }}>
                     <Form.Input
                         label="Name"

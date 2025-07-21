@@ -2,6 +2,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { useForm } from '@inertiajs/react';
 import Form from '@/Components/Form';
 import Button from '@/Components/Button';
+import BackButton from '@/Components/BackButton';
 
 export default function Edit({ website, clients, hostingProviders }) {
     const { data, setData, put, errors } = useForm({
@@ -17,6 +18,10 @@ export default function Edit({ website, clients, hostingProviders }) {
     return (
         <AuthenticatedLayout header={<h1 className="text-2xl font-bold text-gray-800">Edit Website</h1>}>
             <div className="max-w-xl mx-auto bg-white rounded-lg shadow p-6 mt-8">
+                <div className="flex justify-between items-center mb-6">
+                    <BackButton fallbackRoute={`/websites/${website.id}`} />
+                    <h2 className="text-lg font-semibold">Edit Website</h2>
+                </div>
                 <Form onSubmit={e => { e.preventDefault(); put(`/websites/${website.id}`); }}>
                     <Form.Input
                         label="Domain Name"
