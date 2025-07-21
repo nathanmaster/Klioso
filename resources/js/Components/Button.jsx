@@ -7,6 +7,7 @@ export default function Button({
     loading = false,
     disabled = false,
     size = 'md',
+    variant = 'primary',
     className = '',
     ...props
 }) {
@@ -17,13 +18,22 @@ export default function Button({
         md: "px-4 py-2 text-sm",
         lg: "px-6 py-3 text-base"
     };
-    const color =
-        disabled || loading
+    
+    const variants = {
+        primary: disabled || loading
             ? "bg-blue-300 text-white cursor-not-allowed"
-            : "bg-blue-600 text-white hover:bg-blue-700";
+            : "bg-blue-600 text-white hover:bg-blue-700",
+        outline: disabled || loading
+            ? "border border-gray-300 bg-gray-100 text-gray-400 cursor-not-allowed"
+            : "border border-gray-300 bg-white text-gray-700 hover:bg-gray-50",
+        ghost: disabled || loading
+            ? "text-gray-400 cursor-not-allowed"
+            : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+    };
+    
     return (
         <Component
-            className={`${base} ${sizes[size]} ${color} ${className}`}
+            className={`${base} ${sizes[size]} ${variants[variant]} ${className}`}
             disabled={disabled || loading}
             {...props}
         >

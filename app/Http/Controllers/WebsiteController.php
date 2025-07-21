@@ -39,10 +39,10 @@ class WebsiteController extends Controller
     public function create()
     {
         $clients = Client::all()->map(fn($c) => ['id' => $c->id, 'name' => $c->name]);
-        $providers = HostingProvider::all()->map(fn($p) => ['id' => $p->id, 'name' => $p->name]);
+        $hostingProviders = HostingProvider::all()->map(fn($p) => ['id' => $p->id, 'name' => $p->name]);
         return Inertia::render('Websites/Create', [
             'clients' => $clients,
-            'providers' => $providers,
+            'hostingProviders' => $hostingProviders,
             'layout' => 'AuthenticatedLayout',
         ]);
     }
@@ -97,7 +97,7 @@ class WebsiteController extends Controller
     public function edit(Website $website)
     {
         $clients = Client::all()->map(fn($c) => ['id' => $c->id, 'name' => $c->name]);
-        $providers = HostingProvider::all()->map(fn($p) => ['id' => $p->id, 'name' => $p->name]);
+        $hostingProviders = HostingProvider::all()->map(fn($p) => ['id' => $p->id, 'name' => $p->name]);
         return Inertia::render('Websites/Edit', [
             'website' => [
                 'id' => $website->id,
@@ -110,7 +110,7 @@ class WebsiteController extends Controller
                 'hosting_provider_id' => $website->hosting_provider_id,
             ],
             'clients' => $clients,
-            'providers' => $providers,
+            'hostingProviders' => $hostingProviders,
             'layout' => 'AuthenticatedLayout',
         ]);
     }

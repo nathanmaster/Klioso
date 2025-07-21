@@ -31,8 +31,3 @@ export default function Show({ client }) {
         </AuthenticatedLayout>
     );
 }
-                </div>
-            </div>
-        </AuthenticatedLayout>
-    );
-}

@@ -9,6 +9,6 @@ class Template extends Model
     // Optionally specify the table if not 'templates'
     // protected $table = 'templates';
 
-    // Optionally specify fillable fields
-    // protected $fillable = ['name', 'description', 'source_url', 'notes'];
+    // Specify fillable fields for mass assignment
+    protected $fillable = ['name', 'description', 'source_url', 'notes'];
 }

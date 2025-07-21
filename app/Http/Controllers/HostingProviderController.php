@@ -10,15 +10,19 @@ class HostingProviderController extends Controller
 {
     public function index()
     {
-        $providers = HostingProvider::all()->map(function ($provider) {
+        $hostingProviders = HostingProvider::all()->map(function ($provider) {
             return [
                 'id' => $provider->id,
                 'name' => $provider->name,
+                'description' => $provider->description,
+                'website' => $provider->website,
+                'contact_info' => $provider->contact_info,
+                'notes' => $provider->notes,
                 'login_url' => $provider->login_url,
             ];
         });
         return Inertia::render('HostingProviders/Index', [
-            'providers' => $providers,
+            'hostingProviders' => $hostingProviders,
             'layout' => 'AuthenticatedLayout',
         ]);
     }
@@ -33,8 +37,12 @@ class HostingProviderController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'name' => 'required|string',
-            'login_url' => 'nullable|string',
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'website' => 'nullable|url|max:255',
+            'contact_info' => 'nullable|string',
+            'notes' => 'nullable|string',
+            'login_url' => 'nullable|url|max:255',
         ]);
         HostingProvider::create($data);
         return redirect()->route('hosting-providers.index');
@@ -46,7 +54,13 @@ class HostingProviderController extends Controller
             'hostingProvider' => [
                 'id' => $hostingProvider->id,
                 'name' => $hostingProvider->name,
+                'description' => $hostingProvider->description,
+                'website' => $hostingProvider->website,
+                'contact_info' => $hostingProvider->contact_info,
+                'notes' => $hostingProvider->notes,
                 'login_url' => $hostingProvider->login_url,
+                'created_at' => $hostingProvider->created_at,
+                'updated_at' => $hostingProvider->updated_at,
             ],
             'layout' => 'AuthenticatedLayout',
         ]);
@@ -58,6 +72,10 @@ class HostingProviderController extends Controller
             'hostingProvider' => [
                 'id' => $hostingProvider->id,
                 'name' => $hostingProvider->name,
+                'description' => $hostingProvider->description,
+                'website' => $hostingProvider->website,
+                'contact_info' => $hostingProvider->contact_info,
+                'notes' => $hostingProvider->notes,
                 'login_url' => $hostingProvider->login_url,
             ],
             'layout' => 'AuthenticatedLayout',
@@ -67,8 +85,12 @@ class HostingProviderController extends Controller
     public function update(Request $request, HostingProvider $hostingProvider)
     {
         $data = $request->validate([
-            'name' => 'required|string',
-            'login_url' => 'nullable|string',
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'website' => 'nullable|url|max:255',
+            'contact_info' => 'nullable|string',
+            'notes' => 'nullable|string',
+            'login_url' => 'nullable|url|max:255',
         ]);
         $hostingProvider->update($data);
         return redirect()->route('hosting-providers.index');

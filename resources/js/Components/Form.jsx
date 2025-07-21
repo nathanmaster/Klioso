@@ -32,6 +32,19 @@ function Checkbox({ label, error, ...props }) {
     );
 }
 
+function Select({ label, error, helper, children, ...props }) {
+    return (
+        <label className="block mb-4">
+            <span className="block text-sm font-medium text-gray-700">{label}</span>
+            <select className={`mt-1 block w-full rounded border-gray-300 shadow-sm ${error ? 'border-red-500' : ''}`} {...props}>
+                {children}
+            </select>
+            {helper && <span className="text-xs text-gray-400">{helper}</span>}
+            {error && <span className="text-xs text-red-500">{error}</span>}
+        </label>
+    );
+}
+
 export default function Form({ children, ...props }) {
     return <form {...props} className="space-y-4">{children}</form>;
 }
@@ -39,3 +52,4 @@ export default function Form({ children, ...props }) {
 Form.Input = Input;
 Form.Textarea = Textarea;
 Form.Checkbox = Checkbox;
+Form.Select = Select;

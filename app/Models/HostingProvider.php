@@ -11,6 +11,10 @@ class HostingProvider extends Model
 
     protected $fillable = [
         'name',
+        'description',
+        'website',
+        'contact_info',
+        'notes',
         'login_url',
     ];
 

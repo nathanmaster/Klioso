@@ -1,25 +1,32 @@
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head } from '@inertiajs/react';
+import TableLayout from '@/Layouts/TableLayout';
+import { Link } from '@inertiajs/react';
+import Button from '@/Components/Button';
 
-export default function Index() {
-    return (
-        <AuthenticatedLayout
-            header={
-                <h2 className="text-xl font-semibold leading-tight text-gray-800">
-                    Hosting Providers
-                </h2>
-            }
-        >
-            <Head title="Hosting Providers" />
-            <div className="py-12">
-                <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">
-                    <div className="overflow-hidden bg-white shadow-sm sm:rounded-lg">
-                        <div className="p-6 text-gray-900">
-                            Hosting Providers page content goes here.
-                        </div>
-                    </div>
-                </div>
+export default function Index({ hostingProviders, filters }) {
+    const columns = [
+        { label: 'Name', key: 'name', render: provider => <Link href={`/hosting-providers/${provider.id}`}>{provider.name}</Link> },
+        { label: 'Description', key: 'description', render: provider => provider.description || '-' },
+        { label: 'Website', key: 'website', render: provider => provider.website ? <a href={provider.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">{provider.website}</a> : '-' },
+        { label: 'Contact Info', key: 'contact_info', render: provider => provider.contact_info ? (provider.contact_info.length > 50 ? `${provider.contact_info.substring(0, 50)}...` : provider.contact_info) : '-' },
+        { label: 'Actions', key: 'actions', render: provider => (
+            <div className="flex gap-2">
+                <Button as={Link} href={`/hosting-providers/${provider.id}`} size="sm" variant="outline">View</Button>
+                <Button as={Link} href={`/hosting-providers/${provider.id}/edit`} size="sm">Edit</Button>
             </div>
-        </AuthenticatedLayout>
+        )}
+    ];
+
+    return (
+        <TableLayout
+            title="Hosting Providers"
+            data={hostingProviders}
+            columns={columns}
+            createRoute="/hosting-providers/create"
+            createButtonText="Add Provider"
+            searchPlaceholder="Search hosting providers..."
+            searchRoute="/hosting-providers"
+            emptyStateMessage="No hosting providers found."
+            filters={filters}
+        />
     );
 }
