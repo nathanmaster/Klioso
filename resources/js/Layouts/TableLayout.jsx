@@ -6,13 +6,13 @@ import Button from '@/Components/Button';
 
 export default function TableLayout({ 
     title, 
-    data, 
-    columns, 
+    data = [], 
+    columns = [], 
     createRoute,
     createButtonText = 'Add New',
     searchPlaceholder = 'Search...',
     emptyStateMessage = 'No records found.',
-    filters,
+    filters = {},
     searchRoute,
     children 
 }) {

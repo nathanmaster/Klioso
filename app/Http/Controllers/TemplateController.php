@@ -8,9 +8,14 @@ use Inertia\Inertia;
 
 class TemplateController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $templates = Template::all()->map(function ($template) {
+        $query = Template::query();
+        if ($request->search) {
+            $query->where('name', 'like', '%' . $request->search . '%')
+                  ->orWhere('description', 'like', '%' . $request->search . '%');
+        }
+        $templates = $query->get()->map(function ($template) {
             return [
                 'id' => $template->id,
                 'name' => $template->name,
@@ -21,6 +26,7 @@ class TemplateController extends Controller
         });
         return Inertia::render('Templates/Index', [
             'templates' => $templates,
+            'filters' => $request->only('search'),
             'layout' => 'AuthenticatedLayout',
         ]);
     }

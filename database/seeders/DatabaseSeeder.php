@@ -19,5 +19,8 @@ class DatabaseSeeder extends Seeder
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);
+
+        // Run test data seeder for websites and plugins
+        $this->call(TestDataSeeder::class);
     }
 }

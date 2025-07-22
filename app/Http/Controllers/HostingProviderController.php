@@ -8,9 +8,14 @@ use Inertia\Inertia;
 
 class HostingProviderController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $hostingProviders = HostingProvider::all()->map(function ($provider) {
+        $query = HostingProvider::query();
+        if ($request->search) {
+            $query->where('name', 'like', '%' . $request->search . '%')
+                  ->orWhere('description', 'like', '%' . $request->search . '%');
+        }
+        $hostingProviders = $query->get()->map(function ($provider) {
             return [
                 'id' => $provider->id,
                 'name' => $provider->name,
@@ -23,6 +28,7 @@ class HostingProviderController extends Controller
         });
         return Inertia::render('HostingProviders/Index', [
             'hostingProviders' => $hostingProviders,
+            'filters' => $request->only('search'),
             'layout' => 'AuthenticatedLayout',
         ]);
     }

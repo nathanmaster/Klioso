@@ -28,32 +28,17 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    // Add explicit index routes for Inertia pages
-    Route::get('/clients', function () {
-        return Inertia::render('Clients');
-    })->name('clients.index');
-
-    Route::get('/plugins', function () {
-        return Inertia::render('Plugins');
-    })->name('plugins.index');
-
-    Route::get('/hosting-providers', function () {
-        return Inertia::render('HostingProviders');
-    })->name('hosting-providers.index');
-
-    Route::get('/websites', function () {
-        return Inertia::render('Websites');
-    })->name('websites.index');
-
-    Route::get('/templates', function () {
-        return Inertia::render('Templates');
-    })->name('templates.index');
-
+    // Resource routes
     Route::resource('clients', ClientController::class);
     Route::resource('hosting-providers', HostingProviderController::class);
     Route::resource('websites', WebsiteController::class);
     Route::resource('plugins', PluginController::class);
     Route::resource('templates', TemplateController::class);
+
+    // Website-Plugin relationship routes
+    Route::post('/websites/{website}/plugins', [WebsiteController::class, 'attachPlugin'])->name('websites.plugins.attach');
+    Route::put('/websites/{website}/plugins/{plugin}', [WebsiteController::class, 'updatePlugin'])->name('websites.plugins.update');
+    Route::delete('/websites/{website}/plugins/{plugin}', [WebsiteController::class, 'detachPlugin'])->name('websites.plugins.detach');
 });
 
 require __DIR__.'/auth.php';

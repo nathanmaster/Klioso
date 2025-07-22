@@ -8,9 +8,14 @@ use Inertia\Inertia;
 
 class PluginController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $plugins = Plugin::all()->map(function ($plugin) {
+        $query = Plugin::query();
+        if ($request->search) {
+            $query->where('name', 'like', '%' . $request->search . '%')
+                  ->orWhere('description', 'like', '%' . $request->search . '%');
+        }
+        $plugins = $query->get()->map(function ($plugin) {
             return [
                 'id' => $plugin->id,
                 'name' => $plugin->name,
@@ -22,6 +27,7 @@ class PluginController extends Controller
         });
         return Inertia::render('Plugins/Index', [
             'plugins' => $plugins,
+            'filters' => $request->only('search'),
             'layout' => 'AuthenticatedLayout',
         ]);
     }
