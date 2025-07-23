@@ -18,7 +18,10 @@ export default function Scanner({ websites = [] }) {
 
     const handleUrlScan = async (e) => {
         e.preventDefault();
-        if (!scanForm.url) return;
+        if (!scanForm.url) {
+            setError('URL is required to perform the scan.');
+            return;
+        }
 
         setIsScanning(true);
         setError('');
