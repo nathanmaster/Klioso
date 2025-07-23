@@ -11,6 +11,7 @@ export default function AppLayout({ children }) {
                     <li><Link href="/websites">Websites</Link></li>
                     <li><Link href="/plugins">Plugins</Link></li>
                     <li><Link href="/templates">Templates</Link></li>
+                    <li><Link href="/scanner">WP Scanner</Link></li>
                 </ul>
             </nav>
             <main>

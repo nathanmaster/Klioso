@@ -6,6 +6,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\WebsiteController;
 use App\Http\Controllers\PluginController;
 use App\Http\Controllers\TemplateController;
+use App\Http\Controllers\WordPressScanController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -39,6 +40,12 @@ Route::middleware('auth')->group(function () {
     Route::post('/websites/{website}/plugins', [WebsiteController::class, 'attachPlugin'])->name('websites.plugins.attach');
     Route::put('/websites/{website}/plugins/{plugin}', [WebsiteController::class, 'updatePlugin'])->name('websites.plugins.update');
     Route::delete('/websites/{website}/plugins/{plugin}', [WebsiteController::class, 'detachPlugin'])->name('websites.plugins.detach');
+
+    // WordPress Scanner routes
+    Route::get('/scanner', [WordPressScanController::class, 'index'])->name('scanner.index');
+    Route::post('/scan', [WordPressScanController::class, 'scan'])->name('scanner.scan');
+    Route::post('/websites/{website}/scan', [WordPressScanController::class, 'scanWebsite'])->name('scanner.website');
+    Route::post('/scanner/add-plugin', [WordPressScanController::class, 'addPlugin'])->name('scanner.add-plugin');
 });
 
 require __DIR__.'/auth.php';
