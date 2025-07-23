@@ -6,6 +6,8 @@ use App\Models\Website;
 use App\Models\Plugin;
 use App\Services\WordPressScanService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 use Inertia\Inertia;
 
 class WordPressScanController extends Controller
@@ -42,20 +44,20 @@ class WordPressScanController extends Controller
     public function scan(Request $request)
     {
         // Debug: Log the incoming request data
-        \Log::info('WordPress scan request received', [
+        Log::info('WordPress scan request received', [
             'all_data' => $request->all(),
             'url' => $request->input('url'),
             'scan_type' => $request->input('scan_type'),
             'content_type' => $request->header('Content-Type'),
         ]);
 
-        $validator = \Validator::make($request->all(), [
+        $validator = Validator::make($request->all(), [
             'url' => 'required|url',
             'scan_type' => 'nullable|in:plugins,themes,vulnerabilities,all',
         ]);
 
         if ($validator->fails()) {
-            \Log::warning('WordPress scan validation failed', [
+            Log::warning('WordPress scan validation failed', [
                 'errors' => $validator->errors(),
                 'input' => $request->all(),
             ]);
@@ -88,7 +90,7 @@ class WordPressScanController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            \Log::error('WordPress scan failed', [
+            Log::error('WordPress scan failed', [
                 'url' => $url,
                 'scan_type' => $scanType,
                 'error' => $e->getMessage(),

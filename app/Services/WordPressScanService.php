@@ -194,11 +194,17 @@ class WordPressScanService
             if ($response->successful()) {
                 $content = $response->body();
                 
-                // Look for directory links
-                preg_match_all('/<a href="([^"]+)\/?">[^<]*([^\/]+)\/?<\/a>/', $content, $matches);
+                // Use DOMDocument for proper HTML parsing
+                $dom = new \DOMDocument();
+                @$dom->loadHTML($content); // Suppress warnings for malformed HTML
+                $xpath = new \DOMXPath($dom);
+                $links = $xpath->query('//a[@href]');
                 
-                if (!empty($matches[1])) {
-                    foreach ($matches[1] as $index => $pluginSlug) {
+                foreach ($links as $link) {
+                    $href = $link->getAttribute('href');
+                    // Extract plugin slug from directory links
+                    if (preg_match('/^([^\/]+)\/?$/', $href, $matches)) {
+                        $pluginSlug = $matches[1];
                         if ($pluginSlug !== '..' && $pluginSlug !== '.') {
                             $plugins[] = [
                                 'name' => $this->formatPluginName($pluginSlug),
@@ -233,11 +239,30 @@ class WordPressScanService
             if ($response->successful()) {
                 $content = $response->body();
                 
-                // Look for plugin references in wp-content/plugins/
-                preg_match_all('/wp-content\/plugins\/([^\/\'"?]+)/', $content, $matches);
+                // Use DOMDocument for safer HTML parsing
+                $dom = new \DOMDocument();
+                @$dom->loadHTML($content, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
                 
-                if (!empty($matches[1])) {
-                    foreach (array_unique($matches[1]) as $pluginSlug) {
+                // Look for plugin references in wp-content/plugins/
+                $xpath = new \DOMXPath($dom);
+                $elements = $xpath->query('//*[contains(@src, "wp-content/plugins/") or contains(@href, "wp-content/plugins/")]');
+                
+                $foundPlugins = [];
+                foreach ($elements as $element) {
+                    $url_attr = $element->getAttribute('src') ?: $element->getAttribute('href');
+                    if (preg_match('/wp-content\/plugins\/([^\/\'"?]+)/', $url_attr, $matches)) {
+                        $foundPlugins[] = $matches[1];
+                    }
+                }
+                
+                // Fallback to regex for edge cases where DOMDocument might miss content
+                preg_match_all('/wp-content\/plugins\/([^\/\'"?]+)/', $content, $regexMatches);
+                if (!empty($regexMatches[1])) {
+                    $foundPlugins = array_merge($foundPlugins, $regexMatches[1]);
+                }
+                
+                if (!empty($foundPlugins)) {
+                    foreach (array_unique($foundPlugins) as $pluginSlug) {
                         $plugins[] = [
                             'name' => $this->formatPluginName($pluginSlug),
                             'slug' => $pluginSlug,
@@ -274,24 +299,23 @@ class WordPressScanService
             'google-analytics-for-wordpress',
         ];
 
-        foreach ($commonPlugins as $pluginSlug) {
-            try {
-                $response = Http::timeout(5) // Shorter timeout for individual checks
-                    ->withUserAgent($this->userAgent)
-                    ->get($url . '/wp-content/plugins/' . $pluginSlug . '/');
+        // Use concurrent HTTP requests for better performance
+        $responses = Http::pool(fn ($pool) => array_map(
+            fn ($pluginSlug) => $pool->timeout(3) // Reduced timeout for concurrent requests
+                ->withUserAgent($this->userAgent)
+                ->get($url . '/wp-content/plugins/' . $pluginSlug . '/'),
+            $commonPlugins
+        ));
 
-                if ($response->successful()) {
-                    $plugins[] = [
-                        'name' => $this->formatPluginName($pluginSlug),
-                        'slug' => $pluginSlug,
-                        'status' => 'active',
-                        'version' => $this->getPluginVersion($url, $pluginSlug),
-                    ];
-                }
-
-            } catch (\Exception $e) {
-                // Plugin not found or not accessible, continue
-                continue;
+        foreach ($responses as $index => $response) {
+            if ($response->successful()) {
+                $pluginSlug = $commonPlugins[$index];
+                $plugins[] = [
+                    'name' => $this->formatPluginName($pluginSlug),
+                    'slug' => $pluginSlug,
+                    'status' => 'active',
+                    'version' => $this->getPluginVersion($url, $pluginSlug),
+                ];
             }
         }
 
@@ -369,11 +393,30 @@ class WordPressScanService
             if ($response->successful()) {
                 $content = $response->body();
                 
-                // Look for theme references
-                preg_match_all('/wp-content\/themes\/([^\/\'"?]+)/', $content, $matches);
+                // Use DOMDocument for safer HTML parsing
+                $dom = new \DOMDocument();
+                @$dom->loadHTML($content, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
                 
-                if (!empty($matches[1])) {
-                    foreach (array_unique($matches[1]) as $themeSlug) {
+                // Look for theme references in wp-content/themes/
+                $xpath = new \DOMXPath($dom);
+                $elements = $xpath->query('//*[contains(@src, "wp-content/themes/") or contains(@href, "wp-content/themes/")]');
+                
+                $foundThemes = [];
+                foreach ($elements as $element) {
+                    $url_attr = $element->getAttribute('src') ?: $element->getAttribute('href');
+                    if (preg_match('/wp-content\/themes\/([^\/\'"?]+)/', $url_attr, $matches)) {
+                        $foundThemes[] = $matches[1];
+                    }
+                }
+                
+                // Fallback to regex for edge cases
+                preg_match_all('/wp-content\/themes\/([^\/\'"?]+)/', $content, $regexMatches);
+                if (!empty($regexMatches[1])) {
+                    $foundThemes = array_merge($foundThemes, $regexMatches[1]);
+                }
+                
+                if (!empty($foundThemes)) {
+                    foreach (array_unique($foundThemes) as $themeSlug) {
                         $themes[] = [
                             'name' => $this->formatPluginName($themeSlug),
                             'slug' => $themeSlug,

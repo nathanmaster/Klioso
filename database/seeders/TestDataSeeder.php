@@ -13,20 +13,26 @@ class TestDataSeeder extends Seeder
     public function run(): void
     {
         // Create test client if none exists
-        $client = Client::firstOrCreate([
-            'name' => 'Test Client',
-            'email' => 'client@test.com',
-            'phone' => '555-0123',
-        ]);
+        $client = Client::firstOrCreate(
+            ['contact_email' => 'client@test.com'], // Search criteria
+            [
+                'name' => 'Test Client',
+                'contact_email' => 'client@test.com',
+                'contact_phone' => '555-0123',
+            ]
+        );
 
         // Create test hosting provider if none exists
-        $hostingProvider = HostingProvider::firstOrCreate([
-            'name' => 'Test Hosting',
-            'description' => 'Test hosting provider',
-            'website' => 'https://testhosting.com',
-            'contact_info' => 'support@testhosting.com',
-            'login_url' => 'https://cpanel.testhosting.com',
-        ]);
+        $hostingProvider = HostingProvider::firstOrCreate(
+            ['name' => 'Test Hosting'], // Search criteria
+            [
+                'name' => 'Test Hosting',
+                'description' => 'Test hosting provider',
+                'website' => 'https://testhosting.com',
+                'contact_info' => 'support@testhosting.com',
+                'login_url' => 'https://cpanel.testhosting.com',
+            ]
+        );
 
         // Create test plugins if none exist
         $plugins = [
