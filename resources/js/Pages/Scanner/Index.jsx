@@ -277,6 +277,7 @@ export default function Scanner({ websites = [] }) {
 
                                         <Form.Checkbox
                                             label="Auto-sync discovered plugins to website"
+                                            aria-label="Automatically synchronize discovered plugins with the selected website's database"
                                             checked={scanForm.autoSync}
                                             onChange={(e) => setScanForm(prev => ({ ...prev, autoSync: e.target.checked }))}
                                         />
