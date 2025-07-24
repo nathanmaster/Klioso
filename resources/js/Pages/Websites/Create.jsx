@@ -8,12 +8,20 @@ export default function Create({ clients, hostingProviders }) {
     const { data, setData, post, errors } = useForm({
         domain_name: '',
         platform: '',
-        dns_provider: '',
         client_id: '',
         hosting_provider_id: '',
+        dns_provider_id: '',
+        email_provider_id: '',
+        domain_registrar_id: '',
         status: 'active',
         notes: '',
     });
+
+    // Filter providers by service type
+    const hostingProviders_filtered = hostingProviders?.filter(p => p.provides_hosting) || [];
+    const dnsProviders = hostingProviders?.filter(p => p.provides_dns) || [];
+    const emailProviders = hostingProviders?.filter(p => p.provides_email) || [];
+    const domainRegistrars = hostingProviders?.filter(p => p.provides_domain_registration) || [];
 
     return (
         <AuthenticatedLayout header={<h1 className="text-2xl font-bold text-gray-800">Add Website</h1>}>
@@ -39,14 +47,6 @@ export default function Create({ clients, hostingProviders }) {
                         placeholder="WordPress, Laravel, etc."
                         error={errors?.platform}
                     />
-                    <Form.Input
-                        label="DNS Provider"
-                        value={data.dns_provider}
-                        onChange={e => setData('dns_provider', e.target.value)}
-                        required
-                        placeholder="Cloudflare, Route 53, etc."
-                        error={errors?.dns_provider}
-                    />
                     <Form.Select
                         label="Client"
                         value={data.client_id}
@@ -65,7 +65,40 @@ export default function Create({ clients, hostingProviders }) {
                         error={errors?.hosting_provider_id}
                     >
                         <option value="">Select a hosting provider</option>
-                        {hostingProviders?.map(provider => (
+                        {hostingProviders_filtered?.map(provider => (
+                            <option key={provider.id} value={provider.id}>{provider.name}</option>
+                        ))}
+                    </Form.Select>
+                    <Form.Select
+                        label="DNS Provider"
+                        value={data.dns_provider_id}
+                        onChange={e => setData('dns_provider_id', e.target.value)}
+                        error={errors?.dns_provider_id}
+                    >
+                        <option value="">Select a DNS provider</option>
+                        {dnsProviders?.map(provider => (
+                            <option key={provider.id} value={provider.id}>{provider.name}</option>
+                        ))}
+                    </Form.Select>
+                    <Form.Select
+                        label="Email Provider"
+                        value={data.email_provider_id}
+                        onChange={e => setData('email_provider_id', e.target.value)}
+                        error={errors?.email_provider_id}
+                    >
+                        <option value="">Select an email provider</option>
+                        {emailProviders?.map(provider => (
+                            <option key={provider.id} value={provider.id}>{provider.name}</option>
+                        ))}
+                    </Form.Select>
+                    <Form.Select
+                        label="Domain Registrar"
+                        value={data.domain_registrar_id}
+                        onChange={e => setData('domain_registrar_id', e.target.value)}
+                        error={errors?.domain_registrar_id}
+                    >
+                        <option value="">Select a domain registrar</option>
+                        {domainRegistrars?.map(provider => (
                             <option key={provider.id} value={provider.id}>{provider.name}</option>
                         ))}
                     </Form.Select>

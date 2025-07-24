@@ -12,14 +12,18 @@ export default function Create() {
         contact_info: '',
         notes: '',
         login_url: '',
+        provides_hosting: false,
+        provides_dns: false,
+        provides_email: false,
+        provides_domain_registration: false,
     });
 
     return (
-        <AuthenticatedLayout header={<h1 className="text-2xl font-bold text-gray-800">Add Hosting Provider</h1>}>
+        <AuthenticatedLayout header={<h1 className="text-2xl font-bold text-gray-800">Add Provider</h1>}>
             <div className="max-w-xl mx-auto bg-white rounded-lg shadow p-6 mt-8">
                 <div className="flex justify-between items-center mb-6">
                     <BackButton fallbackRoute="/hosting-providers" />
-                    <h2 className="text-lg font-semibold">New Hosting Provider</h2>
+                    <h2 className="text-lg font-semibold">New Provider</h2>
                 </div>
                 <Form onSubmit={e => { e.preventDefault(); post('/hosting-providers'); }}>
                     <Form.Input
@@ -62,6 +66,38 @@ export default function Create() {
                         placeholder="https://cpanel.hostingprovider.com"
                         error={errors?.login_url}
                     />
+                    
+                    <div className="mt-6">
+                        <label className="block text-sm font-medium text-gray-700 mb-3">
+                            Services Provided
+                        </label>
+                        <div className="space-y-3">
+                            <Form.Checkbox
+                                label="Web Hosting"
+                                checked={data.provides_hosting}
+                                onChange={e => setData('provides_hosting', e.target.checked)}
+                                error={errors?.provides_hosting}
+                            />
+                            <Form.Checkbox
+                                label="DNS Management"
+                                checked={data.provides_dns}
+                                onChange={e => setData('provides_dns', e.target.checked)}
+                                error={errors?.provides_dns}
+                            />
+                            <Form.Checkbox
+                                label="Email Services"
+                                checked={data.provides_email}
+                                onChange={e => setData('provides_email', e.target.checked)}
+                                error={errors?.provides_email}
+                            />
+                            <Form.Checkbox
+                                label="Domain Registration"
+                                checked={data.provides_domain_registration}
+                                onChange={e => setData('provides_domain_registration', e.target.checked)}
+                                error={errors?.provides_domain_registration}
+                            />
+                        </div>
+                    </div>
                     <Button type="submit">Save</Button>
                 </Form>
                 {errors && <div className="mt-4 text-red-500 text-sm">{Object.values(errors).join(', ')}</div>}
