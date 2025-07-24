@@ -127,7 +127,14 @@ class WebsiteController extends Controller
 
     public function show(Website $website)
     {
-        $website->load(['client', 'hostingProvider', 'plugins']);
+        $website->load([
+            'client', 
+            'hostingProvider', 
+            'dnsProvider', 
+            'emailProvider', 
+            'domainRegistrar', 
+            'plugins'
+        ]);
         $allPlugins = \App\Models\Plugin::all();
         
         return Inertia::render('Websites/Show', [
@@ -135,7 +142,6 @@ class WebsiteController extends Controller
                 'id' => $website->id,
                 'domain_name' => $website->domain_name,
                 'platform' => $website->platform,
-                'dns_provider' => $website->dns_provider,
                 'status' => $website->status,
                 'notes' => $website->notes,
                 'client' => $website->client ? [
@@ -145,6 +151,18 @@ class WebsiteController extends Controller
                 'hostingProvider' => $website->hostingProvider ? [
                     'id' => $website->hostingProvider->id,
                     'name' => $website->hostingProvider->name,
+                ] : null,
+                'dnsProvider' => $website->dnsProvider ? [
+                    'id' => $website->dnsProvider->id,
+                    'name' => $website->dnsProvider->name,
+                ] : null,
+                'emailProvider' => $website->emailProvider ? [
+                    'id' => $website->emailProvider->id,
+                    'name' => $website->emailProvider->name,
+                ] : null,
+                'domainRegistrar' => $website->domainRegistrar ? [
+                    'id' => $website->domainRegistrar->id,
+                    'name' => $website->domainRegistrar->name,
                 ] : null,
                 'plugins' => $website->plugins->map(fn($plugin) => [
                     'id' => $plugin->id,
