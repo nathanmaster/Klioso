@@ -12,8 +12,7 @@
     "scripts": {
         "build": "vite build",
         "dev": "vite",
-        "install": "composer install --optimize-autoloader --no-dev && npm run build",
-        "postinstall": "php artisan key:generate --ansi && php artisan migrate --force"
+        "install": "composer install --optimize-autoloader --no-dev && npm run build"
     },
     "keywords": [
         "wordpress",

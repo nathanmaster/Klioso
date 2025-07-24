@@ -88,32 +88,43 @@ const envFile = path.join(currentDir, '.env');
 if (fs.existsSync(envExample) && !fs.existsSync(envFile)) {
     console.log('⚙️ Creating .env file...');
     fs.copyFileSync(envExample, envFile);
+    console.log('✅ Environment file created');
+} else if (!fs.existsSync(envFile)) {
+    console.log('⚠️ No .env.example found, you may need to create .env manually');
 }
 
-// Generate Laravel key
-console.log('🔑 Generating application key...');
-try {
-    execSync('php artisan key:generate --ansi', { 
-        cwd: currentDir, 
-        stdio: 'inherit' 
-    });
-    console.log('✅ Application key generated');
-} catch (error) {
-    console.error('❌ Failed to generate application key');
-    process.exit(1);
+// Generate Laravel key only if .env exists
+if (fs.existsSync(envFile)) {
+    console.log('🔑 Generating application key...');
+    try {
+        execSync('php artisan key:generate --ansi', { 
+            cwd: currentDir, 
+            stdio: 'inherit' 
+        });
+        console.log('✅ Application key generated');
+    } catch (error) {
+        console.error('❌ Failed to generate application key');
+        console.log('💡 You can generate it manually with: php artisan key:generate');
+    }
+} else {
+    console.log('⚠️ No .env file found, skipping key generation');
 }
 
-// Run migrations
-console.log('🗄️ Setting up database...');
-try {
-    execSync('php artisan migrate --force', { 
-        cwd: currentDir, 
-        stdio: 'inherit' 
-    });
-    console.log('✅ Database setup complete');
-} catch (error) {
-    console.error('❌ Failed to setup database');
-    console.log('💡 Please configure your database in .env and run: php artisan migrate');
+// Run migrations only if .env exists and is configured
+if (fs.existsSync(envFile)) {
+    console.log('🗄️ Setting up database...');
+    try {
+        execSync('php artisan migrate --force', { 
+            cwd: currentDir, 
+            stdio: 'inherit' 
+        });
+        console.log('✅ Database setup complete');
+    } catch (error) {
+        console.error('❌ Failed to setup database');
+        console.log('💡 Please configure your database in .env and run: php artisan migrate');
+    }
+} else {
+    console.log('⚠️ No .env file found, skipping database migration');
 }
 
 console.log('');
