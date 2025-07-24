@@ -1,0 +1,120 @@
+name: Create Release Binaries
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.3'
+        extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, pdo_mysql
+        coverage: none
+        
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install PHP dependencies
+      run: composer install --optimize-autoloader --no-dev
+      
+    - name: Install Node dependencies
+      run: npm ci
+      
+    - name: Build assets
+      run: npm run build
+      
+    - name: Prepare release files
+      run: |
+        # Create production build
+        mkdir -p releases/production
+        rsync -av --exclude='node_modules' --exclude='.git' --exclude='tests' --exclude='storage/logs/*' . releases/production/
+        
+        # Laravel optimizations
+        cd releases/production
+        php artisan config:cache
+        php artisan route:cache
+        php artisan view:cache
+        cd ../..
+        
+    - name: Create release archives
+      run: |
+        VERSION=${GITHUB_REF#refs/tags/}
+        
+        # Production package
+        cd releases
+        zip -r "klioso-${VERSION}-production.zip" production/
+        
+        # Source package
+        cd ..
+        git archive --format=zip --prefix="klioso-${VERSION}/" HEAD > "releases/klioso-${VERSION}-source.zip"
+        
+        # Windows package
+        cp -r releases/production releases/windows
+        echo "Klioso ${VERSION} - Windows Ready Package" > releases/windows/README-WINDOWS.txt
+        cd releases
+        zip -r "klioso-${VERSION}-windows.zip" windows/
+        
+        # Shared hosting package
+        cp -r production shared-hosting
+        echo "Klioso ${VERSION} - Shared Hosting Package" > shared-hosting/INSTALL.txt
+        zip -r "klioso-${VERSION}-shared-hosting.zip" shared-hosting/
+        
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          releases/klioso-${{ github.ref_name }}-production.zip
+          releases/klioso-${{ github.ref_name }}-source.zip
+          releases/klioso-${{ github.ref_name }}-windows.zip
+          releases/klioso-${{ github.ref_name }}-shared-hosting.zip
+        draft: true
+        prerelease: true
+        generate_release_notes: true
+        body: |
+          # Klioso ${{ github.ref_name }} - Multi-Service Provider Release
+          
+          ## 🎉 Major Features
+          - **Multi-Service Provider System**: Providers can now offer hosting, DNS, email, and domain registration services
+          - **Responsive Table Layout**: Modern mobile-friendly interface with sidebar-free design
+          - **WordPress Scanner**: Advanced scanning for plugins, themes, and vulnerabilities
+          - **Flexible Website Management**: Optional client/provider relationships for development sites
+          - **ARIA-Compliant Forms**: Full accessibility support
+          
+          ## 📦 Release Packages
+          - **Production**: `klioso-${{ github.ref_name }}-production.zip` - Ready for deployment
+          - **Source**: `klioso-${{ github.ref_name }}-source.zip` - Complete source code
+          - **Windows**: `klioso-${{ github.ref_name }}-windows.zip` - Optimized for Windows/Laragon
+          - **Shared Hosting**: `klioso-${{ github.ref_name }}-shared-hosting.zip` - cPanel/shared hosting ready
+          
+          ## 🔧 Requirements
+          - PHP 8.2+
+          - MySQL 8+ or SQLite
+          - Composer
+          - Node.js 18+ (for development)
+          
+          ## 📋 Installation
+          1. Download appropriate package for your environment
+          2. Extract and configure `.env` file
+          3. Run `php artisan migrate`
+          4. Access via web browser
+          
+          ## ⚠️ Breaking Changes
+          - Database schema updates required (run migrations)
+          - Provider relationships restructured
+          - UI layout significantly updated
+          
+          See [CHANGELOG.md](CHANGELOG.md) for detailed changes.
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

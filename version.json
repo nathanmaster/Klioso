@@ -1,0 +1,23 @@
+{
+  "name": "Klioso",
+  "version": "0.8.0",
+  "description": "Multi-Service Provider Management System for WordPress and Web Development",
+  "codename": "Multi-Provider",
+  "release_date": "2025-07-24",
+  "stability": "beta",
+  "minimum_requirements": {
+    "php": "8.2.0",
+    "mysql": "8.0.0",
+    "node": "18.0.0",
+    "composer": "2.0.0"
+  },
+  "features": [
+    "multi-service-providers",
+    "responsive-tables",
+    "wordpress-scanner",
+    "flexible-relationships", 
+    "accessibility-compliant"
+  ],
+  "changelog_url": "https://github.com/nathanmaster/laravel12/blob/main/CHANGELOG.md",
+  "documentation_url": "https://github.com/nathanmaster/laravel12/blob/main/README.md"
+}
