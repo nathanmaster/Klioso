@@ -374,23 +374,15 @@ jobs:
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v')
     
-    strategy:
-      matrix:
-        registry:
-          - url: 'https://registry.npmjs.org'
-            token: NPM_TOKEN
-          - url: 'https://npm.pkg.github.com'
-            token: GITHUB_TOKEN
-    
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
       
-    - name: Setup Node.js
+    - name: Setup Node.js for npm registry
       uses: actions/setup-node@v4
       with:
         node-version: '18'
-        registry-url: ${{ matrix.registry.url }}
+        registry-url: 'https://registry.npmjs.org'
         
     - name: Install dependencies
       run: |
@@ -401,7 +393,50 @@ jobs:
     - name: Build package
       run: npm run build
       
-    - name: Publish to ${{ matrix.registry.url }}
+    - name: Update package name for npm registry
+      run: |
+        # Create a temporary package.json for npm registry (unscoped)
+        node -e "
+          const pkg = require('./package.json');
+          pkg.name = 'klioso';
+          delete pkg.publishConfig;
+          require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));
+        "
+        echo "Updated package name to: $(node -p "require('./package.json').name")"
+        
+    - name: Publish to npm registry
       run: npm publish --access public
       env:
-        NODE_AUTH_TOKEN: ${{ secrets[matrix.registry.token] }}
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        
+  publish-github-packages:
+    needs: create-release
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: read
+      packages: write
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js for GitHub Packages
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        registry-url: 'https://npm.pkg.github.com'
+        
+    - name: Install dependencies
+      run: |
+        npm cache clean --force
+        rm -f package-lock.json
+        npm install --legacy-peer-deps
+        
+    - name: Build package
+      run: npm run build
+        
+    - name: Publish to GitHub Packages
+      run: npm publish --access public
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
