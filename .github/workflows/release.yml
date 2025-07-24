@@ -41,10 +41,14 @@ jobs:
       
     - name: Install Node dependencies and build assets
       run: |
-        # Try npm ci first, fallback to npm install if it fails
-        if ! npm ci --legacy-peer-deps; then
-          echo "npm ci failed, trying npm install..."
-          npm install --legacy-peer-deps
+        # Clear npm cache and remove lock file to handle dependency conflicts
+        npm cache clean --force
+        rm -f package-lock.json
+        
+        # Try npm install with legacy peer deps
+        if ! npm install --legacy-peer-deps; then
+          echo "npm install failed, trying with additional flags..."
+          npm install --legacy-peer-deps --force
         fi
         
         # Build assets
