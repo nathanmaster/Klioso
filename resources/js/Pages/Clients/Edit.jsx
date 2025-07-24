@@ -3,6 +3,7 @@ import { useForm } from '@inertiajs/react';
 import Form from '@/Components/Form';
 import Button from '@/Components/Button';
 import { Link } from '@inertiajs/react';
+import BackButton from '@/Components/BackButton';
 
 export default function Edit({ client }) {
     const { data, setData, put, errors } = useForm({
@@ -28,6 +29,10 @@ export default function Edit({ client }) {
                 {/* Main Content */}
                 <div className="flex-1">
                     <div className="bg-white rounded-lg shadow p-6 max-w-xl mx-auto">
+                        <div className="flex justify-between items-center mb-6">
+                            <BackButton fallbackRoute={`/clients/${client.id}`} />
+                            <h2 className="text-lg font-semibold">Edit {client.name}</h2>
+                        </div>
                         <Form onSubmit={e => { e.preventDefault(); put(`/clients/${client.id}`); }}>
                             <Form.Input
                                 label="Name"

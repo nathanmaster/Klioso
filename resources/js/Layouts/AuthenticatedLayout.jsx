@@ -22,6 +22,7 @@ export default function AuthenticatedLayout({ header, children }) {
         { name: 'Websites', route: 'websites.index', match: 'websites.*' },
         { name: 'Plugins', route: 'plugins.index', match: 'plugins.*' },
         { name: 'Templates', route: 'templates.index', match: 'templates.*' },
+        { name: 'WP Scanner', route: 'scanner.index', match: 'scanner.*' },
     ];
 
     return (

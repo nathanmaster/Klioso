@@ -8,20 +8,49 @@ use Inertia\Inertia;
 
 class PluginController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $plugins = Plugin::all()->map(function ($plugin) {
-            return [
-                'id' => $plugin->id,
-                'name' => $plugin->name,
-                'description' => $plugin->description,
-                'is_paid' => $plugin->is_paid,
-                'purchase_url' => $plugin->purchase_url,
-                'install_source' => $plugin->install_source,
-            ];
-        });
+        $query = Plugin::query();
+        
+        // Search functionality
+        if ($request->search) {
+            $query->where('name', 'like', '%' . $request->search . '%')
+                  ->orWhere('description', 'like', '%' . $request->search . '%');
+        }
+        
+        // Sorting functionality
+        $sortBy = $request->get('sort_by', 'name');
+        $sortDirection = $request->get('sort_direction', 'asc');
+        
+        // Validate sort parameters
+        $allowedSortFields = ['name', 'description', 'is_paid', 'purchase_url', 'install_source'];
+        if (!in_array($sortBy, $allowedSortFields)) {
+            $sortBy = 'name';
+        }
+        if (!in_array($sortDirection, ['asc', 'desc'])) {
+            $sortDirection = 'asc';
+        }
+        
+        $query->orderBy($sortBy, $sortDirection);
+        
+        // Pagination
+        $plugins = $query->paginate($request->get('per_page', 15))
+            ->withQueryString();
+        
         return Inertia::render('Plugins/Index', [
-            'plugins' => $plugins,
+            'plugins' => $plugins->items(),
+            'pagination' => [
+                'current_page' => $plugins->currentPage(),
+                'last_page' => $plugins->lastPage(),
+                'per_page' => $plugins->perPage(),
+                'total' => $plugins->total(),
+                'from' => $plugins->firstItem(),
+                'to' => $plugins->lastItem(),
+                'path' => $request->url(),
+            ],
+            'sortBy' => $sortBy,
+            'sortDirection' => $sortDirection,
+            'filters' => $request->only('search'),
             'layout' => 'AuthenticatedLayout',
         ]);
     }

@@ -1,83 +1,92 @@
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Link, router } from '@inertiajs/react';
-import { useState } from 'react';
-import Table from '@/Components/Table';
+import ResponsiveTableLayout from '@/Layouts/ResponsiveTableLayout';
+import { Link } from '@inertiajs/react';
 import Button from '@/Components/Button';
+import DeleteButton from '@/Components/DeleteButton';
 
-export default function Index({ clients, filters }) {
-    const [search, setSearch] = useState(filters?.search || '');
-
-    function handleSearch(e) {
-        e.preventDefault();
-        router.get('/clients', { search });
-    }
-
+// Clients Index Page
+export default function Index({ clients, pagination, sortBy, sortDirection, filters }) {
     const columns = [
-        { label: 'Name', key: 'name', render: client => <Link href={`/clients/${client.id}`}>{client.name}</Link> },
-        { label: 'Contact Email', key: 'contact_email' },
-        { label: 'Contact Phone', key: 'contact_phone' },
-        { label: 'Address', key: 'address' },
-        { label: 'Company', key: 'company' },
-        { label: 'Notes', key: 'notes' },
-        { label: 'Actions', key: 'actions', render: client => <Button as={Link} href={`/clients/${client.id}/edit`}>Edit</Button> }
+        { 
+            label: 'Name', 
+            key: 'name', 
+            sortable: true,
+            render: client => (
+                <Link 
+                    href={`/clients/${client.id}`} 
+                    className="text-indigo-600 hover:text-indigo-900 font-medium"
+                >
+                    {client.name}
+                </Link>
+            )
+        },
+        { 
+            label: 'Contact Email', 
+            key: 'contact_email', 
+            sortable: true,
+            render: client => client.contact_email || '-'
+        },
+        { 
+            label: 'Phone', 
+            key: 'contact_phone', 
+            sortable: false,
+            hideOnMobile: true,
+            render: client => client.contact_phone || '-'
+        },
+        { 
+            label: 'Company', 
+            key: 'company', 
+            sortable: false,
+            hideOnMobile: true,
+            render: client => client.company || '-'
+        },
+        { 
+            label: 'Notes', 
+            key: 'notes', 
+            sortable: false,
+            hideOnMobile: true,
+            render: client => client.notes ? (
+                <div className="max-w-xs truncate" title={client.notes}>
+                    {client.notes.length > 50 ? `${client.notes.substring(0, 50)}...` : client.notes}
+                </div>
+            ) : '-'
+        },
+        { 
+            label: 'Actions', 
+            key: 'actions', 
+            sortable: false,
+            render: client => (
+                <div className="flex flex-col sm:flex-row gap-2">
+                    <Button as={Link} href={`/clients/${client.id}`} size="sm" variant="outline">
+                        View
+                    </Button>
+                    <Button as={Link} href={`/clients/${client.id}/edit`} size="sm">
+                        Edit
+                    </Button>
+                    <DeleteButton
+                        resource={client}
+                        resourceName="client"
+                        deleteRoute={`/clients/${client.id}`}
+                        size="sm"
+                    />
+                </div>
+            )
+        }
     ];
 
     return (
-        <AuthenticatedLayout header={<h1 className="text-2xl font-bold text-gray-800">Clients</h1>}>
-            <div className="flex gap-8 py-8">
-                {/* Sidebar Navigation */}
-                <nav className="w-64 bg-white rounded-lg shadow p-6 flex flex-col gap-4">
-                    <Link href="/clients" className="text-blue-600 hover:underline font-medium">Clients</Link>
-                    <Link href="/websites" className="text-blue-600 hover:underline font-medium">Websites</Link>
-                    <Link href="/plugins" className="text-blue-600 hover:underline font-medium">Plugins</Link>
-                    <Link href="/templates" className="text-blue-600 hover:underline font-medium">Templates</Link>
-                    <Link href="/hosting-providers" className="text-blue-600 hover:underline font-medium">Hosting Providers</Link>
-                    <Button as={Link} href="/clients/create" size="sm" className="mt-4">+ New Client</Button>
-                </nav>
-                {/* Main Content */}
-                <div className="flex-1">
-                    <div className="bg-white rounded-lg shadow p-6">
-                        <form onSubmit={handleSearch} className="flex items-center gap-2 mb-6">
-                            <input
-                                type="text"
-                                placeholder="Search clients..."
-                                value={search}
-                                onChange={e => setSearch(e.target.value)}
-                                className="border rounded px-3 py-2 w-full max-w-xs"
-                            />
-                            <Button type="submit" size="sm">Search</Button>
-                        </form>
-                        <table className="min-w-full divide-y divide-gray-200 ">
-                            <thead>
-                                <tr>
-                                    <th>Name</th>
-                                    <th>Contact Email</th>
-                                    <th>Contact Phone</th>
-                                    <th>Address</th>
-                                    <th>Company</th>
-                                    <th>Notes</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-200 items-center text-center">
-                                {clients.map(client => (
-                                    <tr key={client.id}>
-                                        <td className="text-center">{client.name}</td>
-                                        <td className="text-center">{client.contact_email}</td>
-                                        <td className="text-center">{client.contact_phone}</td>
-                                        <td className="text-center">{client.address}</td>
-                                        <td className="text-center">{client.company}</td>
-                                        <td className="text-center">{client.notes}</td>
-                                        <td className="text-center">
-                                            <Button as={Link} href={`/clients/${client.id}/edit`}>Edit</Button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </AuthenticatedLayout>
+        <ResponsiveTableLayout
+            title="Clients"
+            data={clients}
+            columns={columns}
+            createRoute="/clients/create"
+            createButtonText="Add Client"
+            searchPlaceholder="Search clients by name or email..."
+            searchRoute="/clients"
+            emptyStateMessage="No clients found. Start by adding your first client."
+            filters={filters}
+            sortBy={sortBy}
+            sortDirection={sortDirection}
+            pagination={pagination}
+        />
     );
 }

@@ -1,52 +1,106 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Link } from '@inertiajs/react';
 import Button from '@/Components/Button';
+import BackButton from '@/Components/BackButton';
+import DeleteButton from '@/Components/DeleteButton';
 
 export default function Show({ plugin, websites }) {
     return (
         <AuthenticatedLayout header={<h1 className="text-2xl font-bold text-gray-800">Plugin Details</h1>}>
-            <div className="flex gap-8 py-8">
-                {/* Sidebar Navigation */}
-                <nav className="w-64 bg-white rounded-lg shadow p-6 flex flex-col gap-4">
-                    <Link href="/clients" className="text-blue-600 hover:underline font-medium">Clients</Link>
-                    <Link href="/websites" className="text-blue-600 hover:underline font-medium">Websites</Link>
-                    <Link href="/plugins" className="text-blue-600 hover:underline font-medium">Plugins</Link>
-                    <Link href="/templates" className="text-blue-600 hover:underline font-medium">Templates</Link>
-                    <Link href="/hosting-providers" className="text-blue-600 hover:underline font-medium">Hosting Providers</Link>
-                    <Button as={Link} href={`/plugins/${plugin.id}/edit`} size="sm" className="mt-4">Edit Plugin</Button>
-                </nav>
-                {/* Main Content */}
-                <div className="flex-1">
-                    <div className="bg-white rounded-lg shadow p-6 max-w-xl mx-auto">
-                        <h2 className="text-xl font-bold mb-4">{plugin.name}</h2>
-                        <div className="mb-2"><strong>Description:</strong> {plugin.description}</div>
-                        <div className="mb-2"><strong>Paid:</strong> {plugin.is_paid ? 'Yes' : 'No'}</div>
-                        <div className="mb-2"><strong>Purchase URL:</strong> {plugin.purchase_url}</div>
-                        <div className="mb-2"><strong>Install Source:</strong> {plugin.install_source}</div>
-                        <div className="mt-6">
-                            <h3 className="font-semibold mb-2">Websites Using This Plugin</h3>
-                            <table className="min-w-full divide-y divide-gray-200">
-                                <thead>
-                                    <tr>
-                                        <th>Domain</th>
-                                        <th>Version</th>
-                                        <th>Status</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-200 items-center text-center">
-                                    {websites.map(site => (
-                                        <tr key={site.id}>
-                                            <td className="text-center">
-                                                <Link href={`/websites/${site.id}`}>{site.domain_name}</Link>
-                                            </td>
-                                            <td className="text-center">{site.pivot.version || '-'}</td>
-                                            <td className="text-center">{site.pivot.is_active ? 'Active' : 'Inactive'}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
+            <div className="max-w-4xl mx-auto space-y-6 mt-8">
+                {/* Header with navigation */}
+                <div className="flex justify-between items-center">
+                    <BackButton fallbackRoute="/plugins" />
+                    <div className="flex gap-2">
+                        <Button as={Link} href={`/plugins/${plugin.id}/edit`}>Edit Plugin</Button>
+                        <DeleteButton 
+                            resource={plugin}
+                            resourceName="plugin"
+                            deleteRoute={`/plugins/${plugin.id}`}
+                        />
                     </div>
+                </div>
+
+                {/* Plugin Details Card */}
+                <div className="bg-white rounded-lg shadow p-6">
+                    <h2 className="text-lg font-semibold mb-4">Plugin Information</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Name</label>
+                            <p className="mt-1 text-sm text-gray-900">{plugin.name}</p>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Type</label>
+                            <span className={`mt-1 inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                plugin.is_paid ? 'bg-orange-100 text-orange-800' : 'bg-green-100 text-green-800'
+                            }`}>
+                                {plugin.is_paid ? 'Paid' : 'Free'}
+                            </span>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Install Source</label>
+                            <p className="mt-1 text-sm text-gray-900">{plugin.install_source || '-'}</p>
+                        </div>
+                        {plugin.is_paid && plugin.purchase_url && (
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Purchase URL</label>
+                                <p className="mt-1 text-sm">
+                                    <a href={plugin.purchase_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                                        {plugin.purchase_url}
+                                    </a>
+                                </p>
+                            </div>
+                        )}
+                        {plugin.description && (
+                            <div className="md:col-span-2">
+                                <label className="block text-sm font-medium text-gray-700">Description</label>
+                                <p className="mt-1 text-sm text-gray-900">{plugin.description}</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Websites Using This Plugin */}
+                <div className="bg-white rounded-lg shadow p-6">
+                    <h3 className="text-lg font-semibold mb-4">Websites Using This Plugin ({websites.length})</h3>
+                    {websites.length > 0 ? (
+                        <div className="space-y-3">
+                            {websites.map(website => (
+                                <div key={website.id} className="border rounded-lg p-4">
+                                    <div className="flex justify-between items-start">
+                                        <div className="flex-1">
+                                            <h4 className="font-medium">
+                                                <Link href={`/websites/${website.id}`} className="text-blue-600 hover:underline">
+                                                    {website.domain_name}
+                                                </Link>
+                                            </h4>
+                                            <div className="flex gap-4 mt-2 text-sm">
+                                                <span>
+                                                    <strong>Version:</strong> {website.pivot.version || 'Not specified'}
+                                                </span>
+                                                <span className={`px-2 py-1 rounded text-xs ${
+                                                    website.pivot.is_active 
+                                                        ? 'bg-green-100 text-green-800' 
+                                                        : 'bg-red-100 text-red-800'
+                                                }`}>
+                                                    {website.pivot.is_active ? 'Active' : 'Inactive'}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div className="ml-4">
+                                            <Button as={Link} href={`/websites/${website.id}`} size="sm" variant="outline">
+                                                View Website
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="text-center py-8 text-gray-500">
+                            <p>This plugin is not currently used by any websites.</p>
+                        </div>
+                    )}
                 </div>
             </div>
         </AuthenticatedLayout>

@@ -11,13 +11,45 @@ class ClientController extends Controller
     public function index(Request $request)
     {
         $query = Client::query();
+        
+        // Search functionality
         if ($request->search) {
             $query->where('name', 'like', '%' . $request->search . '%')
                   ->orWhere('contact_email', 'like', '%' . $request->search . '%');
         }
-        $clients = $query->get();
+        
+        // Sorting functionality
+        $sortBy = $request->get('sort_by', 'name');
+        $sortDirection = $request->get('sort_direction', 'asc');
+        
+        // Validate sort parameters
+        $allowedSortFields = ['name', 'contact_email', 'phone', 'created_at'];
+        if (!in_array($sortBy, $allowedSortFields)) {
+            $sortBy = 'name';
+        }
+        if (!in_array($sortDirection, ['asc', 'desc'])) {
+            $sortDirection = 'asc';
+        }
+        
+        $query->orderBy($sortBy, $sortDirection);
+        
+        // Pagination
+        $clients = $query->paginate($request->get('per_page', 15))
+            ->withQueryString();
+        
         return Inertia::render('Clients/Index', [
-            'clients' => $clients,
+            'clients' => $clients->items(),
+            'pagination' => [
+                'current_page' => $clients->currentPage(),
+                'last_page' => $clients->lastPage(),
+                'per_page' => $clients->perPage(),
+                'total' => $clients->total(),
+                'from' => $clients->firstItem(),
+                'to' => $clients->lastItem(),
+                'path' => $request->url(),
+            ],
+            'sortBy' => $sortBy,
+            'sortDirection' => $sortDirection,
             'filters' => $request->only('search'),
             'layout' => 'AuthenticatedLayout',
         ]);
