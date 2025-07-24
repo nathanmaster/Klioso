@@ -3,12 +3,69 @@
     "name": "klioso",
     "version": "0.8.0",
     "description": "Multi-Service Provider Management System for WordPress and Web Development",
-    "private": true,
+    "private": false,
     "type": "module",
+    "main": "public/index.php",
+    "bin": {
+        "klioso": "./bin/klioso"
+    },
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "install": "composer install --optimize-autoloader --no-dev && npm run build"
     },
+    "keywords": [
+        "wordpress",
+        "management",
+        "laravel",
+        "inertia",
+        "react",
+        "hosting",
+        "website-management",
+        "plugin-scanner",
+        "multi-service",
+        "cms"
+    ],
+    "author": {
+        "name": "Nathan Master",
+        "email": "your-email@example.com",
+        "url": "https://github.com/nathanmaster"
+    },
+    "license": "MIT",
+    "homepage": "https://github.com/nathanmaster/Klioso#readme",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/nathanmaster/Klioso.git"
+    },
+    "bugs": {
+        "url": "https://github.com/nathanmaster/Klioso/issues"
+    },
+    "engines": {
+        "node": ">=18.0.0",
+        "php": ">=8.2.0"
+    },
+    "files": [
+        "app/",
+        "bootstrap/",
+        "config/",
+        "database/",
+        "resources/",
+        "routes/",
+        "public/",
+        "storage/app/.gitkeep",
+        "storage/framework/.gitkeep",
+        "storage/logs/.gitkeep",
+        "composer.json",
+        "composer.lock",
+        "artisan",
+        "vite.config.js",
+        "tailwind.config.js",
+        "postcss.config.js",
+        ".env.example",
+        "README.md",
+        "CHANGELOG.md",
+        "bin/"
+    ],
     "devDependencies": {
         "@headlessui/react": "^2.0.0",
         "@inertiajs/react": "^2.0.0",
@@ -18,17 +75,11 @@
         "autoprefixer": "^10.4.12",
         "axios": "^1.8.2",
         "concurrently": "^9.0.1",
-        "laravel-breeze": "^2.0.0",
         "laravel-vite-plugin": "^1.2.0",
         "postcss": "^8.4.31",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
         "tailwindcss": "^3.2.1",
-        "vite": "^6.2.4",
-        "@inertiajs/inertia": "^1.0.0",
-        "@inertiajs/inertia-react": "^0.8.0",
-        "@inertiajs/inertia-vue3": "^0.8.0",
-        "@vue/compiler-sfc": "^3.4.0",
-        "vue": "^3.4.0"
+        "vite": "^6.2.4"
     }
 }

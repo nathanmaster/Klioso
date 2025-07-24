@@ -1,0 +1,140 @@
+#!/usr/bin/env node
+
+const { execSync } = require('child_process');
+const fs = require('fs');
+const path = require('path');
+
+console.log('🚀 Installing Klioso - Multi-Service Provider Management System');
+console.log('📦 This package requires PHP 8.2+ and Composer');
+
+// Check if PHP is available
+try {
+    execSync('php --version', { stdio: 'ignore' });
+    console.log('✅ PHP found');
+} catch (error) {
+    console.error('❌ PHP not found. Please install PHP 8.2+ first.');
+    process.exit(1);
+}
+
+// Check if Composer is available
+try {
+    execSync('composer --version', { stdio: 'ignore' });
+    console.log('✅ Composer found');
+} catch (error) {
+    console.error('❌ Composer not found. Please install Composer first.');
+    process.exit(1);
+}
+
+// Get the installation directory
+const currentDir = process.cwd();
+const packageDir = path.dirname(__dirname);
+
+console.log('📁 Setting up Klioso in:', currentDir);
+
+// Copy files to current directory if we're not already in the package directory
+if (currentDir !== packageDir) {
+    console.log('📋 Copying Klioso files...');
+    
+    // Copy essential files
+    const filesToCopy = [
+        'app/', 'bootstrap/', 'config/', 'database/', 'resources/', 
+        'routes/', 'public/', 'storage/', 'composer.json', 'composer.lock',
+        'artisan', 'vite.config.js', 'tailwind.config.js', 'postcss.config.js',
+        '.env.example', 'README.md'
+    ];
+    
+    filesToCopy.forEach(file => {
+        const source = path.join(packageDir, file);
+        const dest = path.join(currentDir, file);
+        
+        if (fs.existsSync(source)) {
+            if (fs.lstatSync(source).isDirectory()) {
+                execSync(`cp -r "${source}" "${dest}"`, { stdio: 'inherit' });
+            } else {
+                execSync(`cp "${source}" "${dest}"`, { stdio: 'inherit' });
+            }
+        }
+    });
+}
+
+// Install PHP dependencies
+console.log('📦 Installing PHP dependencies...');
+try {
+    execSync('composer install --optimize-autoloader --no-dev', { 
+        cwd: currentDir, 
+        stdio: 'inherit' 
+    });
+    console.log('✅ PHP dependencies installed');
+} catch (error) {
+    console.error('❌ Failed to install PHP dependencies');
+    process.exit(1);
+}
+
+// Install Node dependencies and build assets
+console.log('🎨 Building frontend assets...');
+try {
+    execSync('npm install', { cwd: currentDir, stdio: 'inherit' });
+    execSync('npm run build', { cwd: currentDir, stdio: 'inherit' });
+    console.log('✅ Frontend assets built');
+} catch (error) {
+    console.error('❌ Failed to build frontend assets');
+    process.exit(1);
+}
+
+// Setup environment file
+const envExample = path.join(currentDir, '.env.example');
+const envFile = path.join(currentDir, '.env');
+
+if (fs.existsSync(envExample) && !fs.existsSync(envFile)) {
+    console.log('⚙️ Creating .env file...');
+    fs.copyFileSync(envExample, envFile);
+    console.log('✅ Environment file created');
+} else if (!fs.existsSync(envFile)) {
+    console.log('⚠️ No .env.example found, you may need to create .env manually');
+}
+
+// Generate Laravel key only if .env exists
+if (fs.existsSync(envFile)) {
+    console.log('🔑 Generating application key...');
+    try {
+        execSync('php artisan key:generate --ansi', { 
+            cwd: currentDir, 
+            stdio: 'inherit' 
+        });
+        console.log('✅ Application key generated');
+    } catch (error) {
+        console.error('❌ Failed to generate application key');
+        console.log('💡 You can generate it manually with: php artisan key:generate');
+    }
+} else {
+    console.log('⚠️ No .env file found, skipping key generation');
+}
+
+// Run migrations only if .env exists and is configured
+if (fs.existsSync(envFile)) {
+    console.log('🗄️ Setting up database...');
+    try {
+        execSync('php artisan migrate --force', { 
+            cwd: currentDir, 
+            stdio: 'inherit' 
+        });
+        console.log('✅ Database setup complete');
+    } catch (error) {
+        console.error('❌ Failed to setup database');
+        console.log('💡 Please configure your database in .env and run: php artisan migrate');
+    }
+} else {
+    console.log('⚠️ No .env file found, skipping database migration');
+}
+
+console.log('');
+console.log('🎉 Klioso installation complete!');
+console.log('');
+console.log('📋 Next steps:');
+console.log('1. Configure your database in .env');
+console.log('2. Run: php artisan migrate (if not already done)');
+console.log('3. Run: php artisan serve');
+console.log('4. Visit: http://localhost:8000');
+console.log('');
+console.log('📖 Documentation: https://github.com/nathanmaster/Klioso#readme');
+console.log('🐛 Issues: https://github.com/nathanmaster/Klioso/issues');
