@@ -27,6 +27,12 @@ class WordPressScanService
         ];
 
         try {
+            // Validate URL format
+            if (!filter_var($url, FILTER_VALIDATE_URL)) {
+                $results['errors'][] = 'Invalid URL format provided';
+                return $results;
+            }
+
             // First, check if it's a WordPress site
             $isWordPress = $this->detectWordPress($url);
             $results['wordpress_detected'] = $isWordPress;
@@ -60,9 +66,11 @@ class WordPressScanService
         } catch (\Exception $e) {
             Log::error('WordPress scan failed', [
                 'url' => $url,
+                'scan_type' => $scanType,
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
             ]);
-            $results['errors'][] = $e->getMessage();
+            $results['errors'][] = 'Scan failed: ' . $e->getMessage();
         }
 
         return $results;
@@ -78,7 +86,21 @@ class WordPressScanService
                 ->withUserAgent($this->userAgent)
                 ->get($url);
 
+            if (!$response->successful()) {
+                Log::info('Failed to reach URL for WordPress detection', [
+                    'url' => $url, 
+                    'status' => $response->status()
+                ]);
+                return false;
+            }
+
             $content = $response->body();
+            
+            // Check if content is empty
+            if (empty($content) || strlen($content) < 10) {
+                Log::warning('Empty or minimal content received from URL', ['url' => $url]);
+                return false;
+            }
             
             // Check for common WordPress indicators
             $indicators = [
@@ -194,24 +216,37 @@ class WordPressScanService
             if ($response->successful()) {
                 $content = $response->body();
                 
+                // Check if content is empty or invalid
+                if (empty($content) || strlen($content) < 10) {
+                    Log::warning('Empty or invalid content received from plugins directory', ['url' => $url]);
+                    return $plugins;
+                }
+                
                 // Use DOMDocument for proper HTML parsing
                 $dom = new \DOMDocument();
-                @$dom->loadHTML($content); // Suppress warnings for malformed HTML
-                $xpath = new \DOMXPath($dom);
-                $links = $xpath->query('//a[@href]');
                 
-                foreach ($links as $link) {
-                    $href = $link->getAttribute('href');
-                    // Extract plugin slug from directory links
-                    if (preg_match('/^([^\/]+)\/?$/', $href, $matches)) {
-                        $pluginSlug = $matches[1];
-                        if ($pluginSlug !== '..' && $pluginSlug !== '.') {
-                            $plugins[] = [
-                                'name' => $this->formatPluginName($pluginSlug),
-                                'slug' => $pluginSlug,
-                                'status' => 'active', // Assume active if publicly visible
-                                'version' => $this->getPluginVersion($url, $pluginSlug),
-                            ];
+                // Suppress errors and warnings for malformed HTML
+                libxml_use_internal_errors(true);
+                $loaded = @$dom->loadHTML($content); 
+                libxml_clear_errors();
+                
+                if ($loaded) {
+                    $xpath = new \DOMXPath($dom);
+                    $links = $xpath->query('//a[@href]');
+                    
+                    foreach ($links as $link) {
+                        $href = $link->getAttribute('href');
+                        // Extract plugin slug from directory links
+                        if (preg_match('/^([^\/]+)\/?$/', $href, $matches)) {
+                            $pluginSlug = $matches[1];
+                            if ($pluginSlug !== '..' && $pluginSlug !== '.') {
+                                $plugins[] = [
+                                    'name' => $this->formatPluginName($pluginSlug),
+                                    'slug' => $pluginSlug,
+                                    'status' => 'active', // Assume active if publicly visible
+                                    'version' => $this->getPluginVersion($url, $pluginSlug),
+                                ];
+                            }
                         }
                     }
                 }
@@ -239,19 +274,33 @@ class WordPressScanService
             if ($response->successful()) {
                 $content = $response->body();
                 
+                // Check if content is empty or invalid
+                if (empty($content) || strlen($content) < 10) {
+                    Log::warning('Empty or invalid content received from URL', ['url' => $url]);
+                    return $plugins;
+                }
+                
                 // Use DOMDocument for safer HTML parsing
                 $dom = new \DOMDocument();
-                @$dom->loadHTML($content, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
                 
-                // Look for plugin references in wp-content/plugins/
-                $xpath = new \DOMXPath($dom);
-                $elements = $xpath->query('//*[contains(@src, "wp-content/plugins/") or contains(@href, "wp-content/plugins/")]');
+                // Suppress errors and warnings for malformed HTML
+                libxml_use_internal_errors(true);
+                $loaded = @$dom->loadHTML($content, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+                libxml_clear_errors();
                 
                 $foundPlugins = [];
-                foreach ($elements as $element) {
-                    $url_attr = $element->getAttribute('src') ?: $element->getAttribute('href');
-                    if (preg_match('/wp-content\/plugins\/([^\/\'"?]+)/', $url_attr, $matches)) {
-                        $foundPlugins[] = $matches[1];
+                
+                // Only use DOMDocument if it loaded successfully
+                if ($loaded) {
+                    // Look for plugin references in wp-content/plugins/
+                    $xpath = new \DOMXPath($dom);
+                    $elements = $xpath->query('//*[contains(@src, "wp-content/plugins/") or contains(@href, "wp-content/plugins/")]');
+                    
+                    foreach ($elements as $element) {
+                        $url_attr = $element->getAttribute('src') ?: $element->getAttribute('href');
+                        if (preg_match('/wp-content\/plugins\/([^\/\'"?]+)/', $url_attr, $matches)) {
+                            $foundPlugins[] = $matches[1];
+                        }
                     }
                 }
                 
@@ -393,19 +442,33 @@ class WordPressScanService
             if ($response->successful()) {
                 $content = $response->body();
                 
+                // Check if content is empty or invalid
+                if (empty($content) || strlen($content) < 10) {
+                    Log::warning('Empty or invalid content received from URL for themes', ['url' => $url]);
+                    return $themes;
+                }
+                
                 // Use DOMDocument for safer HTML parsing
                 $dom = new \DOMDocument();
-                @$dom->loadHTML($content, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
                 
-                // Look for theme references in wp-content/themes/
-                $xpath = new \DOMXPath($dom);
-                $elements = $xpath->query('//*[contains(@src, "wp-content/themes/") or contains(@href, "wp-content/themes/")]');
+                // Suppress errors and warnings for malformed HTML
+                libxml_use_internal_errors(true);
+                $loaded = @$dom->loadHTML($content, LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+                libxml_clear_errors();
                 
                 $foundThemes = [];
-                foreach ($elements as $element) {
-                    $url_attr = $element->getAttribute('src') ?: $element->getAttribute('href');
-                    if (preg_match('/wp-content\/themes\/([^\/\'"?]+)/', $url_attr, $matches)) {
-                        $foundThemes[] = $matches[1];
+                
+                // Only use DOMDocument if it loaded successfully
+                if ($loaded) {
+                    // Look for theme references in wp-content/themes/
+                    $xpath = new \DOMXPath($dom);
+                    $elements = $xpath->query('//*[contains(@src, "wp-content/themes/") or contains(@href, "wp-content/themes/")]');
+                    
+                    foreach ($elements as $element) {
+                        $url_attr = $element->getAttribute('src') ?: $element->getAttribute('href');
+                        if (preg_match('/wp-content\/themes\/([^\/\'"?]+)/', $url_attr, $matches)) {
+                            $foundThemes[] = $matches[1];
+                        }
                     }
                 }
                 
