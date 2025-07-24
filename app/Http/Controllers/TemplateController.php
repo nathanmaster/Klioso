@@ -11,11 +11,33 @@ class TemplateController extends Controller
     public function index(Request $request)
     {
         $query = Template::query();
+        
+        // Search functionality
         if ($request->search) {
             $query->where('name', 'like', '%' . $request->search . '%')
                   ->orWhere('description', 'like', '%' . $request->search . '%');
         }
-        $templates = $query->get()->map(function ($template) {
+        
+        // Sorting functionality
+        $sortBy = $request->get('sort_by', 'name');
+        $sortDirection = $request->get('sort_direction', 'asc');
+        
+        // Validate sort parameters
+        $allowedSortFields = ['name', 'description', 'created_at'];
+        if (!in_array($sortBy, $allowedSortFields)) {
+            $sortBy = 'name';
+        }
+        if (!in_array($sortDirection, ['asc', 'desc'])) {
+            $sortDirection = 'asc';
+        }
+        
+        $query->orderBy($sortBy, $sortDirection);
+        
+        // Pagination
+        $templates = $query->paginate($request->get('per_page', 15))
+            ->withQueryString();
+        
+        $templateData = $templates->getCollection()->map(function ($template) {
             return [
                 'id' => $template->id,
                 'name' => $template->name,
@@ -24,8 +46,20 @@ class TemplateController extends Controller
                 'notes' => $template->notes,
             ];
         });
+        
         return Inertia::render('Templates/Index', [
-            'templates' => $templates,
+            'templates' => $templateData,
+            'pagination' => [
+                'current_page' => $templates->currentPage(),
+                'last_page' => $templates->lastPage(),
+                'per_page' => $templates->perPage(),
+                'total' => $templates->total(),
+                'from' => $templates->firstItem(),
+                'to' => $templates->lastItem(),
+                'path' => $request->url(),
+            ],
+            'sortBy' => $sortBy,
+            'sortDirection' => $sortDirection,
             'filters' => $request->only('search'),
             'layout' => 'AuthenticatedLayout',
         ]);

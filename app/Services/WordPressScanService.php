@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Log;
 class WordPressScanService
 {
     protected $timeout = 30;
+    protected $concurrentRequestTimeout = 8; // Configurable timeout for concurrent requests
     protected $userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36';
 
     /**
@@ -134,10 +135,12 @@ class WordPressScanService
             return false;
 
         } catch (\Illuminate\Http\Client\ConnectionException $e) {
-            Log::warning('Connection failed during WordPress detection', ['url' => $url, 'error' => $e->getMessage()]);
+            $domain = parse_url($url, PHP_URL_HOST);
+            Log::warning('Connection failed during WordPress detection', ['domain' => $domain, 'error' => $e->getMessage()]);
             return false;
         } catch (\Exception $e) {
-            Log::warning('Failed to detect WordPress', ['url' => $url, 'error' => $e->getMessage()]);
+            $domain = parse_url($url, PHP_URL_HOST);
+            Log::warning('Failed to detect WordPress', ['domain' => $domain, 'error' => $e->getMessage()]);
             return false;
         }
     }
@@ -383,7 +386,7 @@ class WordPressScanService
         // Use concurrent HTTP requests for better performance
         try {
             $responses = Http::pool(fn ($pool) => array_map(
-                fn ($pluginSlug) => $pool->timeout(3) // Reduced timeout for concurrent requests
+                fn ($pluginSlug) => $pool->timeout($this->concurrentRequestTimeout) // Configurable timeout for concurrent requests
                     ->withUserAgent($this->userAgent)
                     ->get($url . '/wp-content/plugins/' . $pluginSlug . '/'),
                 $commonPlugins

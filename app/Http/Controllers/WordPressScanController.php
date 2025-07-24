@@ -43,12 +43,15 @@ class WordPressScanController extends Controller
      */
     public function scan(Request $request)
     {
-        // Debug: Log the incoming request data
+        // Debug: Log the incoming request data (sanitized)
+        $url = $request->input('url');
+        $domain = $url ? parse_url($url, PHP_URL_HOST) : null;
+        
         Log::info('WordPress scan request received', [
-            'all_data' => $request->all(),
-            'url' => $request->input('url'),
+            'domain' => $domain,
             'scan_type' => $request->input('scan_type'),
             'content_type' => $request->header('Content-Type'),
+            'has_url' => !empty($url),
         ]);
 
         $validator = Validator::make($request->all(), [
@@ -59,7 +62,8 @@ class WordPressScanController extends Controller
         if ($validator->fails()) {
             Log::warning('WordPress scan validation failed', [
                 'errors' => $validator->errors(),
-                'input' => $request->all(),
+                'domain' => $domain,
+                'scan_type' => $request->input('scan_type'),
             ]);
             
             return response()->json([

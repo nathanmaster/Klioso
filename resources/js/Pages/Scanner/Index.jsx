@@ -212,6 +212,7 @@ export default function Scanner({ websites = [] }) {
 
                                     <form onSubmit={handleUrlScan} className="space-y-4">
                                         <Form.Input
+                                            id="website-url"
                                             label="Website URL"
                                             value={scanForm.url}
                                             onChange={(e) => setScanForm(prev => ({ ...prev, url: e.target.value }))}
@@ -220,6 +221,7 @@ export default function Scanner({ websites = [] }) {
                                         />
 
                                         <Form.Select
+                                            id="url-scan-type"
                                             label="Scan Type"
                                             value={scanForm.scanType}
                                             onChange={(e) => setScanForm(prev => ({ ...prev, scanType: e.target.value }))}
@@ -251,6 +253,7 @@ export default function Scanner({ websites = [] }) {
 
                                     <form onSubmit={handleWebsiteScan} className="space-y-4">
                                         <Form.Select
+                                            id="website-select"
                                             label="Website"
                                             value={selectedWebsite}
                                             onChange={(e) => setSelectedWebsite(e.target.value)}
@@ -265,6 +268,7 @@ export default function Scanner({ websites = [] }) {
                                         </Form.Select>
 
                                         <Form.Select
+                                            id="website-scan-type"
                                             label="Scan Type"
                                             value={scanForm.scanType}
                                             onChange={(e) => setScanForm(prev => ({ ...prev, scanType: e.target.value }))}
@@ -276,11 +280,15 @@ export default function Scanner({ websites = [] }) {
                                         </Form.Select>
 
                                         <Form.Checkbox
+                                            id="auto-sync"
                                             label="Auto-sync discovered plugins to website"
-                                            aria-label="Automatically synchronize discovered plugins with the selected website's database"
+                                            aria-describedby="auto-sync-description"
                                             checked={scanForm.autoSync}
                                             onChange={(e) => setScanForm(prev => ({ ...prev, autoSync: e.target.checked }))}
                                         />
+                                        <p id="auto-sync-description" className="text-xs text-gray-500 -mt-2">
+                                            Automatically synchronize discovered plugins with the selected website's database.
+                                        </p>
 
                                         <Button type="submit" disabled={isScanning}>
                                             {isScanning ? 'Scanning...' : 'Start Scan'}

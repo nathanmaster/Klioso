@@ -220,10 +220,26 @@ export default function WebsitePlugins({ website, allPlugins = [], websitePlugin
             
             {/* Version Update Modal */}
             {showVersionModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-                        <h3 className="text-lg font-semibold mb-4">Update Plugin Version</h3>
-                        <p className="text-gray-600 mb-4">
+                <div 
+                    className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+                    role="dialog"
+                    aria-labelledby="update-plugin-title"
+                    aria-describedby="update-plugin-description"
+                    onKeyDown={(e) => {
+                        if (e.key === 'Escape') {
+                            setShowVersionModal(false);
+                            setEditingPlugin(null);
+                            setNewVersion('');
+                        }
+                    }}
+                >
+                    <div 
+                        className="bg-white rounded-lg p-6 max-w-md w-full mx-4" 
+                        tabIndex="-1"
+                        ref={(el) => el && el.focus()}
+                    >
+                        <h3 id="update-plugin-title" className="text-lg font-semibold mb-4">Update Plugin Version</h3>
+                        <p id="update-plugin-description" className="text-gray-600 mb-4">
                             Updating version for: <strong>{editingPlugin?.name}</strong>
                         </p>
                         <input
@@ -260,10 +276,25 @@ export default function WebsitePlugins({ website, allPlugins = [], websitePlugin
 
             {/* Remove Plugin Modal */}
             {showRemoveModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-                        <h3 className="text-lg font-semibold mb-4">Remove Plugin</h3>
-                        <p className="text-gray-600 mb-6">
+                <div 
+                    className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+                    role="dialog"
+                    aria-labelledby="remove-plugin-title"
+                    aria-describedby="remove-plugin-description"
+                    onKeyDown={(e) => {
+                        if (e.key === 'Escape') {
+                            setShowRemoveModal(false);
+                            setPluginToRemove(null);
+                        }
+                    }}
+                >
+                    <div 
+                        className="bg-white rounded-lg p-6 max-w-md w-full mx-4"
+                        tabIndex="-1"
+                        ref={(el) => el && el.focus()}
+                    >
+                        <h3 id="remove-plugin-title" className="text-lg font-semibold mb-4">Remove Plugin</h3>
+                        <p id="remove-plugin-description" className="text-gray-600 mb-6">
                             Are you sure you want to remove this plugin from the website? This action cannot be undone.
                         </p>
                         <div className="flex gap-2 justify-end">

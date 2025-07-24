@@ -11,11 +11,33 @@ class HostingProviderController extends Controller
     public function index(Request $request)
     {
         $query = HostingProvider::query();
+        
+        // Search functionality
         if ($request->search) {
             $query->where('name', 'like', '%' . $request->search . '%')
                   ->orWhere('description', 'like', '%' . $request->search . '%');
         }
-        $hostingProviders = $query->get()->map(function ($provider) {
+        
+        // Sorting functionality
+        $sortBy = $request->get('sort_by', 'name');
+        $sortDirection = $request->get('sort_direction', 'asc');
+        
+        // Validate sort parameters
+        $allowedSortFields = ['name', 'description', 'created_at'];
+        if (!in_array($sortBy, $allowedSortFields)) {
+            $sortBy = 'name';
+        }
+        if (!in_array($sortDirection, ['asc', 'desc'])) {
+            $sortDirection = 'asc';
+        }
+        
+        $query->orderBy($sortBy, $sortDirection);
+        
+        // Pagination
+        $hostingProviders = $query->paginate($request->get('per_page', 15))
+            ->withQueryString();
+        
+        $providerData = $hostingProviders->getCollection()->map(function ($provider) {
             return [
                 'id' => $provider->id,
                 'name' => $provider->name,
@@ -26,8 +48,20 @@ class HostingProviderController extends Controller
                 'login_url' => $provider->login_url,
             ];
         });
+        
         return Inertia::render('HostingProviders/Index', [
-            'hostingProviders' => $hostingProviders,
+            'hostingProviders' => $providerData,
+            'pagination' => [
+                'current_page' => $hostingProviders->currentPage(),
+                'last_page' => $hostingProviders->lastPage(),
+                'per_page' => $hostingProviders->perPage(),
+                'total' => $hostingProviders->total(),
+                'from' => $hostingProviders->firstItem(),
+                'to' => $hostingProviders->lastItem(),
+                'path' => $request->url(),
+            ],
+            'sortBy' => $sortBy,
+            'sortDirection' => $sortDirection,
             'filters' => $request->only('search'),
             'layout' => 'AuthenticatedLayout',
         ]);

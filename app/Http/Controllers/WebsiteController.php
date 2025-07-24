@@ -13,11 +13,36 @@ class WebsiteController extends Controller
     public function index(Request $request)
     {
         $query = Website::with(['client', 'hostingProvider']);
+        
+        // Search functionality
         if ($request->search) {
             $query->where('domain_name', 'like', '%' . $request->search . '%')
-                  ->orWhere('platform', 'like', '%' . $request->search . '%');
+                  ->orWhere('platform', 'like', '%' . $request->search . '%')
+                  ->orWhereHas('client', function($q) use ($request) {
+                      $q->where('name', 'like', '%' . $request->search . '%');
+                  });
         }
-        $websites = $query->get()->map(function ($website) {
+        
+        // Sorting functionality
+        $sortBy = $request->get('sort_by', 'domain_name');
+        $sortDirection = $request->get('sort_direction', 'asc');
+        
+        // Validate sort parameters
+        $allowedSortFields = ['domain_name', 'platform', 'status', 'created_at'];
+        if (!in_array($sortBy, $allowedSortFields)) {
+            $sortBy = 'domain_name';
+        }
+        if (!in_array($sortDirection, ['asc', 'desc'])) {
+            $sortDirection = 'asc';
+        }
+        
+        $query->orderBy($sortBy, $sortDirection);
+        
+        // Pagination
+        $websites = $query->paginate($request->get('per_page', 15))
+            ->withQueryString();
+        
+        $websiteData = $websites->getCollection()->map(function ($website) {
             return [
                 'id' => $website->id,
                 'domain_name' => $website->domain_name,
@@ -35,8 +60,20 @@ class WebsiteController extends Controller
                 ] : null,
             ];
         });
+        
         return Inertia::render('Websites/Index', [
-            'websites' => $websites,
+            'websites' => $websiteData,
+            'pagination' => [
+                'current_page' => $websites->currentPage(),
+                'last_page' => $websites->lastPage(),
+                'per_page' => $websites->perPage(),
+                'total' => $websites->total(),
+                'from' => $websites->firstItem(),
+                'to' => $websites->lastItem(),
+                'path' => $request->url(),
+            ],
+            'sortBy' => $sortBy,
+            'sortDirection' => $sortDirection,
             'filters' => $request->only('search'),
             'layout' => 'AuthenticatedLayout',
         ]);
