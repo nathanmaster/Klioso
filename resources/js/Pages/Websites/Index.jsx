@@ -39,7 +39,9 @@ export default function Index({ websites, pagination, sortBy, sortDirection, fil
                 >
                     {website.client.name}
                 </Link>
-            ) : '-'
+            ) : (
+                <span className="text-gray-500 italic">No Client</span>
+            )
         },
         { 
             label: 'Status', 
@@ -68,7 +70,9 @@ export default function Index({ websites, pagination, sortBy, sortDirection, fil
                 >
                     {website.hostingProvider.name}
                 </Link>
-            ) : '-'
+            ) : (
+                <span className="text-gray-500 italic">No Host</span>
+            )
         },
         { 
             label: 'Providers', 

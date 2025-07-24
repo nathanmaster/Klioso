@@ -111,7 +111,7 @@ class WebsiteController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'client_id' => 'required|exists:clients,id',
+            'client_id' => 'nullable|exists:clients,id',
             'hosting_provider_id' => 'nullable|exists:hosting_providers,id',
             'dns_provider_id' => 'nullable|exists:hosting_providers,id',
             'email_provider_id' => 'nullable|exists:hosting_providers,id',
@@ -215,7 +215,7 @@ class WebsiteController extends Controller
     public function update(Request $request, Website $website)
     {
         $data = $request->validate([
-            'client_id' => 'required|exists:clients,id',
+            'client_id' => 'nullable|exists:clients,id',
             'hosting_provider_id' => 'nullable|exists:hosting_providers,id',
             'dns_provider_id' => 'nullable|exists:hosting_providers,id',
             'email_provider_id' => 'nullable|exists:hosting_providers,id',

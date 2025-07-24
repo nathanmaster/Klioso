@@ -48,56 +48,56 @@ export default function Create({ clients, hostingProviders }) {
                         error={errors?.platform}
                     />
                     <Form.Select
-                        label="Client"
+                        label="Client (Optional)"
                         value={data.client_id}
                         onChange={e => setData('client_id', e.target.value)}
                         error={errors?.client_id}
                     >
-                        <option value="">Select a client</option>
+                        <option value="">No client / Internal / Development</option>
                         {clients?.map(client => (
                             <option key={client.id} value={client.id}>{client.name}</option>
                         ))}
                     </Form.Select>
                     <Form.Select
-                        label="Hosting Provider"
+                        label="Hosting Provider (Optional)"
                         value={data.hosting_provider_id}
                         onChange={e => setData('hosting_provider_id', e.target.value)}
                         error={errors?.hosting_provider_id}
                     >
-                        <option value="">Select a hosting provider</option>
+                        <option value="">No hosting / TBD</option>
                         {hostingProviders_filtered?.map(provider => (
                             <option key={provider.id} value={provider.id}>{provider.name}</option>
                         ))}
                     </Form.Select>
                     <Form.Select
-                        label="DNS Provider"
+                        label="DNS Provider (Optional)"
                         value={data.dns_provider_id}
                         onChange={e => setData('dns_provider_id', e.target.value)}
                         error={errors?.dns_provider_id}
                     >
-                        <option value="">Select a DNS provider</option>
+                        <option value="">No DNS provider / TBD</option>
                         {dnsProviders?.map(provider => (
                             <option key={provider.id} value={provider.id}>{provider.name}</option>
                         ))}
                     </Form.Select>
                     <Form.Select
-                        label="Email Provider"
+                        label="Email Provider (Optional)"
                         value={data.email_provider_id}
                         onChange={e => setData('email_provider_id', e.target.value)}
                         error={errors?.email_provider_id}
                     >
-                        <option value="">Select an email provider</option>
+                        <option value="">No email provider / TBD</option>
                         {emailProviders?.map(provider => (
                             <option key={provider.id} value={provider.id}>{provider.name}</option>
                         ))}
                     </Form.Select>
                     <Form.Select
-                        label="Domain Registrar"
+                        label="Domain Registrar (Optional)"
                         value={data.domain_registrar_id}
                         onChange={e => setData('domain_registrar_id', e.target.value)}
                         error={errors?.domain_registrar_id}
                     >
-                        <option value="">Select a domain registrar</option>
+                        <option value="">No domain registrar / TBD</option>
                         {domainRegistrars?.map(provider => (
                             <option key={provider.id} value={provider.id}>{provider.name}</option>
                         ))}
