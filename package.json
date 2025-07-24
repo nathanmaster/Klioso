@@ -1,6 +1,6 @@
 {
     "$schema": "https://json.schemastore.org/package.json",
-    "name": "klioso",
+    "name": "@nathanmaster/klioso",
     "version": "0.8.0",
     "description": "Multi-Service Provider Management System for WordPress and Web Development",
     "private": false,
@@ -11,8 +11,10 @@
     },
     "scripts": {
         "build": "vite build",
-        "dev": "vite",
-        "install": "composer install --optimize-autoloader --no-dev && npm run build"
+        "dev": "vite"
+    },
+    "publishConfig": {
+        "@nathanmaster:registry": "https://npm.pkg.github.com"
     },
     "keywords": [
         "wordpress",
@@ -64,6 +66,8 @@
         ".env.example",
         "README.md",
         "CHANGELOG.md",
+        "GITHUB-PACKAGES.md",
+        ".npmrc",
         "bin/"
     ],
     "devDependencies": {
