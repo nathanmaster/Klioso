@@ -14,9 +14,11 @@ class Website extends Model
         'url',
         'client_id',
         'hosting_provider_id',
+        'dns_provider_id',
+        'email_provider_id',
+        'domain_registrar_id',
         'domain_name',
         'platform',
-        'dns_provider',
         'status',
         'notes',
     ];
@@ -29,6 +31,21 @@ class Website extends Model
     public function hostingProvider()
     {
         return $this->belongsTo(HostingProvider::class);
+    }
+
+    public function dnsProvider()
+    {
+        return $this->belongsTo(HostingProvider::class, 'dns_provider_id');
+    }
+
+    public function emailProvider()
+    {
+        return $this->belongsTo(HostingProvider::class, 'email_provider_id');
+    }
+
+    public function domainRegistrar()
+    {
+        return $this->belongsTo(HostingProvider::class, 'domain_registrar_id');
     }
 
     public function plugins()

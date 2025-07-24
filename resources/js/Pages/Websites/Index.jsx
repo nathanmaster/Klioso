@@ -39,7 +39,9 @@ export default function Index({ websites, pagination, sortBy, sortDirection, fil
                 >
                     {website.client.name}
                 </Link>
-            ) : '-'
+            ) : (
+                <span className="text-gray-500 italic">No Client</span>
+            )
         },
         { 
             label: 'Status', 
@@ -68,14 +70,29 @@ export default function Index({ websites, pagination, sortBy, sortDirection, fil
                 >
                     {website.hostingProvider.name}
                 </Link>
-            ) : '-'
+            ) : (
+                <span className="text-gray-500 italic">No Host</span>
+            )
         },
         { 
-            label: 'DNS Provider', 
-            key: 'dns_provider', 
+            label: 'Providers', 
+            key: 'providers', 
             sortable: false,
             hideOnMobile: true,
-            render: website => website.dns_provider || '-'
+            render: website => (
+                <div className="text-xs space-y-1">
+                    {website.dnsProvider && (
+                        <div className="text-blue-600">DNS: {website.dnsProvider.name}</div>
+                    )}
+                    {website.emailProvider && (
+                        <div className="text-green-600">Email: {website.emailProvider.name}</div>
+                    )}
+                    {website.domainRegistrar && (
+                        <div className="text-purple-600">Domain: {website.domainRegistrar.name}</div>
+                    )}
+                    {!website.dnsProvider && !website.emailProvider && !website.domainRegistrar && '-'}
+                </div>
+            )
         },
         { 
             label: 'Actions', 

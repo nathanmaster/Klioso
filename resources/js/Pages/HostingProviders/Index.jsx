@@ -19,12 +19,30 @@ export default function Index({ hostingProviders, pagination, sortBy, sortDirect
             )
         },
         { 
+            label: 'Services', 
+            key: 'services', 
+            sortable: false,
+            render: provider => provider.services ? (
+                <div className="flex flex-wrap gap-1">
+                    {provider.services.split(', ').map((service, index) => (
+                        <span 
+                            key={index}
+                            className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-800"
+                        >
+                            {service}
+                        </span>
+                    ))}
+                </div>
+            ) : '-'
+        },
+        { 
             label: 'Description', 
             key: 'description', 
             sortable: true,
+            hideOnMobile: true,
             render: provider => provider.description ? (
                 <div className="max-w-xs truncate" title={provider.description}>
-                    {provider.description.length > 80 ? `${provider.description.substring(0, 80)}...` : provider.description}
+                    {provider.description.length > 60 ? `${provider.description.substring(0, 60)}...` : provider.description}
                 </div>
             ) : '-'
         },

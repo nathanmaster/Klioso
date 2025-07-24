@@ -46,6 +46,11 @@ class HostingProviderController extends Controller
                 'contact_info' => $provider->contact_info,
                 'notes' => $provider->notes,
                 'login_url' => $provider->login_url,
+                'provides_hosting' => $provider->provides_hosting,
+                'provides_dns' => $provider->provides_dns,
+                'provides_email' => $provider->provides_email,
+                'provides_domain_registration' => $provider->provides_domain_registration,
+                'services' => $provider->services_string,
             ];
         });
         
@@ -83,6 +88,10 @@ class HostingProviderController extends Controller
             'contact_info' => 'nullable|string',
             'notes' => 'nullable|string',
             'login_url' => 'nullable|url|max:255',
+            'provides_hosting' => 'boolean',
+            'provides_dns' => 'boolean',
+            'provides_email' => 'boolean',
+            'provides_domain_registration' => 'boolean',
         ]);
         HostingProvider::create($data);
         return redirect()->route('hosting-providers.index');
@@ -99,6 +108,11 @@ class HostingProviderController extends Controller
                 'contact_info' => $hostingProvider->contact_info,
                 'notes' => $hostingProvider->notes,
                 'login_url' => $hostingProvider->login_url,
+                'provides_hosting' => $hostingProvider->provides_hosting,
+                'provides_dns' => $hostingProvider->provides_dns,
+                'provides_email' => $hostingProvider->provides_email,
+                'provides_domain_registration' => $hostingProvider->provides_domain_registration,
+                'services' => $hostingProvider->services,
                 'created_at' => $hostingProvider->created_at,
                 'updated_at' => $hostingProvider->updated_at,
             ],
@@ -117,6 +131,10 @@ class HostingProviderController extends Controller
                 'contact_info' => $hostingProvider->contact_info,
                 'notes' => $hostingProvider->notes,
                 'login_url' => $hostingProvider->login_url,
+                'provides_hosting' => $hostingProvider->provides_hosting,
+                'provides_dns' => $hostingProvider->provides_dns,
+                'provides_email' => $hostingProvider->provides_email,
+                'provides_domain_registration' => $hostingProvider->provides_domain_registration,
             ],
             'layout' => 'AuthenticatedLayout',
         ]);
@@ -131,6 +149,10 @@ class HostingProviderController extends Controller
             'contact_info' => 'nullable|string',
             'notes' => 'nullable|string',
             'login_url' => 'nullable|url|max:255',
+            'provides_hosting' => 'boolean',
+            'provides_dns' => 'boolean',
+            'provides_email' => 'boolean',
+            'provides_domain_registration' => 'boolean',
         ]);
         $hostingProvider->update($data);
         return redirect()->route('hosting-providers.index');

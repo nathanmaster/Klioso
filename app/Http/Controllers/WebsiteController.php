@@ -12,7 +12,7 @@ class WebsiteController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Website::with(['client', 'hostingProvider']);
+        $query = Website::with(['client', 'hostingProvider', 'dnsProvider', 'emailProvider', 'domainRegistrar']);
         
         // Search functionality
         if ($request->search) {
@@ -47,7 +47,6 @@ class WebsiteController extends Controller
                 'id' => $website->id,
                 'domain_name' => $website->domain_name,
                 'platform' => $website->platform,
-                'dns_provider' => $website->dns_provider,
                 'status' => $website->status,
                 'notes' => $website->notes,
                 'client' => $website->client ? [
@@ -57,6 +56,18 @@ class WebsiteController extends Controller
                 'hostingProvider' => $website->hostingProvider ? [
                     'id' => $website->hostingProvider->id,
                     'name' => $website->hostingProvider->name,
+                ] : null,
+                'dnsProvider' => $website->dnsProvider ? [
+                    'id' => $website->dnsProvider->id,
+                    'name' => $website->dnsProvider->name,
+                ] : null,
+                'emailProvider' => $website->emailProvider ? [
+                    'id' => $website->emailProvider->id,
+                    'name' => $website->emailProvider->name,
+                ] : null,
+                'domainRegistrar' => $website->domainRegistrar ? [
+                    'id' => $website->domainRegistrar->id,
+                    'name' => $website->domainRegistrar->name,
                 ] : null,
             ];
         });
@@ -82,7 +93,14 @@ class WebsiteController extends Controller
     public function create()
     {
         $clients = Client::all()->map(fn($c) => ['id' => $c->id, 'name' => $c->name]);
-        $hostingProviders = HostingProvider::all()->map(fn($p) => ['id' => $p->id, 'name' => $p->name]);
+        $hostingProviders = HostingProvider::all()->map(fn($p) => [
+            'id' => $p->id, 
+            'name' => $p->name,
+            'provides_hosting' => $p->provides_hosting,
+            'provides_dns' => $p->provides_dns,
+            'provides_email' => $p->provides_email,
+            'provides_domain_registration' => $p->provides_domain_registration,
+        ]);
         return Inertia::render('Websites/Create', [
             'clients' => $clients,
             'hostingProviders' => $hostingProviders,
@@ -93,11 +111,13 @@ class WebsiteController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'client_id' => 'required|exists:clients,id',
-            'hosting_provider_id' => 'required|exists:hosting_providers,id',
+            'client_id' => 'nullable|exists:clients,id',
+            'hosting_provider_id' => 'nullable|exists:hosting_providers,id',
+            'dns_provider_id' => 'nullable|exists:hosting_providers,id',
+            'email_provider_id' => 'nullable|exists:hosting_providers,id',
+            'domain_registrar_id' => 'nullable|exists:hosting_providers,id',
             'domain_name' => 'required|string|unique:websites,domain_name',
             'platform' => 'required|string',
-            'dns_provider' => 'required|string',
             'status' => 'required|string',
             'notes' => 'nullable|string',
         ]);
@@ -148,7 +168,14 @@ class WebsiteController extends Controller
     public function edit(Website $website)
     {
         $clients = Client::all()->map(fn($c) => ['id' => $c->id, 'name' => $c->name]);
-        $hostingProviders = HostingProvider::all()->map(fn($p) => ['id' => $p->id, 'name' => $p->name]);
+        $hostingProviders = HostingProvider::all()->map(fn($p) => [
+            'id' => $p->id, 
+            'name' => $p->name,
+            'provides_hosting' => $p->provides_hosting,
+            'provides_dns' => $p->provides_dns,
+            'provides_email' => $p->provides_email,
+            'provides_domain_registration' => $p->provides_domain_registration,
+        ]);
         $allPlugins = \App\Models\Plugin::all();
         $website->load(['plugins']);
         
@@ -157,11 +184,13 @@ class WebsiteController extends Controller
                 'id' => $website->id,
                 'domain_name' => $website->domain_name,
                 'platform' => $website->platform,
-                'dns_provider' => $website->dns_provider,
                 'status' => $website->status,
                 'notes' => $website->notes,
                 'client_id' => $website->client_id,
                 'hosting_provider_id' => $website->hosting_provider_id,
+                'dns_provider_id' => $website->dns_provider_id,
+                'email_provider_id' => $website->email_provider_id,
+                'domain_registrar_id' => $website->domain_registrar_id,
                 'plugins' => $website->plugins->map(fn($plugin) => [
                     'id' => $plugin->id,
                     'name' => $plugin->name,
@@ -186,11 +215,13 @@ class WebsiteController extends Controller
     public function update(Request $request, Website $website)
     {
         $data = $request->validate([
-            'client_id' => 'required|exists:clients,id',
-            'hosting_provider_id' => 'required|exists:hosting_providers,id',
+            'client_id' => 'nullable|exists:clients,id',
+            'hosting_provider_id' => 'nullable|exists:hosting_providers,id',
+            'dns_provider_id' => 'nullable|exists:hosting_providers,id',
+            'email_provider_id' => 'nullable|exists:hosting_providers,id',
+            'domain_registrar_id' => 'nullable|exists:hosting_providers,id',
             'domain_name' => 'required|string|unique:websites,domain_name,' . $website->id,
             'platform' => 'required|string',
-            'dns_provider' => 'required|string',
             'status' => 'required|string',
             'notes' => 'nullable|string',
         ]);

@@ -1,5 +1,8 @@
 {
     "$schema": "https://json.schemastore.org/package.json",
+    "name": "klioso",
+    "version": "0.8.0",
+    "description": "Multi-Service Provider Management System for WordPress and Web Development",
     "private": true,
     "type": "module",
     "scripts": {
