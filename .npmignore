@@ -1,0 +1,66 @@
+# Development files
+node_modules/
+.vscode/
+.idea/
+*.log
+.DS_Store
+Thumbs.db
+
+# Environment files
+.env
+.env.local
+.env.production
+.env.testing
+
+# Build artifacts
+/public/hot
+/public/storage
+/public/build
+/storage/*.key
+/storage/logs/*
+!/storage/logs/.gitkeep
+/storage/framework/cache/*
+!/storage/framework/cache/.gitkeep
+/storage/framework/sessions/*
+!/storage/framework/sessions/.gitkeep
+/storage/framework/testing/*
+!/storage/framework/testing/.gitkeep
+/storage/framework/views/*
+!/storage/framework/views/.gitkeep
+
+# Vendor directories
+/vendor/
+
+# Testing
+.phpunit.result.cache
+coverage/
+/tests/
+
+# Git files
+.git/
+.gitignore
+.gitattributes
+
+# GitHub specific
+.github/
+
+# Temporary files
+temp-release/
+releases/
+*.tmp
+*.temp
+
+# OS files
+*.swp
+*.swo
+*~
+
+# Laravel specific
+/bootstrap/cache/*
+!/bootstrap/cache/.gitkeep
+/config/app.php
+
+# Development tools
+phpunit.xml
+.phpunit.cache
+webpack.mix.js

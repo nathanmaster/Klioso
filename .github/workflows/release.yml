@@ -368,3 +368,32 @@ jobs:
           *While extensively tested, this is a beta release. Please maintain current backups and test thoroughly before production use.*
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    
+  publish-npm:
+    needs: create-release
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        registry-url: 'https://registry.npmjs.org'
+        
+    - name: Install dependencies
+      run: |
+        npm cache clean --force
+        rm -f package-lock.json
+        npm install --legacy-peer-deps
+        
+    - name: Build package
+      run: npm run build
+      
+    - name: Publish to npm
+      run: npm publish --access public
+      env:
+        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
