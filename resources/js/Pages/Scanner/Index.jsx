@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Head, router } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import Button from '@/Components/Button';
 import Form from '@/Components/Form';
@@ -21,6 +21,12 @@ export default function Scanner({ websites = [] }) {
     const [selectedPlugins, setSelectedPlugins] = useState(new Set());
     const [successMessage, setSuccessMessage] = useState('');
     const [bulkActionLoading, setBulkActionLoading] = useState(false);
+    
+    // Plugin filtering state
+    const [filterStatus, setFilterStatus] = useState('all'); // all, installed, not-installed
+    const [filterType, setFilterType] = useState('all'); // all, plugin, theme
+    const [filterActive, setFilterActive] = useState('all'); // all, active, inactive
+    const [searchQuery, setSearchQuery] = useState('');
 
     // Auto-clear success and error messages
     useEffect(() => {
@@ -427,6 +433,14 @@ export default function Scanner({ websites = [] }) {
                         <div className="p-6 bg-white border-b border-gray-200">
                             <div className="flex justify-between items-center mb-6">
                                 <h2 className="text-xl font-semibold text-gray-900">WordPress Scanner</h2>
+                                <div className="flex gap-3">
+                                    <Link
+                                        href={route('scanner.history')}
+                                        className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors text-sm font-medium"
+                                    >
+                                        View History
+                                    </Link>
+                                </div>
                             </div>
 
                             {/* Tab Navigation */}
@@ -644,11 +658,108 @@ export default function Scanner({ websites = [] }) {
                                     </div>
 
                                     {/* Plugins Results */}
-                                    {scanResults.plugins && scanResults.plugins.length > 0 && (
+                                    {scanResults.plugins && scanResults.plugins.length > 0 && (() => {
+                                        // Filter plugins based on current filters
+                                        const filteredPlugins = scanResults.plugins.filter((plugin, index) => {
+                                            // Search query filter
+                                            if (searchQuery && !plugin.name.toLowerCase().includes(searchQuery.toLowerCase()) && 
+                                                !plugin.description?.toLowerCase().includes(searchQuery.toLowerCase())) {
+                                                return false;
+                                            }
+                                            
+                                            // Status filter (installed/not installed)
+                                            if (filterStatus === 'installed' && !plugin.in_database) return false;
+                                            if (filterStatus === 'not-installed' && plugin.in_database) return false;
+                                            
+                                            // Type filter (plugin/theme)
+                                            if (filterType === 'plugin' && plugin.type !== 'plugin') return false;
+                                            if (filterType === 'theme' && plugin.type !== 'theme') return false;
+                                            
+                                            // Active status filter
+                                            if (filterActive === 'active' && !plugin.active) return false;
+                                            if (filterActive === 'inactive' && plugin.active) return false;
+                                            
+                                            return true;
+                                        });
+
+                                        return (
                                         <div>
+                                            {/* Filter Controls */}
+                                            <div className="bg-gray-50 border rounded-lg p-4 mb-4">
+                                                <div className="flex flex-wrap gap-4 items-center">
+                                                    <div className="flex items-center gap-2">
+                                                        <label className="text-sm font-medium text-gray-700">Search:</label>
+                                                        <input
+                                                            type="text"
+                                                            placeholder="Search plugins..."
+                                                            value={searchQuery}
+                                                            onChange={(e) => setSearchQuery(e.target.value)}
+                                                            className="px-3 py-1 border border-gray-300 rounded-md text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                                        />
+                                                    </div>
+                                                    
+                                                    <div className="flex items-center gap-2">
+                                                        <label className="text-sm font-medium text-gray-700">Status:</label>
+                                                        <select
+                                                            value={filterStatus}
+                                                            onChange={(e) => setFilterStatus(e.target.value)}
+                                                            className="px-3 py-1 border border-gray-300 rounded-md text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                                        >
+                                                            <option value="all">All</option>
+                                                            <option value="installed">In Database</option>
+                                                            <option value="not-installed">Not in Database</option>
+                                                        </select>
+                                                    </div>
+                                                    
+                                                    <div className="flex items-center gap-2">
+                                                        <label className="text-sm font-medium text-gray-700">Type:</label>
+                                                        <select
+                                                            value={filterType}
+                                                            onChange={(e) => setFilterType(e.target.value)}
+                                                            className="px-3 py-1 border border-gray-300 rounded-md text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                                        >
+                                                            <option value="all">All</option>
+                                                            <option value="plugin">Plugins</option>
+                                                            <option value="theme">Themes</option>
+                                                        </select>
+                                                    </div>
+                                                    
+                                                    <div className="flex items-center gap-2">
+                                                        <label className="text-sm font-medium text-gray-700">Active:</label>
+                                                        <select
+                                                            value={filterActive}
+                                                            onChange={(e) => setFilterActive(e.target.value)}
+                                                            className="px-3 py-1 border border-gray-300 rounded-md text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                                        >
+                                                            <option value="all">All</option>
+                                                            <option value="active">Active</option>
+                                                            <option value="inactive">Inactive</option>
+                                                        </select>
+                                                    </div>
+                                                    
+                                                    {(searchQuery || filterStatus !== 'all' || filterType !== 'all' || filterActive !== 'all') && (
+                                                        <button
+                                                            onClick={() => {
+                                                                setSearchQuery('');
+                                                                setFilterStatus('all');
+                                                                setFilterType('all');
+                                                                setFilterActive('all');
+                                                            }}
+                                                            className="px-3 py-1 text-sm text-gray-600 hover:text-gray-800 border border-gray-300 rounded-md hover:bg-gray-100"
+                                                        >
+                                                            Clear Filters
+                                                        </button>
+                                                    )}
+                                                </div>
+                                                
+                                                <div className="mt-2 text-sm text-gray-600">
+                                                    Showing {filteredPlugins.length} of {scanResults.plugins.length} plugins
+                                                </div>
+                                            </div>
+                                            
                                             <div className="flex justify-between items-center mb-4">
                                                 <h4 className="text-lg font-medium text-gray-900">
-                                                    Detected Plugins ({scanResults.plugins.length})
+                                                    Detected Plugins ({filteredPlugins.length})
                                                 </h4>
                                                 
                                                 {/* Bulk Actions */}
@@ -683,16 +794,22 @@ export default function Scanner({ websites = [] }) {
                                             </div>
                                             
                                             <div className="space-y-3">
-                                                {scanResults.plugins.map((plugin, index) => (
-                                                    <div key={index} className="bg-white border rounded-lg p-4">
+                                                {filteredPlugins.map((plugin, originalIndex) => {
+                                                    // Find the original index in the unfiltered array for proper selection handling
+                                                    const pluginIndex = scanResults.plugins.findIndex(p => 
+                                                        p.name === plugin.name && p.slug === plugin.slug
+                                                    );
+                                                    
+                                                    return (
+                                                    <div key={pluginIndex} className="bg-white border rounded-lg p-4">
                                                         <div className="flex justify-between items-start">
                                                             <div className="flex items-start gap-3 flex-1">
                                                                 <input
                                                                     type="checkbox"
-                                                                    id={`plugin-${index}`}
+                                                                    id={`plugin-${pluginIndex}`}
                                                                     className="mt-1 h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
-                                                                    checked={selectedPlugins.has(index)}
-                                                                    onChange={(e) => handlePluginSelect(index, e.target.checked)}
+                                                                    checked={selectedPlugins.has(pluginIndex)}
+                                                                    onChange={(e) => handlePluginSelect(pluginIndex, e.target.checked)}
                                                                 />
                                                                 <div className="flex-1">
                                                                     <h5 className="font-medium">{plugin.name}</h5>
@@ -753,10 +870,12 @@ export default function Scanner({ websites = [] }) {
                                                             </div>
                                                         </div>
                                                     </div>
-                                                ))}
+                                                    );
+                                                })}
                                             </div>
                                         </div>
-                                    )}
+                                        );
+                                    })()}
 
                                     {/* Themes Results */}
                                     {scanResults.themes && scanResults.themes.length > 0 && (

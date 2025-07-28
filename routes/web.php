@@ -43,6 +43,8 @@ Route::middleware('auth')->group(function () {
 
     // WordPress Scanner routes
     Route::get('/scanner', [WordPressScanController::class, 'index'])->name('scanner.index');
+    Route::get('/scanner/history', [WordPressScanController::class, 'history'])->name('scanner.history');
+    Route::post('/scanner/export', [WordPressScanController::class, 'export'])->name('scanner.export');
     Route::post('/scan', [WordPressScanController::class, 'scan'])->name('scanner.scan');
     Route::post('/websites/{website}/scan', [WordPressScanController::class, 'scanWebsite'])->name('scanner.website');
     Route::post('/scanner/add-plugin', [WordPressScanController::class, 'addPlugin'])->name('scanner.add-plugin');

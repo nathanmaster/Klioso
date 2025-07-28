@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Website;
 use App\Models\Plugin;
+use App\Models\ScanHistory;
 use App\Services\WordPressScanService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -36,6 +37,181 @@ class WordPressScanController extends Controller
         return Inertia::render('Scanner/Index', [
             'websites' => $websites,
         ]);
+    }
+
+    /**
+     * Show scan history page
+     */
+    public function history(Request $request)
+    {
+        $query = ScanHistory::with('website')
+            ->orderBy('created_at', 'desc');
+
+        // Apply filters if provided
+        if ($request->has('type') && $request->type !== 'all') {
+            $query->where('scan_type', $request->type);
+        }
+
+        if ($request->has('status') && $request->status !== 'all') {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->has('search') && $request->search) {
+            $query->where('target', 'like', '%' . $request->search . '%');
+        }
+
+        $scanHistory = $query->paginate(20)->withQueryString();
+
+        return Inertia::render('Scanner/History', [
+            'scanHistory' => $scanHistory,
+            'filters' => [
+                'type' => $request->get('type', 'all'),
+                'status' => $request->get('status', 'all'),
+                'search' => $request->get('search', '')
+            ]
+        ]);
+    }
+
+    /**
+     * Export scan results to CSV or JSON
+     */
+    public function export(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'scan_id' => 'required|exists:scan_history,id',
+            'format' => 'required|in:csv,json'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $scan = ScanHistory::findOrFail($request->scan_id);
+        $format = $request->format;
+        
+        $filename = 'scan_' . $scan->id . '_' . date('Y-m-d_H-i-s') . '.' . $format;
+
+        if ($format === 'csv') {
+            return $this->exportToCsv($scan, $filename);
+        } else {
+            return $this->exportToJson($scan, $filename);
+        }
+    }
+
+    /**
+     * Export scan results to CSV format
+     */
+    private function exportToCsv($scan, $filename)
+    {
+        $csvData = [];
+        $results = $scan->scan_results;
+
+        // Add header row
+        $csvData[] = [
+            'Type', 'Name', 'Slug', 'Description', 'Version', 'Status', 
+            'Active', 'In Database', 'Is Paid', 'Last Updated'
+        ];
+
+        // Add plugins
+        if (isset($results['plugins']) && is_array($results['plugins'])) {
+            foreach ($results['plugins'] as $plugin) {
+                $csvData[] = [
+                    'Plugin',
+                    $plugin['name'] ?? '',
+                    $plugin['slug'] ?? '',
+                    $plugin['description'] ?? '',
+                    $plugin['version'] ?? '',
+                    $plugin['status'] ?? '',
+                    isset($plugin['active']) ? ($plugin['active'] ? 'Yes' : 'No') : 'Unknown',
+                    isset($plugin['in_database']) ? ($plugin['in_database'] ? 'Yes' : 'No') : 'No',
+                    isset($plugin['is_paid']) ? ($plugin['is_paid'] ? 'Yes' : 'No') : 'Unknown',
+                    $plugin['last_updated'] ?? ''
+                ];
+            }
+        }
+
+        // Add themes
+        if (isset($results['themes']) && is_array($results['themes'])) {
+            foreach ($results['themes'] as $theme) {
+                $csvData[] = [
+                    'Theme',
+                    $theme['name'] ?? '',
+                    $theme['slug'] ?? '',
+                    $theme['description'] ?? '',
+                    $theme['version'] ?? '',
+                    $theme['status'] ?? '',
+                    isset($theme['active']) ? ($theme['active'] ? 'Yes' : 'No') : 'Unknown',
+                    'No', // Themes not stored in database yet
+                    'Unknown',
+                    $theme['last_updated'] ?? ''
+                ];
+            }
+        }
+
+        // Add vulnerabilities
+        if (isset($results['vulnerabilities']) && is_array($results['vulnerabilities'])) {
+            foreach ($results['vulnerabilities'] as $vuln) {
+                $csvData[] = [
+                    'Vulnerability',
+                    $vuln['title'] ?? '',
+                    $vuln['plugin_slug'] ?? '',
+                    $vuln['description'] ?? '',
+                    $vuln['affected_version'] ?? '',
+                    $vuln['severity'] ?? '',
+                    'N/A',
+                    'N/A',
+                    'N/A',
+                    $vuln['published'] ?? ''
+                ];
+            }
+        }
+
+        $callback = function() use ($csvData) {
+            $file = fopen('php://output', 'w');
+            foreach ($csvData as $row) {
+                fputcsv($file, $row);
+            }
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ]);
+    }
+
+    /**
+     * Export scan results to JSON format
+     */
+    private function exportToJson($scan, $filename)
+    {
+        $exportData = [
+            'scan_info' => [
+                'id' => $scan->id,
+                'scan_type' => $scan->scan_type,
+                'target' => $scan->target,
+                'status' => $scan->status,
+                'scanned_at' => $scan->created_at->toISOString(),
+                'duration' => $scan->duration,
+                'summary' => [
+                    'plugins_found' => $scan->plugins_found,
+                    'themes_found' => $scan->themes_found,
+                    'vulnerabilities_found' => $scan->vulnerabilities_found,
+                    'total_items' => $scan->total_items_found
+                ]
+            ],
+            'scan_results' => $scan->scan_results,
+            'exported_at' => now()->toISOString(),
+            'exported_by' => auth()->user()->name ?? 'Unknown'
+        ];
+
+        return response()->json($exportData)
+            ->header('Content-Type', 'application/json')
+            ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
     }
 
     /**
@@ -75,6 +251,7 @@ class WordPressScanController extends Controller
 
         $url = $request->input('url');
         $scanType = $request->input('scan_type', 'plugins');
+        $startTime = microtime(true);
 
         try {
             // Perform the scan
@@ -85,15 +262,63 @@ class WordPressScanController extends Controller
                 $scanResults['plugins'] = $this->matchPluginsToDatabase($scanResults['plugins'] ?? []);
             }
 
+            $endTime = microtime(true);
+            $scanDurationMs = round(($endTime - $startTime) * 1000);
+
+            // Save scan history
+            $this->saveScanHistory([
+                'scan_type' => 'url',
+                'target' => $url,
+                'website_id' => null,
+                'scan_results' => $scanResults,
+                'scan_summary' => [
+                    'url' => $url,
+                    'scan_type' => $scanType,
+                    'scanned_at' => now()->toISOString(),
+                ],
+                'plugins_found' => count($scanResults['plugins'] ?? []),
+                'themes_found' => count($scanResults['themes'] ?? []),
+                'vulnerabilities_found' => count($scanResults['vulnerabilities'] ?? []),
+                'auto_sync_enabled' => false,
+                'plugins_added_to_db' => 0,
+                'status' => 'completed',
+                'scan_duration_ms' => $scanDurationMs,
+            ]);
+
             return response()->json([
                 'success' => true,
                 'data' => $scanResults,
                 'scanned_url' => $url,
                 'scan_type' => $scanType,
                 'scanned_at' => now()->toISOString(),
+                'scan_duration' => $scanDurationMs . 'ms',
             ]);
 
         } catch (\Exception $e) {
+            $endTime = microtime(true);
+            $scanDurationMs = round(($endTime - $startTime) * 1000);
+
+            // Save failed scan history
+            $this->saveScanHistory([
+                'scan_type' => 'url',
+                'target' => $url,
+                'website_id' => null,
+                'scan_results' => [],
+                'scan_summary' => [
+                    'url' => $url,
+                    'scan_type' => $scanType,
+                    'error' => $e->getMessage(),
+                ],
+                'plugins_found' => 0,
+                'themes_found' => 0,
+                'vulnerabilities_found' => 0,
+                'auto_sync_enabled' => false,
+                'plugins_added_to_db' => 0,
+                'status' => 'failed',
+                'error_message' => $e->getMessage(),
+                'scan_duration_ms' => $scanDurationMs,
+            ]);
+
             Log::error('WordPress scan failed', [
                 'url' => $url,
                 'scan_type' => $scanType,
@@ -283,5 +508,20 @@ class WordPressScanController extends Controller
             'errors' => $errors,
             'message' => count($addedPlugins) . ' plugins processed successfully'
         ]);
+    }
+
+    /**
+     * Save scan history to database
+     */
+    private function saveScanHistory(array $data)
+    {
+        try {
+            ScanHistory::create($data);
+        } catch (\Exception $e) {
+            Log::error('Failed to save scan history', [
+                'error' => $e->getMessage(),
+                'data' => $data
+            ]);
+        }
     }
 }
