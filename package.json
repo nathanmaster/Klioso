@@ -1,8 +1,8 @@
 {
     "$schema": "https://json.schemastore.org/package.json",
     "name": "@nathanmaster/klioso",
-    "version": "0.8.0",
-    "description": "Multi-Service Provider Management System for WordPress and Web Development",
+    "version": "0.9.0-beta.1",
+    "description": "Multi-Service Provider Management System for WordPress and Web Development with Enhanced Scanner",
     "private": false,
     "type": "module",
     "main": "public/index.php",
