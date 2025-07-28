@@ -234,4 +234,54 @@ class WordPressScanController extends Controller
             'plugin' => $plugin,
         ]);
     }
+
+    /**
+     * Bulk add multiple discovered plugins to database
+     */
+    public function bulkAddPlugins(Request $request)
+    {
+        $request->validate([
+            'plugins' => 'required|array',
+            'plugins.*.name' => 'required|string',
+            'plugins.*.description' => 'nullable|string',
+            'plugins.*.slug' => 'nullable|string',
+        ]);
+
+        $addedPlugins = [];
+        $errors = [];
+
+        foreach ($request->input('plugins') as $pluginData) {
+            try {
+                // Check if plugin already exists
+                $existingPlugin = Plugin::where('name', $pluginData['name'])->first();
+                
+                if ($existingPlugin) {
+                    $addedPlugins[] = $existingPlugin;
+                    continue;
+                }
+
+                $plugin = Plugin::create([
+                    'name' => $pluginData['name'],
+                    'description' => $pluginData['description'] ?? null,
+                    'is_paid' => false, // Default to free, can be updated later
+                    'install_source' => 'WordPress Repository', // Default source
+                ]);
+
+                $addedPlugins[] = $plugin;
+
+            } catch (\Exception $e) {
+                $errors[] = [
+                    'plugin' => $pluginData['name'],
+                    'error' => $e->getMessage()
+                ];
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'plugins' => $addedPlugins,
+            'errors' => $errors,
+            'message' => count($addedPlugins) . ' plugins processed successfully'
+        ]);
+    }
 }

@@ -37,35 +37,42 @@ export default function Scanner({ websites = [] }) {
         }
     }, [error]);
 
-    // Progress tracking for actual scan progress
-    const updateProgress = (percent, stage, timeLeft = null) => {
-        setScanProgress({
-            percent,
-            stage,
-            timeLeft: timeLeft || Math.max(0, (100 - percent) * 100) // Estimate based on remaining percentage
-        });
-    };
+    // Progress simulation for better UX
+    const simulateProgress = () => {
+        const stages = [
+            { percent: 15, stage: 'Connecting to website...', duration: 1000 },
+            { percent: 30, stage: 'Detecting WordPress installation...', duration: 1500 },
+            { percent: 55, stage: 'Scanning plugins and themes...', duration: 2000 },
+            { percent: 75, stage: 'Checking security vulnerabilities...', duration: 1500 },
+            { percent: 90, stage: 'Analyzing results...', duration: 1000 },
+            { percent: 100, stage: 'Finalizing scan...', duration: 500 }
+        ];
 
-    // Gradual progress animation during API call
-    const animateProgress = (startPercent, endPercent, stage, duration = 3000) => {
-        const steps = Math.max((endPercent - startPercent), 1);
-        const stepDuration = duration / steps;
-        let currentPercent = startPercent;
-        
+        const totalTime = stages.reduce((sum, stage) => sum + stage.duration, 0);
+        let currentStageIndex = 0;
+        let elapsedTime = 0;
+
+        setScanProgress({ percent: 0, stage: 'Initializing scan...', timeLeft: totalTime });
+
         const interval = setInterval(() => {
-            if (currentPercent < endPercent) {
-                currentPercent += 1;
-                const timeLeft = Math.max(0, ((100 - currentPercent) / 100) * 8000); // More realistic 8 second estimate
+            if (currentStageIndex < stages.length) {
+                const currentStage = stages[currentStageIndex];
+                const timeLeft = totalTime - elapsedTime;
+                
                 setScanProgress({
-                    percent: currentPercent,
-                    stage,
-                    timeLeft
+                    percent: currentStage.percent,
+                    stage: currentStage.stage,
+                    timeLeft: Math.max(0, timeLeft)
                 });
+
+                elapsedTime += currentStage.duration;
+                currentStageIndex++;
             } else {
                 clearInterval(interval);
+                setScanProgress(null);
             }
-        }, stepDuration);
-        
+        }, 800);
+
         return interval;
     };
 
@@ -82,22 +89,14 @@ export default function Scanner({ websites = [] }) {
         setSuccessMessage('');
         setSelectedPlugins(new Set());
 
-        let progressInterval = null;
+        const progressInterval = simulateProgress();
 
         try {
-            // Start progress tracking
-            updateProgress(10, 'Initializing scan...');
-            
             const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
             
             if (!csrfToken) {
                 throw new Error('CSRF token not found. Please refresh the page.');
             }
-
-            updateProgress(20, 'Connecting to website...');
-
-            // Start gradual animation from 20% to 60% while scanning
-            progressInterval = animateProgress(20, 60, 'Scanning website for WordPress components...', 4000);
 
             const response = await fetch('/scan', {
                 method: 'POST',
@@ -112,16 +111,7 @@ export default function Scanner({ websites = [] }) {
                 }),
             });
 
-            // Stop the gradual animation and jump to 80%
-            clearInterval(progressInterval);
-            updateProgress(80, 'Processing scan results...', 2000);
-            
-            // Add a small delay to show the processing stage
-            await new Promise(resolve => setTimeout(resolve, 500));
-
             const data = await response.json();
-
-            updateProgress(95, 'Finalizing results...', 500);
 
             if (response.ok && data.success) {
                 setScanResults(data.data);
@@ -147,33 +137,21 @@ export default function Scanner({ websites = [] }) {
                 if (!scanForm.autoSync && data.data.plugins) {
                     setSelectedPlugins(new Set(data.data.plugins.map((_, index) => index)));
                 }
-                
-                // Complete progress
-                updateProgress(100, 'Scan completed successfully!', 0);
-                
-                // Hide progress bar after a brief delay to show completion
-                setTimeout(() => {
-                    setScanProgress(null);
-                }, 1500);
             } else if (response.status === 422) {
-                clearInterval(progressInterval); // Clear progress animation
                 const errorMessages = data.errors 
                     ? Object.values(data.errors).flat().join(', ')
                     : data.message || 'Validation failed';
                 setError('Validation error: ' + errorMessages);
-                setScanProgress(null); // Clear progress bar on error
             } else {
-                clearInterval(progressInterval); // Clear progress animation
                 setError(data.message || `Request failed with status ${response.status}`);
-                setScanProgress(null); // Clear progress bar on error
             }
 
         } catch (err) {
-            clearInterval(progressInterval); // Clear progress animation
             setError('Failed to perform scan: ' + err.message);
-            setScanProgress(null); // Clear progress bar on error
         } finally {
             setIsScanning(false);
+            clearInterval(progressInterval);
+            setScanProgress(null);
         }
     };
 
@@ -187,22 +165,14 @@ export default function Scanner({ websites = [] }) {
         setSuccessMessage('');
         setSelectedPlugins(new Set());
 
-        let progressInterval = null;
+        const progressInterval = simulateProgress();
 
         try {
-            // Start progress tracking
-            updateProgress(10, 'Initializing website scan...');
-            
             const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
             
             if (!csrfToken) {
                 throw new Error('CSRF token not found. Please refresh the page.');
             }
-
-            updateProgress(25, 'Connecting to website database...');
-
-            // Start gradual animation from 25% to 65% while scanning
-            progressInterval = animateProgress(25, 65, 'Scanning website database for plugins and themes...', 3500);
 
             const response = await fetch(`/websites/${selectedWebsite}/scan`, {
                 method: 'POST',
@@ -217,16 +187,7 @@ export default function Scanner({ websites = [] }) {
                 }),
             });
 
-            // Stop the gradual animation and jump to 80%
-            clearInterval(progressInterval);
-            updateProgress(80, 'Processing website scan results...', 1500);
-            
-            // Add a small delay to show the processing stage
-            await new Promise(resolve => setTimeout(resolve, 500));
-
             const data = await response.json();
-
-            updateProgress(95, 'Finalizing website scan...', 500);
 
             if (data.success) {
                 setScanResults(data.data);
@@ -252,26 +213,16 @@ export default function Scanner({ websites = [] }) {
                 if (!scanForm.autoSync && data.data.plugins) {
                     setSelectedPlugins(new Set(data.data.plugins.map((_, index) => index)));
                 }
-                
-                // Complete progress
-                updateProgress(100, 'Website scan completed successfully!', 0);
-                
-                // Hide progress bar after a brief delay to show completion
-                setTimeout(() => {
-                    setScanProgress(null);
-                }, 1500);
             } else {
-                clearInterval(progressInterval); // Clear progress animation
                 setError(data.message || 'Scan failed');
-                setScanProgress(null); // Clear progress bar on error
             }
 
         } catch (err) {
-            clearInterval(progressInterval); // Clear progress animation
             setError('Failed to perform scan: ' + err.message);
-            setScanProgress(null); // Clear progress bar on error
         } finally {
             setIsScanning(false);
+            clearInterval(progressInterval);
+            setScanProgress(null);
         }
     };
 
@@ -562,10 +513,7 @@ export default function Scanner({ websites = [] }) {
                                         <h4 className="text-sm font-medium text-blue-900">Scanning in Progress</h4>
                                         <div className="flex items-center text-sm text-blue-700">
                                             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
-                                            {scanProgress.timeLeft > 0 
-                                                ? `${Math.ceil(scanProgress.timeLeft / 1000)}s remaining`
-                                                : 'Almost done...'
-                                            }
+                                            {Math.floor(scanProgress.timeLeft / 1000)}s remaining
                                         </div>
                                     </div>
                                     <div className="w-full bg-blue-200 rounded-full h-2.5 mb-2">

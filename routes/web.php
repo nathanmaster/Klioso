@@ -46,6 +46,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/scan', [WordPressScanController::class, 'scan'])->name('scanner.scan');
     Route::post('/websites/{website}/scan', [WordPressScanController::class, 'scanWebsite'])->name('scanner.website');
     Route::post('/scanner/add-plugin', [WordPressScanController::class, 'addPlugin'])->name('scanner.add-plugin');
+    Route::post('/scanner/bulk-add-plugins', [WordPressScanController::class, 'bulkAddPlugins'])->name('scanner.bulk-add-plugins');
 });
 
 require __DIR__.'/auth.php';
