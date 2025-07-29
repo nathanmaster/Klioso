@@ -1,4 +1,4 @@
-name: 🚀 Release WordPress Scanner
+name: Create Release Binaries
 
 on:
   push:
@@ -7,80 +7,260 @@ on:
 
 permissions:
   contents: write
+  issues: write
+  pull-requests: write
 
 jobs:
-  release:
+  create-release:
     runs-on: ubuntu-latest
     
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-
+      
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
       with:
         php-version: '8.3'
-        extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv
+        extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, pdo_mysql, zip, gd, curl
         coverage: none
-
+        
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '20'
+        node-version: '18'
         cache: 'npm'
-
+        
+    - name: Verify environment
+      run: |
+        echo "PHP Version: $(php --version)"
+        echo "Node Version: $(node --version)"
+        echo "NPM Version: $(npm --version)"
+        echo "Composer Version: $(composer --version)"
+        echo "Release Tag: ${GITHUB_REF#refs/tags/}"
+        
     - name: Install PHP dependencies
-      run: composer install --no-dev --optimize-autoloader --no-interaction
-
-    - name: Install Node dependencies
-      run: npm install
-
-    - name: Build assets
-      run: npm run build
-
-    - name: Create release directory
-      run: mkdir -p releases
-
-    - name: Create production package
       run: |
-        # Create production build
-        mkdir -p build/production
-        rsync -av --exclude-from=.gitignore --exclude='.git*' --exclude='node_modules' --exclude='tests' --exclude='storage/logs/*' --exclude='storage/framework/cache/*' --exclude='storage/framework/sessions/*' --exclude='storage/framework/views/*' . build/production/
-        cd build/production && zip -r ../../releases/wordpress-scanner-${{ github.ref_name }}-production.zip .
-
-    - name: Create Windows package
+        composer install --optimize-autoloader --no-dev --no-interaction
+        composer dump-autoload --optimize
+      
+    - name: Install Node dependencies and build assets
       run: |
-        # Create Windows/Laragon build
-        mkdir -p build/windows
-        rsync -av --exclude-from=.gitignore --exclude='.git*' --exclude='node_modules' --exclude='tests' --exclude='storage/logs/*' --exclude='storage/framework/cache/*' --exclude='storage/framework/sessions/*' --exclude='storage/framework/views/*' . build/windows/
-        # Add Windows-specific files
-        echo "@echo off" > build/windows/install.bat
-        echo "echo Installing WordPress Scanner..." >> build/windows/install.bat
-        echo "composer install --no-dev --optimize-autoloader" >> build/windows/install.bat
-        echo "php artisan key:generate" >> build/windows/install.bat
-        echo "php artisan migrate" >> build/windows/install.bat
-        echo "echo Installation complete!" >> build/windows/install.bat
-        cd build/windows && zip -r ../../releases/wordpress-scanner-${{ github.ref_name }}-windows.zip .
-
-    - name: Create shared hosting package
-      run: |
-        # Create shared hosting build
-        mkdir -p build/shared-hosting
-        rsync -av --exclude-from=.gitignore --exclude='.git*' --exclude='node_modules' --exclude='tests' --exclude='storage/logs/*' --exclude='storage/framework/cache/*' --exclude='storage/framework/sessions/*' --exclude='storage/framework/views/*' . build/shared-hosting/
-        cd build/shared-hosting && zip -r ../../releases/wordpress-scanner-${{ github.ref_name }}-shared-hosting.zip .
-
-    - name: Create source package
-      run: |
-        # Create complete source archive
-        git archive --format=zip --prefix=wordpress-scanner-${{ github.ref_name }}-source/ HEAD > releases/wordpress-scanner-${{ github.ref_name }}-source.zip
-
+        # Clear npm cache and remove lock file to handle dependency conflicts
+        npm cache clean --force
+        rm -f package-lock.json
+        
+        # Try npm install with legacy peer deps
+        if ! npm install --legacy-peer-deps; then
+          echo "npm install failed, trying with additional flags..."
+          npm install --legacy-peer-deps --force
+        fi
+        
+        # Build assets
+        npm run build
+        
+        # Verify build was successful
+        if [ ! -d "public/build" ]; then
+          echo "Build directory not found, something went wrong with asset compilation"
+          exit 1
+        fi
+      
     - name: Generate checksums
       run: |
+        VERSION=${GITHUB_REF#refs/tags/}
+        echo "Building release for version: $VERSION"
+        
+    - name: Prepare release files
+      run: |
+        VERSION=${GITHUB_REF#refs/tags/}
+        
+        # Create releases directory
+        mkdir -p releases
+        
+        # Create production build
+        mkdir -p releases/production
+        
+        # Copy files excluding development directories
+        rsync -av \
+          --exclude='node_modules' \
+          --exclude='.git' \
+          --exclude='tests' \
+          --exclude='storage/logs/*.log' \
+          --exclude='temp-release' \
+          --exclude='releases' \
+          --exclude='.vscode' \
+          --exclude='*.tmp' \
+          . releases/production/
+        
+        # Ensure storage directories exist with proper structure
+        mkdir -p releases/production/storage/{app/public,framework/{cache/data,sessions,views},logs}
+        touch releases/production/storage/app/public/.gitkeep
+        touch releases/production/storage/framework/cache/data/.gitkeep
+        touch releases/production/storage/framework/sessions/.gitkeep
+        touch releases/production/storage/framework/views/.gitkeep
+        touch releases/production/storage/logs/.gitkeep
+        
+        # Set proper permissions
+        chmod -R 755 releases/production
+        chmod -R 777 releases/production/storage releases/production/bootstrap/cache
+        
+        # Laravel optimizations
+        cd releases/production
+        php artisan config:cache
+        php artisan route:cache
+        php artisan view:cache
+        cd ../..
+        
+    - name: Create release archives
+      run: |
+        VERSION=${GITHUB_REF#refs/tags/}
         cd releases
-        sha256sum *.zip > checksums.txt
-
+        
+        # Production package
+        zip -r "wordpress-scanner-${VERSION}-production.zip" production/
+        
+        # Windows package (copy from production)
+        cp -r production windows
+        
+        # Create Windows-specific files
+        cat > windows/install.bat << 'EOF'
+        @echo off
+        echo 🪟 WordPress Scanner Windows Installation
+        
+        echo Setting up environment...
+        if not exist .env copy .env.example .env
+        
+        echo Generating application key...
+        php artisan key:generate --force
+        
+        echo Running database migrations...
+        php artisan migrate --force
+        
+        echo Optimizing application...
+        php artisan config:cache
+        php artisan route:cache
+        php artisan view:cache
+        
+        echo ✅ Installation complete!
+        echo Configure your web server to point to the 'public' directory.
+        pause
+        EOF
+        
+        cat > windows/README-WINDOWS.md << EOF
+        # WordPress Scanner ${VERSION} for Windows/Laragon
+        
+        ## Quick Start
+        1. Extract this archive to your web directory
+        2. Run install.bat as Administrator
+        3. Edit .env file with your database settings
+        4. Access via your web server
+        
+        ## Requirements
+        - PHP 8.2+ (Laragon recommended)
+        - MySQL 8+ or SQLite
+        - Composer (optional for this package)
+        
+        ## Support
+        Visit: https://github.com/nathanmaster/Klioso
+        EOF
+        
+        zip -r "wordpress-scanner-${VERSION}-windows.zip" windows/
+        
+        # Shared hosting package
+        cp -r production shared-hosting
+        
+        # Create shared hosting .htaccess
+        cat > shared-hosting/public/.htaccess << 'EOF'
+        <IfModule mod_rewrite.c>
+            <IfModule mod_negotiation.c>
+                Options -MultiViews -Indexes
+            </IfModule>
+        
+            RewriteEngine On
+        
+            # Handle Authorization Header
+            RewriteCond %{HTTP:Authorization} .
+            RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+        
+            # Redirect Trailing Slashes If Not A Folder...
+            RewriteCond %{REQUEST_FILENAME} !-d
+            RewriteCond %{REQUEST_URI} (.+)/$
+            RewriteRule ^ %1 [L,R=301]
+        
+            # Send Requests To Front Controller...
+            RewriteCond %{REQUEST_FILENAME} !-d
+            RewriteCond %{REQUEST_FILENAME} !-f
+            RewriteRule ^ index.php [L]
+        </IfModule>
+        
+        # Security headers
+        <IfModule mod_headers.c>
+            Header always set X-Frame-Options "SAMEORIGIN"
+            Header always set X-Content-Type-Options "nosniff"
+        </IfModule>
+        EOF
+        
+        cat > shared-hosting/README-SHARED-HOSTING.md << EOF
+        # WordPress Scanner ${VERSION} for Shared Hosting
+        
+        ## Installation
+        1. Upload all files to your hosting account
+        2. Move contents of 'public' directory to your domain's document root
+        3. Edit .env file with database credentials
+        4. Run migrations via hosting control panel or SSH
+        
+        ## Requirements
+        - PHP 8.2+ with required extensions
+        - MySQL 5.7+ or MariaDB 10.3+
+        - SSL certificate recommended
+        
+        ## Support
+        Visit: https://github.com/nathanmaster/Klioso
+        EOF
+        
+        zip -r "wordpress-scanner-${VERSION}-shared-hosting.zip" shared-hosting/
+        
+        # Generate checksums
+        for file in wordpress-scanner-${VERSION}-*.zip; do
+          if [ -f "$file" ]; then
+            sha256sum "$file" >> checksums.txt
+          fi
+        done
+        
+        # Source archive (from git)
+        cd ..
+        git archive --format=zip --prefix="wordpress-scanner-${VERSION}/" HEAD > "releases/wordpress-scanner-${VERSION}-source.zip"
+        cd releases
+        sha256sum "wordpress-scanner-${VERSION}-source.zip" >> checksums.txt
+        
+    - name: Validate packages
+      run: |
+        VERSION=${GITHUB_REF#refs/tags/}
+        cd releases
+        
+        echo "=== Release Package Validation ==="
+        echo "Packages created:"
+        ls -la wordpress-scanner-${VERSION}-*.zip
+        
+        echo -e "\n=== Package Sizes ==="
+        du -h wordpress-scanner-${VERSION}-*.zip
+        
+        echo -e "\n=== Checksums ==="
+        cat checksums.txt
+        
+        echo -e "\n=== Package Contents Verification ==="
+        for package in wordpress-scanner-${VERSION}-*.zip; do
+          echo "Checking $package..."
+          if unzip -t "$package" > /dev/null; then
+            echo "✅ $package: ZIP integrity OK"
+          else
+            echo "❌ $package: ZIP integrity FAILED"
+            exit 1
+          fi
+        done
+        
+        echo -e "\n=== All packages validated successfully! ==="
+        
     - name: Create Release
       uses: softprops/action-gh-release@v1
       with:
@@ -92,6 +272,7 @@ jobs:
           releases/checksums.txt
         draft: false
         prerelease: false
+        generate_release_notes: false
         body: |
           # 🚀 WordPress Scanner ${{ github.ref_name }} - Bulk Operations & Enhanced UI
           
@@ -125,11 +306,11 @@ jobs:
           
           ## 📦 Release Packages
           
-          - **wordpress-scanner-${{ github.ref_name }}-production.zip** - Production-ready deployment package
-          - **wordpress-scanner-${{ github.ref_name }}-windows.zip** - Windows/Laragon optimized with install.bat
-          - **wordpress-scanner-${{ github.ref_name }}-shared-hosting.zip** - cPanel/shared hosting ready
-          - **wordpress-scanner-${{ github.ref_name }}-source.zip** - Complete source code archive
-          - **checksums.txt** - SHA256 checksums for package verification
+          - **`wordpress-scanner-${{ github.ref_name }}-production.zip`** - Production-ready deployment package
+          - **`wordpress-scanner-${{ github.ref_name }}-windows.zip`** - Windows/Laragon optimized with install.bat
+          - **`wordpress-scanner-${{ github.ref_name }}-shared-hosting.zip`** - cPanel/shared hosting ready
+          - **`wordpress-scanner-${{ github.ref_name }}-source.zip`** - Complete source code archive
+          - **`checksums.txt`** - SHA256 checksums for package verification
           
           ## 🏗️ System Requirements
           - **PHP**: 8.2+ (8.3 recommended)
@@ -141,36 +322,36 @@ jobs:
           ## ⚡ Quick Installation
           
           ### Windows/Laragon (Recommended for development)
-          1. Download wordpress-scanner-${{ github.ref_name }}-windows.zip
-          2. Extract to C:\laragon\www\wordpress-scanner
-          3. Run install.bat as Administrator
-          4. Configure database in .env file
-          5. Access via http://wordpress-scanner.test
+          1. Download `wordpress-scanner-${{ github.ref_name }}-windows.zip`
+          2. Extract to `C:\laragon\www\wordpress-scanner`
+          3. Run `install.bat` as Administrator
+          4. Configure database in `.env` file
+          5. Access via `http://wordpress-scanner.test`
           
           ### Linux Production
-          1. Download wordpress-scanner-${{ github.ref_name }}-production.zip
+          1. Download `wordpress-scanner-${{ github.ref_name }}-production.zip`
           2. Extract to your server directory
-          3. Configure web server to point to public/ directory
-          4. Set up .env file with production settings
-          5. Run php artisan migrate
+          3. Configure web server to point to `public/` directory
+          4. Set up `.env` file with production settings
+          5. Run `php artisan migrate`
           
           ### Shared Hosting
-          1. Download wordpress-scanner-${{ github.ref_name }}-shared-hosting.zip
+          1. Download `wordpress-scanner-${{ github.ref_name }}-shared-hosting.zip`
           2. Upload files to your hosting account
-          3. Move public/ contents to document root
+          3. Move `public/` contents to document root
           4. Configure database via hosting control panel
           
           ## ⚠️ Important Notes
           
           - **🛡️ BACKUP YOUR DATA**: This release includes database schema changes
-          - **📋 Database Migrations Required**: Run php artisan migrate after installation
+          - **📋 Database Migrations Required**: Run `php artisan migrate` after installation
           - **🔄 Breaking Changes**: UI layout significantly restructured with bulk operations
           - **✅ Production Ready**: Extensively tested and ready for production use
           
           ## 🔐 Package Verification
           
-          Verify package integrity using SHA256 checksums in checksums.txt:
-          ```
+          Verify package integrity using SHA256 checksums in `checksums.txt`:
+          ```bash
           sha256sum -c checksums.txt
           ```
           
@@ -178,7 +359,7 @@ jobs:
           
           - 🐛 **Bug Reports**: [GitHub Issues](https://github.com/nathanmaster/Klioso/issues)
           - 💬 **Discussions**: [GitHub Discussions](https://github.com/nathanmaster/Klioso/discussions)
-          - 📖 **Documentation**: Check /docs folder in each package
+          - 📖 **Documentation**: Check `/docs` folder in each package
           - 📋 **Full Changelog**: [CHANGELOG.md](https://github.com/nathanmaster/Klioso/blob/main/docs/releases/v0.9.2/CHANGELOG.md)
           
           ---
