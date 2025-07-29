@@ -86,6 +86,21 @@ class Website extends Model
         return $this->hasMany(ScheduledScan::class);
     }
 
+    public function analytics(): HasMany
+    {
+        return $this->hasMany(WebsiteAnalytics::class);
+    }
+
+    public function securityAudits(): HasMany
+    {
+        return $this->hasMany(SecurityAudit::class);
+    }
+
+    public function notifications(): HasMany
+    {
+        return $this->hasMany(Notification::class);
+    }
+
     public function getStatusColorAttribute(): string
     {
         return match($this->status) {
@@ -99,6 +114,29 @@ class Website extends Model
     public function getLatestScanAttribute(): ?ScanHistory
     {
         return $this->scanHistory()->latest()->first();
+    }
+
+    public function getLatestAnalyticsAttribute(): ?WebsiteAnalytics
+    {
+        return $this->analytics()->latest('scanned_at')->first();
+    }
+
+    public function getHealthScoreAttribute(): ?int
+    {
+        return $this->latestAnalytics?->health_score;
+    }
+
+    public function getSecurityScoreAttribute(): ?int
+    {
+        return $this->latestAnalytics?->security_score;
+    }
+
+    public function getCriticalIssuesCountAttribute(): int
+    {
+        return $this->securityAudits()
+            ->where('status', 'open')
+            ->where('severity', 'critical')
+            ->count();
     }
 
     public function hasActiveScheduledScan(): bool

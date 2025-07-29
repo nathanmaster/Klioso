@@ -384,4 +384,39 @@ class WebsiteController extends Controller
         
         return back()->with('success', "{$count} website(s) status updated to {$status} successfully.");
     }
+
+    /**
+     * Collect analytics for a single website
+     */
+    public function collectAnalytics(Website $website)
+    {
+        \App\Jobs\CollectWebsiteAnalytics::dispatch($website, 'full');
+        
+        return back()->with('success', 'Analytics collection started for ' . $website->domain_name);
+    }
+
+    /**
+     * Bulk collect analytics for multiple websites
+     */
+    public function bulkCollectAnalytics(Request $request)
+    {
+        $validated = $request->validate([
+            'website_ids' => 'required|array',
+            'website_ids.*' => 'exists:websites,id',
+            'scan_type' => 'nullable|in:quick,full,security',
+        ]);
+
+        $websiteIds = $validated['website_ids'];
+        $scanType = $validated['scan_type'] ?? 'full';
+
+        $websites = Website::whereIn('id', $websiteIds)->get();
+        
+        foreach ($websites as $website) {
+            \App\Jobs\CollectWebsiteAnalytics::dispatch($website, $scanType);
+        }
+
+        $count = count($websiteIds);
+        
+        return back()->with('success', "Analytics collection started for {$count} website(s).");
+    }
 }

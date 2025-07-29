@@ -9,6 +9,7 @@ use App\Http\Controllers\ScheduledScanController;
 use App\Http\Controllers\PluginController;
 use App\Http\Controllers\TemplateController;
 use App\Http\Controllers\WordPressScanController;
+use App\Http\Controllers\AnalyticsController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -70,6 +71,17 @@ Route::middleware('auth')->group(function () {
     Route::post('/websites/bulk-assign-group', [WebsiteController::class, 'bulkAssignGroup'])->name('websites.bulk-assign-group');
     Route::post('/websites/bulk-status-update', [WebsiteController::class, 'bulkStatusUpdate'])->name('websites.bulk-status-update');
     Route::post('/scheduled-scans/bulk-create', [ScheduledScanController::class, 'bulkCreate'])->name('scheduled-scans.bulk-create');
+
+    // Analytics Dashboard Routes
+    Route::get('/analytics', [AnalyticsController::class, 'dashboard'])->name('analytics.dashboard');
+    Route::get('/analytics/website/{website}', [AnalyticsController::class, 'website'])->name('analytics.website');
+    Route::get('/analytics/security', [AnalyticsController::class, 'security'])->name('analytics.security');
+    Route::get('/analytics/performance', [AnalyticsController::class, 'performance'])->name('analytics.performance');
+    Route::post('/analytics/export', [AnalyticsController::class, 'exportReport'])->name('analytics.export');
+    
+    // Analytics Collection Routes
+    Route::post('/websites/{website}/collect-analytics', [WebsiteController::class, 'collectAnalytics'])->name('websites.collect-analytics');
+    Route::post('/websites/bulk-collect-analytics', [WebsiteController::class, 'bulkCollectAnalytics'])->name('websites.bulk-collect-analytics');
 });
 
 require __DIR__.'/auth.php';
