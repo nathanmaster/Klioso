@@ -56,6 +56,9 @@ jobs:
           npm install --legacy-peer-deps --force
         fi
         
+        # Install missing dependencies required by Recharts
+        npm install react-is --legacy-peer-deps
+        
         # Build assets with analytics dashboard
         npm run build
         
