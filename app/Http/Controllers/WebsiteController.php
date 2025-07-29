@@ -113,7 +113,7 @@ class WebsiteController extends Controller
             'sortDirection' => $sortDirection,
         ]);
     }
-    }
+    
 
     public function create()
     {
