@@ -4,6 +4,8 @@ use App\Http\Controllers\ClientController;
 use App\Http\Controllers\HostingProviderController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\WebsiteController;
+use App\Http\Controllers\WebsiteGroupController;
+use App\Http\Controllers\ScheduledScanController;
 use App\Http\Controllers\PluginController;
 use App\Http\Controllers\TemplateController;
 use App\Http\Controllers\WordPressScanController;
@@ -35,6 +37,19 @@ Route::middleware('auth')->group(function () {
     Route::resource('websites', WebsiteController::class);
     Route::resource('plugins', PluginController::class);
     Route::resource('templates', TemplateController::class);
+    Route::resource('groups', WebsiteGroupController::class);
+    Route::resource('scheduled-scans', ScheduledScanController::class);
+
+    // Website Group management routes
+    Route::put('/groups/{group}/order', [WebsiteGroupController::class, 'updateOrder'])->name('groups.update-order');
+    Route::post('/groups/{group}/websites', [WebsiteGroupController::class, 'addWebsites'])->name('groups.add-websites');
+    Route::delete('/groups/{group}/websites', [WebsiteGroupController::class, 'removeWebsites'])->name('groups.remove-websites');
+    Route::get('/ungrouped-websites', [WebsiteGroupController::class, 'ungroupedWebsites'])->name('groups.ungrouped-websites');
+
+    // Scheduled Scan management routes
+    Route::post('/scheduled-scans/{scheduledScan}/toggle', [ScheduledScanController::class, 'toggleActive'])->name('scheduled-scans.toggle');
+    Route::post('/scheduled-scans/{scheduledScan}/run', [ScheduledScanController::class, 'runNow'])->name('scheduled-scans.run');
+    Route::get('/scheduled-scans-due', [ScheduledScanController::class, 'due'])->name('scheduled-scans.due');
 
     // Website-Plugin relationship routes
     Route::post('/websites/{website}/plugins', [WebsiteController::class, 'attachPlugin'])->name('websites.plugins.attach');

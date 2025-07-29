@@ -20,9 +20,11 @@ export default function AuthenticatedLayout({ header, children }) {
             match: 'hosting-providers.*',
         },
         { name: 'Websites', route: 'websites.index', match: 'websites.*' },
+        { name: 'Groups', route: 'groups.index', match: 'groups.*' },
         { name: 'Plugins', route: 'plugins.index', match: 'plugins.*' },
         { name: 'Templates', route: 'templates.index', match: 'templates.*' },
         { name: 'WP Scanner', route: 'scanner.index', match: 'scanner.*' },
+        { name: 'Scheduled Scans', route: 'scheduled-scans.index', match: 'scheduled-scans.*' },
     ];
 
     return (
