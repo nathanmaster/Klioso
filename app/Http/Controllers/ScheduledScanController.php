@@ -202,4 +202,75 @@ class ScheduledScanController extends Controller
             ];
         }));
     }
+
+    /**
+     * Bulk create scheduled scans for multiple websites
+     */
+    public function bulkCreate(Request $request)
+    {
+        $validated = $request->validate([
+            'website_ids' => 'required|array',
+            'website_ids.*' => 'exists:websites,id',
+            'name_template' => 'required|string|max:255',
+            'frequency' => 'required|in:daily,weekly,monthly',
+            'scheduled_time' => 'required|date_format:H:i',
+            'scan_config' => 'required|array',
+            'is_active' => 'boolean',
+        ]);
+
+        $websiteIds = $validated['website_ids'];
+        $nameTemplate = $validated['name_template'];
+        $scanConfig = json_encode($validated['scan_config']);
+        $isActive = $validated['is_active'] ?? true;
+
+        $createdScans = [];
+        $errors = [];
+
+        foreach ($websiteIds as $websiteId) {
+            try {
+                $website = Website::find($websiteId);
+                
+                // Replace template placeholder with website name
+                $scheduleName = str_replace('{website}', $website->name, $nameTemplate);
+                
+                $scheduledScan = ScheduledScan::create([
+                    'name' => $scheduleName,
+                    'scan_type' => 'website',
+                    'target' => $website->url ?? $website->domain_name,
+                    'website_id' => $websiteId,
+                    'frequency' => $validated['frequency'],
+                    'scheduled_time' => $validated['scheduled_time'],
+                    'scan_config' => $scanConfig,
+                    'is_active' => $isActive,
+                ]);
+
+                $createdScans[] = [
+                    'website_id' => $websiteId,
+                    'website_name' => $website->name,
+                    'schedule_id' => $scheduledScan->id,
+                    'schedule_name' => $scheduleName,
+                ];
+
+            } catch (\Exception $e) {
+                $website = Website::find($websiteId);
+                $errors[] = [
+                    'website_id' => $websiteId,
+                    'website_name' => $website->name ?? 'Unknown',
+                    'error' => $e->getMessage(),
+                ];
+            }
+        }
+
+        $successCount = count($createdScans);
+        $errorCount = count($errors);
+        $totalCount = count($websiteIds);
+
+        $message = "Bulk schedule creation completed: {$successCount} successful, {$errorCount} failed out of {$totalCount} websites.";
+
+        if ($errorCount > 0) {
+            return back()->with('warning', $message . ' Check the details for specific errors.');
+        }
+
+        return back()->with('success', $message);
+    }
 }

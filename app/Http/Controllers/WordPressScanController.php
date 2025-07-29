@@ -524,4 +524,101 @@ class WordPressScanController extends Controller
             ]);
         }
     }
+
+    /**
+     * Bulk scan multiple websites
+     */
+    public function bulkScan(Request $request)
+    {
+        $validated = $request->validate([
+            'website_ids' => 'required|array',
+            'website_ids.*' => 'exists:websites,id',
+            'scan_config' => 'required|array',
+        ]);
+
+        $websiteIds = $validated['website_ids'];
+        $scanConfig = $validated['scan_config'];
+        
+        $results = [];
+        $successCount = 0;
+        $errorCount = 0;
+
+        foreach ($websiteIds as $websiteId) {
+            try {
+                $website = Website::find($websiteId);
+                
+                // Determine the URL to scan
+                $url = $website->url ?? $website->domain_name;
+                if (!str_starts_with($url, 'http')) {
+                    $url = 'https://' . $url;
+                }
+
+                $scanResult = $this->scanService->scanWordPressSite($url);
+
+                // Save scan history
+                $historyData = [
+                    'website_id' => $websiteId,
+                    'url' => $url,
+                    'scan_type' => 'bulk_scan',
+                    'result' => json_encode($scanResult),
+                    'plugins_found' => count($scanResult['plugins'] ?? []),
+                    'themes_found' => count($scanResult['themes'] ?? []),
+                    'vulnerabilities_found' => count($scanResult['vulnerabilities'] ?? []),
+                    'wordpress_version' => $scanResult['wordpress_version'] ?? null,
+                    'scan_duration' => $scanResult['scan_duration'] ?? 0,
+                    'status' => 'completed',
+                ];
+
+                $this->saveScanHistory($historyData);
+
+                // Update website last scan
+                $website->update([
+                    'last_scan' => now(),
+                    'wordpress_version' => $scanResult['wordpress_version'] ?? $website->wordpress_version,
+                ]);
+
+                $results[] = [
+                    'website_id' => $websiteId,
+                    'website_name' => $website->name,
+                    'url' => $url,
+                    'success' => true,
+                    'data' => $scanResult
+                ];
+
+                $successCount++;
+
+            } catch (\Exception $e) {
+                Log::error('Bulk scan failed for website', [
+                    'website_id' => $websiteId,
+                    'error' => $e->getMessage()
+                ]);
+
+                // Save failed scan history
+                $historyData = [
+                    'website_id' => $websiteId,
+                    'url' => $url ?? 'unknown',
+                    'scan_type' => 'bulk_scan',
+                    'result' => json_encode(['error' => $e->getMessage()]),
+                    'status' => 'failed',
+                    'error_message' => $e->getMessage(),
+                ];
+
+                $this->saveScanHistory($historyData);
+
+                $results[] = [
+                    'website_id' => $websiteId,
+                    'website_name' => Website::find($websiteId)->name ?? 'Unknown',
+                    'success' => false,
+                    'error' => $e->getMessage()
+                ];
+
+                $errorCount++;
+            }
+        }
+
+        $totalWebsites = count($websiteIds);
+        $message = "Bulk scan completed: {$successCount} successful, {$errorCount} failed out of {$totalWebsites} websites.";
+
+        return back()->with('success', $message);
+    }
 }

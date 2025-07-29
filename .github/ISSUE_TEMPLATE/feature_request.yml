@@ -1,0 +1,243 @@
+name: ✨ Feature Request
+description: Suggest a new feature or enhancement for WordPress Scanner
+title: '[Feature]: '
+labels: ['enhancement', 'needs-triage']
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting a new feature! Please provide detailed information to help us understand your request.
+
+  - type: checkboxes
+    id: prerequisites
+    attributes:
+      label: Prerequisites
+      description: Please confirm you have completed the following
+      options:
+        - label: I have searched existing issues to ensure this is not a duplicate
+          required: true
+        - label: I have checked the roadmap and planned features
+          required: true
+        - label: This is a feature request, not a bug report
+          required: true
+
+  - type: dropdown
+    id: feature-type
+    attributes:
+      label: Feature Type
+      description: What type of feature are you requesting?
+      options:
+        - New Functionality
+        - Enhancement to Existing Feature
+        - User Interface Improvement
+        - Performance Optimization
+        - Integration with External Service
+        - Developer Experience Improvement
+        - Security Enhancement
+    validations:
+      required: true
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How important is this feature to you?
+      options:
+        - Critical (Blocking current workflow)
+        - High (Would significantly improve workflow)
+        - Medium (Nice to have improvement)
+        - Low (Minor convenience)
+    validations:
+      required: true
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Feature Summary
+      description: A clear and concise description of the feature you'd like to see
+      placeholder: Summarize the feature in 1-2 sentences
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem Statement
+      description: What problem does this feature solve?
+      placeholder: |
+        Describe the problem or limitation you're experiencing:
+        - What is currently difficult or impossible to do?
+        - What workflow or process would this improve?
+        - How does the current solution fall short?
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed Solution
+      description: Describe your ideal solution
+      placeholder: |
+        Describe what you'd like to happen:
+        - How should the feature work?
+        - What should the user interface look like?
+        - What are the key interactions or workflows?
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternative Solutions
+      description: Describe alternatives you've considered
+      placeholder: |
+        Have you considered other approaches to solve this problem?
+        - Other tools or workarounds you've tried
+        - Different implementation approaches
+        - Why these alternatives don't fully solve the problem
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Feature Area
+      description: Which area of the application would this feature affect?
+      options:
+        - Website Management
+        - WordPress Scanning
+        - Bulk Operations
+        - Website Groups
+        - Scheduled Scans
+        - User Interface
+        - Reporting/Analytics
+        - API/Integrations
+        - Configuration/Settings
+        - Authentication/Authorization
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: use-cases
+    attributes:
+      label: Use Cases
+      description: Provide specific use cases for this feature
+      placeholder: |
+        Describe specific scenarios where this feature would be used:
+        
+        **Use Case 1:**
+        - User type: (e.g., WordPress Developer, Agency Owner, Site Administrator)
+        - Scenario: (e.g., Managing 50+ client websites)
+        - Goal: (e.g., Quickly identify outdated plugins across all sites)
+        - Current workflow: (e.g., Manually check each site)
+        - Improved workflow: (e.g., Bulk scan with filtering)
+        
+        **Use Case 2:**
+        - User type:
+        - Scenario:
+        - Goal:
+        - Current workflow:
+        - Improved workflow:
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance Criteria
+      description: Define what "done" looks like for this feature
+      placeholder: |
+        Define the criteria that must be met for this feature to be considered complete:
+        
+        - [ ] Criterion 1
+        - [ ] Criterion 2
+        - [ ] Criterion 3
+        
+        Example:
+        - [ ] User can select multiple websites from the list
+        - [ ] User can apply group assignment to selected websites
+        - [ ] User receives confirmation of successful group assignment
+        - [ ] Changes are reflected immediately in the interface
+
+  - type: textarea
+    id: mockups
+    attributes:
+      label: Mockups/Wireframes
+      description: Include any visual mockups, wireframes, or sketches
+      placeholder: |
+        If you have mockups, wireframes, or sketches, please attach them here.
+        You can also describe the visual layout in text.
+
+  - type: dropdown
+    id: complexity
+    attributes:
+      label: Estimated Complexity
+      description: How complex do you think this feature would be to implement?
+      options:
+        - Simple (Few hours of work)
+        - Medium (1-2 days of work)
+        - Complex (1+ weeks of work)
+        - Major (Significant architectural changes)
+        - Not Sure
+
+  - type: textarea
+    id: technical-considerations
+    attributes:
+      label: Technical Considerations
+      description: Any technical aspects to consider
+      placeholder: |
+        Consider technical aspects such as:
+        - Database schema changes required
+        - API changes needed
+        - Performance implications
+        - Security considerations
+        - Third-party integrations
+        - Compatibility requirements
+
+  - type: textarea
+    id: benefits
+    attributes:
+      label: Benefits
+      description: What are the benefits of implementing this feature?
+      placeholder: |
+        Describe the benefits:
+        - Time savings (e.g., "Would save 2 hours per week")
+        - Improved user experience (e.g., "Reduces clicks from 10 to 2")
+        - Business value (e.g., "Enables managing 3x more websites")
+        - Other benefits
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact Assessment
+      description: Who would benefit from this feature and how many users?
+      placeholder: |
+        - Target users: (e.g., WordPress agencies, freelance developers)
+        - Estimated user base: (e.g., 80% of current users would benefit)
+        - Frequency of use: (e.g., Daily, Weekly, Monthly)
+        - Business impact: (e.g., Could increase user retention)
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Contribution
+      description: How can you help with this feature?
+      options:
+        - label: I can help with design/mockups
+        - label: I can help with testing
+        - label: I can provide detailed requirements
+        - label: I can help with documentation
+        - label: I have development skills and could contribute code
+        - label: I can provide feedback during development
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Add any other context about the feature request
+      placeholder: |
+        Any additional information that might be helpful:
+        - Related features or dependencies
+        - Examples from other applications
+        - Links to relevant resources
+        - Timeline considerations

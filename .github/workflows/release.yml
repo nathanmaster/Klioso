@@ -1,9 +1,32 @@
-name: Create Release Binaries
+name: WordPress Scanner Release
 
 on:
   push:
     tags:
-      - 'v*'
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., v0.9.2)'
+        required: true
+        type: string
+      release_type:
+        description: 'Type of release'
+        required: true
+        default: 'release'
+        type: choice
+        options:
+          - release
+          - prerelease
+      create_tag:
+        description: 'Create git tag if it does not exist'
+        required: false
+        default: true
+        type: boolean
+
+env:
+  NODE_VERSION: '18'
+  PHP_VERSION: '8.3'
 
 permissions:
   contents: write
@@ -72,7 +95,7 @@ jobs:
         
     - name: Prepare release files
       run: |
-        VERSION=${GITHUB_REF#refs/tags/}
+        VERSION=${{ steps.version.outputs.version_number }}
         
         # Create releases directory
         mkdir -p releases
@@ -113,11 +136,11 @@ jobs:
         
     - name: Create release archives
       run: |
-        VERSION=${GITHUB_REF#refs/tags/}
+        VERSION=${{ steps.version.outputs.version_number }}
         cd releases
         
         # Production package
-        zip -r "klioso-${VERSION}-production.zip" production/
+        zip -r "wordpress-scanner-${VERSION}-production.zip" production/
         
         # Windows package (copy from production)
         cp -r production windows
@@ -125,7 +148,7 @@ jobs:
         # Create Windows-specific files
         cat > windows/install.bat << 'EOF'
         @echo off
-        echo 🪟 Klioso Windows Installation
+        echo 🪟 WordPress Scanner Windows Installation
         
         echo Setting up environment...
         if not exist .env copy .env.example .env
@@ -147,7 +170,7 @@ jobs:
         EOF
         
         cat > windows/README-WINDOWS.md << EOF
-        # Klioso ${VERSION} for Windows/Laragon
+        # WordPress Scanner ${VERSION} for Windows/Laragon
         
         ## Quick Start
         1. Extract this archive to your web directory
@@ -164,7 +187,7 @@ jobs:
         Visit: https://github.com/nathanmaster/laravel12
         EOF
         
-        zip -r "klioso-${VERSION}-windows.zip" windows/
+        zip -r "wordpress-scanner-${VERSION}-windows.zip" windows/
         
         # Shared hosting package
         cp -r production shared-hosting
@@ -201,7 +224,7 @@ jobs:
         EOF
         
         cat > shared-hosting/README-SHARED-HOSTING.md << EOF
-        # Klioso ${VERSION} for Shared Hosting
+        # WordPress Scanner ${VERSION} for Shared Hosting
         
         ## Installation
         1. Upload all files to your hosting account
@@ -218,10 +241,10 @@ jobs:
         Visit: https://github.com/nathanmaster/laravel12
         EOF
         
-        zip -r "klioso-${VERSION}-shared-hosting.zip" shared-hosting/
+        zip -r "wordpress-scanner-${VERSION}-shared-hosting.zip" shared-hosting/
         
         # Generate checksums
-        for file in klioso-${VERSION}-*.zip; do
+        for file in wordpress-scanner-${VERSION}-*.zip; do
           if [ -f "$file" ]; then
             sha256sum "$file" >> checksums.txt
           fi
@@ -229,27 +252,62 @@ jobs:
         
         # Source archive (from git)
         cd ..
-        git archive --format=zip --prefix="klioso-${VERSION}/" HEAD > "releases/klioso-${VERSION}-source.zip"
+        git archive --format=zip --prefix="wordpress-scanner-${VERSION}/" HEAD > "releases/wordpress-scanner-${VERSION}-source.zip"
         cd releases
-        sha256sum "klioso-${VERSION}-source.zip" >> checksums.txt
+        sha256sum "wordpress-scanner-${VERSION}-source.zip" >> checksums.txt
+        
+    - name: Generate release notes
+      id: release_notes
+      run: |
+        VERSION=${{ steps.version.outputs.version }}
+        RELEASE_NOTES_FILE="docs/releases/${VERSION}/RELEASE_NOTES.md"
+        CHANGELOG_FILE="docs/releases/${VERSION}/CHANGELOG.md"
+        
+        if [ -f "$RELEASE_NOTES_FILE" ]; then
+          echo "notes_file=$RELEASE_NOTES_FILE" >> $GITHUB_OUTPUT
+          echo "Using structured release notes from $RELEASE_NOTES_FILE"
+        elif [ -f "$CHANGELOG_FILE" ]; then
+          echo "notes_file=$CHANGELOG_FILE" >> $GITHUB_OUTPUT
+          echo "Using changelog from $CHANGELOG_FILE"
+        else
+          # Generate basic release notes
+          echo "## What's Changed in $VERSION" > temp_release_notes.md
+          echo "" >> temp_release_notes.md
+          
+          # Get commits since last tag
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -n "$LAST_TAG" ] && [ "$LAST_TAG" != "$VERSION" ]; then
+            echo "### Changes since $LAST_TAG:" >> temp_release_notes.md
+            git log --pretty=format:"- %s (%h)" $LAST_TAG..HEAD >> temp_release_notes.md
+          else
+            echo "### Recent Changes:" >> temp_release_notes.md
+            git log --pretty=format:"- %s (%h)" -n 20 >> temp_release_notes.md
+          fi
+          
+          echo "" >> temp_release_notes.md
+          echo "## 📦 Installation" >> temp_release_notes.md
+          echo "Download the appropriate package for your environment and follow the installation instructions." >> temp_release_notes.md
+          
+          echo "notes_file=temp_release_notes.md" >> $GITHUB_OUTPUT
+        fi
         
     - name: Validate packages
       run: |
-        VERSION=${GITHUB_REF#refs/tags/}
+        VERSION=${{ steps.version.outputs.version_number }}
         cd releases
         
         echo "=== Release Package Validation ==="
         echo "Packages created:"
-        ls -la klioso-${VERSION}-*.zip
+        ls -la wordpress-scanner-${VERSION}-*.zip
         
         echo -e "\n=== Package Sizes ==="
-        du -h klioso-${VERSION}-*.zip
+        du -h wordpress-scanner-${VERSION}-*.zip
         
         echo -e "\n=== Checksums ==="
         cat checksums.txt
         
         echo -e "\n=== Package Contents Verification ==="
-        for package in klioso-${VERSION}-*.zip; do
+        for package in wordpress-scanner-${VERSION}-*.zip; do
           echo "Checking $package..."
           if unzip -t "$package" > /dev/null; then
             echo "✅ $package: ZIP integrity OK"
@@ -264,15 +322,20 @@ jobs:
     - name: Create Release
       uses: softprops/action-gh-release@v1
       with:
+        tag_name: ${{ steps.version.outputs.version }}
+        name: WordPress Scanner ${{ steps.version.outputs.version }}
+        body_path: ${{ steps.release_notes.outputs.notes_file }}
         files: |
-          releases/klioso-${{ github.ref_name }}-production.zip
-          releases/klioso-${{ github.ref_name }}-source.zip
-          releases/klioso-${{ github.ref_name }}-windows.zip
-          releases/klioso-${{ github.ref_name }}-shared-hosting.zip
+          releases/wordpress-scanner-${{ steps.version.outputs.version_number }}-production.zip
+          releases/wordpress-scanner-${{ steps.version.outputs.version_number }}-source.zip
+          releases/wordpress-scanner-${{ steps.version.outputs.version_number }}-windows.zip
+          releases/wordpress-scanner-${{ steps.version.outputs.version_number }}-shared-hosting.zip
           releases/checksums.txt
         draft: false
-        prerelease: true
+        prerelease: ${{ github.event.inputs.release_type == 'prerelease' || contains(steps.version.outputs.version, 'beta') || contains(steps.version.outputs.version, 'alpha') }}
         generate_release_notes: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         body: |
           # 🚀 Klioso ${{ github.ref_name }} - Multi-Service Provider System
           
@@ -368,75 +431,73 @@ jobs:
           *While extensively tested, this is a beta release. Please maintain current backups and test thoroughly before production use.*
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    
-  publish-npm:
-    needs: create-release
+
+    - name: Update version in files
+      if: github.event_name == 'workflow_dispatch'
+      run: |
+        # Update composer.json version
+        if [ -f "composer.json" ]; then
+          jq '.version = "${{ steps.version.outputs.version_number }}"' composer.json > composer.json.tmp && mv composer.json.tmp composer.json
+        fi
+        
+        # Update package.json version
+        if [ -f "package.json" ]; then
+          jq '.version = "${{ steps.version.outputs.version_number }}"' package.json > package.json.tmp && mv package.json.tmp package.json
+        fi
+        
+        # Commit version updates
+        git config user.name "GitHub Actions"
+        git config user.email "actions@github.com"
+        git add -A
+        if ! git diff --staged --quiet; then
+          git commit -m "chore: bump version to ${{ steps.version.outputs.version }}"
+          git push origin ${{ github.ref_name }}
+        fi
+
+  deploy:
+    name: Deploy Documentation
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/v')
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Setup Node.js for npm registry
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        registry-url: 'https://registry.npmjs.org'
-        
-    - name: Install dependencies
-      run: |
-        npm cache clean --force
-        rm -f package-lock.json
-        npm install --legacy-peer-deps
-        
-    - name: Build package
-      run: npm run build
-      
-    - name: Update package name for npm registry
-      run: |
-        # Create a temporary package.json for npm registry (unscoped)
-        node -e "
-          const pkg = require('./package.json');
-          pkg.name = 'klioso';
-          delete pkg.publishConfig;
-          require('fs').writeFileSync('package.json', JSON.stringify(pkg, null, 2));
-        "
-        echo "Updated package name to: $(node -p "require('./package.json').name")"
-        
-    - name: Publish to npm registry
-      run: npm publish --access public
-      env:
-        NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        
-  publish-github-packages:
     needs: create-release
-    runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/v')
-    permissions:
-      contents: read
-      packages: write
-    
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Setup Node.js for GitHub Packages
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        registry-url: 'https://npm.pkg.github.com'
-        
-    - name: Install dependencies
-      run: |
-        npm cache clean --force
-        rm -f package-lock.json
-        npm install --legacy-peer-deps
-        
-    - name: Build package
-      run: npm run build
-        
-    - name: Publish to GitHub Packages
-      run: npm publish --access public
-      env:
-        NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Build documentation
+        run: |
+          echo "Building documentation for GitHub Pages..."
+          # Copy release documentation to docs root for GitHub Pages
+          if [ -d "docs/releases" ]; then
+            cp -r docs/releases docs/_releases 2>/dev/null || true
+          fi
+          
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        if: success()
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs
+          enable_jekyll: false
+
+  notify:
+    name: Send Notifications
+    runs-on: ubuntu-latest
+    needs: [create-release, deploy]
+    if: always()
+
+    steps:
+      - name: Notify Success
+        if: needs.create-release.result == 'success'
+        run: |
+          echo "✅ Release ${{ needs.create-release.outputs.version || github.ref_name }} created successfully!"
+          
+      - name: Notify Failure
+        if: needs.create-release.result == 'failure'
+        run: |
+          echo "❌ Release failed!"
