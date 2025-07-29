@@ -1,0 +1,190 @@
+name: 🚀 Release WordPress Scanner
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.3'
+        extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv
+        coverage: none
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+
+    - name: Install PHP dependencies
+      run: composer install --no-dev --optimize-autoloader --no-interaction
+
+    - name: Install Node dependencies
+      run: npm install
+
+    - name: Build assets
+      run: npm run build
+
+    - name: Create release directory
+      run: mkdir -p releases
+
+    - name: Create production package
+      run: |
+        # Create production build
+        mkdir -p build/production
+        rsync -av --exclude-from=.gitignore --exclude='.git*' --exclude='node_modules' --exclude='tests' --exclude='storage/logs/*' --exclude='storage/framework/cache/*' --exclude='storage/framework/sessions/*' --exclude='storage/framework/views/*' . build/production/
+        cd build/production && zip -r ../../releases/wordpress-scanner-${{ github.ref_name }}-production.zip .
+
+    - name: Create Windows package
+      run: |
+        # Create Windows/Laragon build
+        mkdir -p build/windows
+        rsync -av --exclude-from=.gitignore --exclude='.git*' --exclude='node_modules' --exclude='tests' --exclude='storage/logs/*' --exclude='storage/framework/cache/*' --exclude='storage/framework/sessions/*' --exclude='storage/framework/views/*' . build/windows/
+        # Add Windows-specific files
+        echo "@echo off" > build/windows/install.bat
+        echo "echo Installing WordPress Scanner..." >> build/windows/install.bat
+        echo "composer install --no-dev --optimize-autoloader" >> build/windows/install.bat
+        echo "php artisan key:generate" >> build/windows/install.bat
+        echo "php artisan migrate" >> build/windows/install.bat
+        echo "echo Installation complete!" >> build/windows/install.bat
+        cd build/windows && zip -r ../../releases/wordpress-scanner-${{ github.ref_name }}-windows.zip .
+
+    - name: Create shared hosting package
+      run: |
+        # Create shared hosting build
+        mkdir -p build/shared-hosting
+        rsync -av --exclude-from=.gitignore --exclude='.git*' --exclude='node_modules' --exclude='tests' --exclude='storage/logs/*' --exclude='storage/framework/cache/*' --exclude='storage/framework/sessions/*' --exclude='storage/framework/views/*' . build/shared-hosting/
+        cd build/shared-hosting && zip -r ../../releases/wordpress-scanner-${{ github.ref_name }}-shared-hosting.zip .
+
+    - name: Create source package
+      run: |
+        # Create complete source archive
+        git archive --format=zip --prefix=wordpress-scanner-${{ github.ref_name }}-source/ HEAD > releases/wordpress-scanner-${{ github.ref_name }}-source.zip
+
+    - name: Generate checksums
+      run: |
+        cd releases
+        sha256sum *.zip > checksums.txt
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          releases/wordpress-scanner-${{ github.ref_name }}-production.zip
+          releases/wordpress-scanner-${{ github.ref_name }}-source.zip
+          releases/wordpress-scanner-${{ github.ref_name }}-windows.zip
+          releases/wordpress-scanner-${{ github.ref_name }}-shared-hosting.zip
+          releases/checksums.txt
+        draft: false
+        prerelease: false
+        body: |
+          # 🚀 WordPress Scanner ${{ github.ref_name }} - Bulk Operations & Enhanced UI
+          
+          ## 🎉 What's New in This Release
+          
+          ### 🔄 Bulk Operations System
+          - **Multi-Select Management**: Select multiple websites for batch operations
+          - **Bulk Scanning**: Scan multiple WordPress sites simultaneously with progress tracking
+          - **Group Assignment**: Assign websites to groups in bulk operations
+          - **Status Updates**: Update multiple website statuses at once
+          - **Scheduled Scans**: Create scheduled scans for multiple websites with template naming
+          
+          ### 🎨 Enhanced User Interface
+          - **Table/Grid Toggle**: Switch between table and grid views for website management
+          - **Mobile Responsive**: Fully responsive design optimized for mobile devices
+          - **BulkActionsModal**: Tabbed interface for different bulk operation types
+          - **Multi-Select UI**: Checkbox selection with keyboard shortcuts support
+          - **Visual Feedback**: Progress indicators and real-time operation status
+          
+          ### 🔍 WordPress Scanner Improvements
+          - **Better Error Handling**: Graceful handling of unreachable or misconfigured sites
+          - **SSL Support**: Automatic detection and handling of HTTPS/HTTP sites  
+          - **Enhanced Detection**: Improved plugin and theme identification algorithms
+          - **Bulk Plugin Management**: Add plugins to multiple sites simultaneously
+          
+          ### 📅 Scheduled Scan System
+          - **Automated Scanning**: Set up recurring scans with customizable frequencies
+          - **Template Naming**: Use dynamic templates for scheduled scan names
+          - **Success Tracking**: Monitor scan success rates and performance metrics
+          - **Bulk Schedule Creation**: Create schedules for multiple websites at once
+          
+          ## 📦 Release Packages
+          
+          - **wordpress-scanner-${{ github.ref_name }}-production.zip** - Production-ready deployment package
+          - **wordpress-scanner-${{ github.ref_name }}-windows.zip** - Windows/Laragon optimized with install.bat
+          - **wordpress-scanner-${{ github.ref_name }}-shared-hosting.zip** - cPanel/shared hosting ready
+          - **wordpress-scanner-${{ github.ref_name }}-source.zip** - Complete source code archive
+          - **checksums.txt** - SHA256 checksums for package verification
+          
+          ## 🏗️ System Requirements
+          - **PHP**: 8.2+ (8.3 recommended)
+          - **Database**: MySQL 8+ or SQLite 3+
+          - **Web Server**: Apache 2.4+ or Nginx 1.18+
+          - **Memory**: 256MB+ PHP memory limit
+          - **Storage**: 50MB+ free disk space
+          
+          ## ⚡ Quick Installation
+          
+          ### Windows/Laragon (Recommended for development)
+          1. Download wordpress-scanner-${{ github.ref_name }}-windows.zip
+          2. Extract to C:\laragon\www\wordpress-scanner
+          3. Run install.bat as Administrator
+          4. Configure database in .env file
+          5. Access via http://wordpress-scanner.test
+          
+          ### Linux Production
+          1. Download wordpress-scanner-${{ github.ref_name }}-production.zip
+          2. Extract to your server directory
+          3. Configure web server to point to public/ directory
+          4. Set up .env file with production settings
+          5. Run php artisan migrate
+          
+          ### Shared Hosting
+          1. Download wordpress-scanner-${{ github.ref_name }}-shared-hosting.zip
+          2. Upload files to your hosting account
+          3. Move public/ contents to document root
+          4. Configure database via hosting control panel
+          
+          ## ⚠️ Important Notes
+          
+          - **🛡️ BACKUP YOUR DATA**: This release includes database schema changes
+          - **📋 Database Migrations Required**: Run php artisan migrate after installation
+          - **🔄 Breaking Changes**: UI layout significantly restructured with bulk operations
+          - **✅ Production Ready**: Extensively tested and ready for production use
+          
+          ## 🔐 Package Verification
+          
+          Verify package integrity using SHA256 checksums in checksums.txt:
+          ```
+          sha256sum -c checksums.txt
+          ```
+          
+          ## 📞 Support & Feedback
+          
+          - 🐛 **Bug Reports**: [GitHub Issues](https://github.com/nathanmaster/Klioso/issues)
+          - 💬 **Discussions**: [GitHub Discussions](https://github.com/nathanmaster/Klioso/discussions)
+          - 📖 **Documentation**: Check /docs folder in each package
+          - 📋 **Full Changelog**: [CHANGELOG.md](https://github.com/nathanmaster/Klioso/blob/main/docs/releases/v0.9.2/CHANGELOG.md)
+          
+          ---
+          
+          **WordPress Scanner ${{ github.ref_name }}** - Professional WordPress management at scale! 🚀
+          
+          *This release has been extensively tested and is ready for production use.*
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
