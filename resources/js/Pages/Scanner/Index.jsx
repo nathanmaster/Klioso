@@ -515,10 +515,10 @@ export default function Scanner({ websites = [] }) {
                             {activeTab === 'website' && (
                                 <div className="space-y-4">
                                     <div>
-                                        <h3 className="text-lg font-medium text-gray-900 mb-4">
+                                        <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">
                                             Scan Existing Website
                                         </h3>
-                                        <p className="text-sm text-gray-600 mb-4">
+                                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                                             Select a website from your database to scan and optionally sync the results.
                                         </p>
                                     </div>
@@ -558,7 +558,7 @@ export default function Scanner({ websites = [] }) {
                                             checked={scanForm.autoSync}
                                             onChange={(e) => setScanForm(prev => ({ ...prev, autoSync: e.target.checked }))}
                                         />
-                                        <p id="auto-sync-description" className="text-xs text-gray-500 -mt-2">
+                                        <p id="auto-sync-description" className="text-xs text-gray-500 dark:text-gray-400 -mt-2">
                                             Automatically synchronize discovered plugins with the selected website's database.
                                         </p>
 
