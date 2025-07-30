@@ -125,7 +125,7 @@ jobs:
         # Create Windows-specific files
         cat > windows/install.bat << 'EOF'
         @echo off
-        echo 🪟 WordPress Scanner Windows Installation
+        echo 🪟 Klioso Windows Installation
         
         echo Setting up environment...
         if not exist .env copy .env.example .env
@@ -147,7 +147,7 @@ jobs:
         EOF
         
         cat > windows/README-WINDOWS.md << EOF
-        # WordPress Scanner ${VERSION} for Windows/Laragon
+        # Klioso ${VERSION} for Windows/Laragon
         
         ## Quick Start
         1. Extract this archive to your web directory
@@ -201,7 +201,7 @@ jobs:
         EOF
         
         cat > shared-hosting/README-SHARED-HOSTING.md << EOF
-        # WordPress Scanner ${VERSION} for Shared Hosting
+        # Klioso ${VERSION} for Shared Hosting
         
         ## Installation
         1. Upload all files to your hosting account
@@ -274,7 +274,7 @@ jobs:
         prerelease: false
         generate_release_notes: false
         body: |
-          # 🚀 WordPress Scanner ${{ github.ref_name }} - Bulk Operations & Enhanced UI
+          # 🚀 Klioso ${{ github.ref_name }} - Bulk Operations & Enhanced UI
           
           ## 🎉 What's New in This Release
           
@@ -292,7 +292,7 @@ jobs:
           - **Multi-Select UI**: Checkbox selection with keyboard shortcuts support
           - **Visual Feedback**: Progress indicators and real-time operation status
           
-          ### 🔍 WordPress Scanner Improvements
+          ### 🔍 Klioso Scanner Improvements
           - **Better Error Handling**: Graceful handling of unreachable or misconfigured sites
           - **SSL Support**: Automatic detection and handling of HTTPS/HTTP sites  
           - **Enhanced Detection**: Improved plugin and theme identification algorithms
@@ -364,7 +364,7 @@ jobs:
           
           ---
           
-          **WordPress Scanner ${{ github.ref_name }}** - Professional WordPress management at scale! 🚀
+          **Klioso ${{ github.ref_name }}** - Professional WordPress management at scale! 🚀
           
           *This release has been extensively tested and is ready for production use.*
       env:

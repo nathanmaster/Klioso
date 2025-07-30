@@ -1,4 +1,4 @@
-# WordPress Scanner v0.9.3 - Advanced Analytics & Security
+# Klioso v0.9.3 - Advanced Analytics & Security
 
 **Release Date:** July 29, 2025  
 **Version:** 0.9.3  
@@ -90,4 +90,4 @@ Transform website monitoring with comprehensive analytics and insights:
 
 ---
 
-*This release focuses on transforming WordPress Scanner from a basic monitoring tool into a comprehensive website management platform with advanced analytics, security features, and enhanced user experience.*
+*This release focuses on transforming Klioso from a basic monitoring tool into a comprehensive website management platform with advanced analytics, security features, and enhanced user experience.*

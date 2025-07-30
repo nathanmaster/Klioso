@@ -101,11 +101,4 @@ class WebsiteAnalytics extends Model
         if ($this->security_score >= 50) return 'at_risk';
         return 'vulnerable';
     }
-}space App\Models;
-
-use Illuminate\Database\Eloquent\Model;
-
-class WebsiteAnalytics extends Model
-{
-    //
 }

@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ScanHistory extends Model
 {
+    protected $table = 'scan_histories';
+    
     protected $fillable = [
         'scan_type',
         'target',

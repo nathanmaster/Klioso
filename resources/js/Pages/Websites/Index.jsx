@@ -46,10 +46,10 @@ export default function Index({ auth, websites, groups, pagination, filters, sor
 
     const getStatusColor = (status) => {
         switch (status) {
-            case 'active': return 'bg-green-100 text-green-800';
-            case 'inactive': return 'bg-red-100 text-red-800';
-            case 'maintenance': return 'bg-yellow-100 text-yellow-800';
-            default: return 'bg-gray-100 text-gray-800';
+            case 'active': return 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200';
+            case 'inactive': return 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200';
+            case 'maintenance': return 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200';
+            default: return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200';
         }
     };
 
@@ -58,13 +58,13 @@ export default function Index({ auth, websites, groups, pagination, filters, sor
             user={auth.user}
             header={
                 <div className="flex justify-between items-center">
-                    <h2 className="font-semibold text-xl text-gray-800 leading-tight">
+                    <h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                         Websites
                     </h2>
                     <div className="flex items-center gap-3">
                         {selectedWebsites.length > 0 && (
                             <>
-                                <span className="text-sm text-gray-600">
+                                <span className="text-sm text-gray-600 dark:text-gray-400">
                                     {selectedWebsites.length} selected
                                 </span>
                                 <button
@@ -82,16 +82,16 @@ export default function Index({ auth, websites, groups, pagination, filters, sor
                                 </button>
                             </>
                         )}
-                        <div className="flex items-center border rounded-lg">
+                        <div className="flex items-center border border-gray-300 dark:border-gray-600 rounded-lg">
                             <button
                                 onClick={() => setViewMode('table')}
-                                className={`p-2 ${viewMode === 'table' ? 'bg-gray-100 text-gray-900' : 'text-gray-500'}`}
+                                className={`p-2 ${viewMode === 'table' ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100' : 'text-gray-500 dark:text-gray-400'}`}
                             >
                                 <QueueListIcon className="h-4 w-4" />
                             </button>
                             <button
                                 onClick={() => setViewMode('grid')}
-                                className={`p-2 ${viewMode === 'grid' ? 'bg-gray-100 text-gray-900' : 'text-gray-500'}`}
+                                className={`p-2 ${viewMode === 'grid' ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100' : 'text-gray-500 dark:text-gray-400'}`}
                             >
                                 <Squares2X2Icon className="h-4 w-4" />
                             </button>
@@ -112,35 +112,35 @@ export default function Index({ auth, websites, groups, pagination, filters, sor
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
                     {viewMode === 'table' ? (
-                        <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                        <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                             <div className="overflow-x-auto">
-                                <table className="min-w-full divide-y divide-gray-200">
-                                    <thead className="bg-gray-50">
+                                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                    <thead className="bg-gray-50 dark:bg-gray-700">
                                         <tr>
                                             <th className="px-6 py-3 text-left">
                                                 <input
                                                     type="checkbox"
                                                     checked={selectedWebsites.length === websites.length && websites.length > 0}
                                                     onChange={handleSelectAll}
-                                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded"
                                                 />
                                             </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                                 Website
                                             </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                                 Status
                                             </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                                 Group
                                             </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                                 Client
                                             </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                                 Last Scan
                                             </th>
-                                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                                                 Actions
                                             </th>
                                         </tr>

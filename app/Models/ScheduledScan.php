@@ -20,10 +20,8 @@ class ScheduledScan extends Model
         'is_active',
         'last_run_at',
         'next_run_at',
-        'total_runs',
-        'successful_runs',
-        'failed_runs',
-        'last_error',
+        'success_count',
+        'failure_count',
     ];
 
     protected $casts = [
@@ -32,9 +30,8 @@ class ScheduledScan extends Model
         'scheduled_time' => 'datetime:H:i:s',
         'last_run_at' => 'datetime',
         'next_run_at' => 'datetime',
-        'total_runs' => 'integer',
-        'successful_runs' => 'integer',
-        'failed_runs' => 'integer',
+        'success_count' => 'integer',
+        'failure_count' => 'integer',
     ];
 
     /**

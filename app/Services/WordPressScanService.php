@@ -561,4 +561,19 @@ class WordPressScanService
         // For now, return empty array
         return $vulnerabilities;
     }
+
+    /**
+     * Scan a WordPress website (alias method for bulk operations)
+     */
+    public function scanWordPressSite($website, $scanType = 'all')
+    {
+        $url = $website->url ?? $website->domain_name;
+        
+        // Ensure URL has protocol
+        if (!str_starts_with($url, 'http://') && !str_starts_with($url, 'https://')) {
+            $url = 'https://' . $url;
+        }
+
+        return $this->scanWebsite($url, $scanType);
+    }
 }

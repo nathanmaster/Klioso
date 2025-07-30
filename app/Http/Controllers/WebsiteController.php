@@ -48,6 +48,8 @@ class WebsiteController extends Controller
                 'name' => $website->name,
                 'url' => $website->url,
                 'domain_name' => $website->domain_name,
+                'display_name' => $website->display_name,
+                'display_label' => $website->display_label,
                 'platform' => $website->platform,
                 'status' => $website->status,
                 'notes' => $website->notes,
@@ -196,6 +198,9 @@ class WebsiteController extends Controller
                     'pivot' => [
                         'version' => $plugin->pivot->version,
                         'is_active' => $plugin->pivot->is_active,
+                        'last_updated' => $plugin->pivot->last_updated,
+                        'created_at' => $plugin->pivot->created_at,
+                        'updated_at' => $plugin->pivot->updated_at,
                     ],
                 ]),
             ],
@@ -241,6 +246,9 @@ class WebsiteController extends Controller
                     'pivot' => [
                         'version' => $plugin->pivot->version,
                         'is_active' => $plugin->pivot->is_active,
+                        'last_updated' => $plugin->pivot->last_updated,
+                        'created_at' => $plugin->pivot->created_at,
+                        'updated_at' => $plugin->pivot->updated_at,
                     ],
                 ]),
             ],
@@ -297,6 +305,7 @@ class WebsiteController extends Controller
         $website->plugins()->attach($data['plugin_id'], [
             'version' => $data['version'] ?? null,
             'is_active' => $data['is_active'] ?? true,
+            'last_updated' => now(),
         ]);
 
         return redirect()->back()->with('success', 'Plugin attached successfully.');
@@ -320,6 +329,7 @@ class WebsiteController extends Controller
         $website->plugins()->updateExistingPivot($pluginId, [
             'version' => $data['version'] ?? null,
             'is_active' => $data['is_active'] ?? true,
+            'last_updated' => now(),
         ]);
 
         return redirect()->back()->with('success', 'Plugin updated successfully.');

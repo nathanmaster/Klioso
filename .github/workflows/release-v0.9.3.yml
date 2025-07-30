@@ -134,7 +134,7 @@ jobs:
         # Create Windows-specific files
         cat > windows/install.bat << 'EOF'
         @echo off
-        echo 🪟 WordPress Scanner Windows Installation v0.9.3
+        echo 🪟 Klioso Windows Installation v0.9.3
         
         echo Setting up environment...
         if not exist .env copy .env.example .env
@@ -165,7 +165,7 @@ jobs:
         EOF
         
         cat > windows/README-WINDOWS.md << EOF
-        # WordPress Scanner ${VERSION} for Windows/Laragon
+        # Klioso ${VERSION} for Windows/Laragon
         ## 🚀 Analytics & Security Monitoring Release
         
         ## 🎯 What's New in v0.9.3
@@ -268,7 +268,7 @@ jobs:
         EOF
         
         cat > shared-hosting/README-SHARED-HOSTING.md << EOF
-        # WordPress Scanner ${VERSION} for Shared Hosting
+        # Klioso ${VERSION} for Shared Hosting
         ## 📊 Analytics & Security Monitoring Edition
         
         ## 🎯 v0.9.3 Analytics Features
@@ -374,7 +374,7 @@ jobs:
         prerelease: false
         generate_release_notes: false
         body: |
-          # 🚀 WordPress Scanner ${{ github.ref_name }} - Advanced Analytics & Security Monitoring
+          # 🚀 Klioso ${{ github.ref_name }} - Advanced Analytics & Security Monitoring
           
           ## 🎉 Major New Features in v0.9.3
           
@@ -546,7 +546,7 @@ jobs:
           
           ---
           
-          **WordPress Scanner ${{ github.ref_name }}** - Professional Analytics & Security Monitoring! 📊🛡️
+          **Klioso ${{ github.ref_name }}** - Professional Analytics & Security Monitoring! 📊🛡️
           
           *This release introduces enterprise-grade analytics capabilities while maintaining the simplicity and reliability you expect.*
       env:

@@ -65,6 +65,16 @@ return [
             'transport' => 'resend',
         ],
 
+        'mailpit' => [
+            'transport' => 'smtp',
+            'host' => env('MAILPIT_HOST', '127.0.0.1'),
+            'port' => env('MAILPIT_PORT', 1025),
+            'username' => null,
+            'password' => null,
+            'timeout' => null,
+            'local_domain' => env('MAIL_EHLO_DOMAIN', parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST)),
+        ],
+
         'sendmail' => [
             'transport' => 'sendmail',
             'path' => env('MAIL_SENDMAIL_PATH', '/usr/sbin/sendmail -bs -i'),

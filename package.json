@@ -1,7 +1,7 @@
 {
     "$schema": "https://json.schemastore.org/package.json",
     "name": "@nathanmaster/klioso",
-    "version": "0.9.3",
+    "version": "0.9.9",
     "description": "Multi-Service Provider Management System for WordPress and Web Development with Enhanced Scanner",
     "private": false,
     "type": "module",
@@ -88,6 +88,7 @@
         "vite": "^6.2.4"
     },
     "dependencies": {
+        "@radix-ui/react-dropdown-menu": "^2.1.15",
         "@radix-ui/react-select": "^2.2.5",
         "@radix-ui/react-slot": "^1.2.3",
         "@radix-ui/react-tabs": "^1.1.12",

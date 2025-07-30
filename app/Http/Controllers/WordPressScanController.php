@@ -539,11 +539,27 @@ class WordPressScanController extends Controller
         $websiteIds = $validated['website_ids'];
         $scanConfig = $validated['scan_config'];
         
+        // Set execution time limit for bulk operations
+        set_time_limit(300); // 5 minutes max
+        
         $results = [];
         $successCount = 0;
         $errorCount = 0;
+        $startTime = microtime(true);
+        $maxExecutionTime = 240; // 4 minutes to leave buffer
 
-        foreach ($websiteIds as $websiteId) {
+        foreach ($websiteIds as $index => $websiteId) {
+            // Check if we're approaching time limit
+            $elapsedTime = microtime(true) - $startTime;
+            if ($elapsedTime > $maxExecutionTime) {
+                Log::warning('Bulk scan timeout approaching, stopping early', [
+                    'processed' => $index,
+                    'total' => count($websiteIds),
+                    'elapsed_time' => $elapsedTime
+                ]);
+                break;
+            }
+            
             try {
                 $website = Website::find($websiteId);
                 
@@ -553,20 +569,27 @@ class WordPressScanController extends Controller
                     $url = 'https://' . $url;
                 }
 
-                $scanResult = $this->scanService->scanWordPressSite($url);
+                $scanResult = $this->scanService->scanWordPressSite($website);
 
                 // Save scan history
                 $historyData = [
-                    'website_id' => $websiteId,
-                    'url' => $url,
                     'scan_type' => 'bulk_scan',
-                    'result' => json_encode($scanResult),
+                    'target' => $url,
+                    'website_id' => $websiteId,
+                    'scan_results' => $scanResult,
+                    'scan_summary' => [
+                        'plugins_found' => count($scanResult['plugins'] ?? []),
+                        'themes_found' => count($scanResult['themes'] ?? []),
+                        'vulnerabilities_found' => count($scanResult['vulnerabilities'] ?? []),
+                        'wordpress_version' => $scanResult['wp_version'] ?? null,
+                    ],
                     'plugins_found' => count($scanResult['plugins'] ?? []),
                     'themes_found' => count($scanResult['themes'] ?? []),
                     'vulnerabilities_found' => count($scanResult['vulnerabilities'] ?? []),
-                    'wordpress_version' => $scanResult['wordpress_version'] ?? null,
-                    'scan_duration' => $scanResult['scan_duration'] ?? 0,
+                    'auto_sync_enabled' => false,
+                    'plugins_added_to_db' => 0,
                     'status' => 'completed',
+                    'scan_duration_ms' => ($scanResult['scan_duration'] ?? 0) * 1000,
                 ];
 
                 $this->saveScanHistory($historyData);
@@ -579,7 +602,7 @@ class WordPressScanController extends Controller
 
                 $results[] = [
                     'website_id' => $websiteId,
-                    'website_name' => $website->name,
+                    'website_name' => $website->display_name,
                     'url' => $url,
                     'success' => true,
                     'data' => $scanResult
@@ -590,24 +613,40 @@ class WordPressScanController extends Controller
             } catch (\Exception $e) {
                 Log::error('Bulk scan failed for website', [
                     'website_id' => $websiteId,
-                    'error' => $e->getMessage()
+                    'url' => $url ?? 'unknown',
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
                 ]);
 
-                // Save failed scan history
+                // Save failed scan history with correct structure
                 $historyData = [
-                    'website_id' => $websiteId,
-                    'url' => $url ?? 'unknown',
                     'scan_type' => 'bulk_scan',
-                    'result' => json_encode(['error' => $e->getMessage()]),
+                    'target' => $url ?? 'unknown',
+                    'website_id' => $websiteId,
+                    'scan_results' => ['error' => $e->getMessage()],
+                    'scan_summary' => [
+                        'plugins_found' => 0,
+                        'themes_found' => 0,
+                        'vulnerabilities_found' => 0,
+                        'error' => $e->getMessage(),
+                    ],
+                    'plugins_found' => 0,
+                    'themes_found' => 0,
+                    'vulnerabilities_found' => 0,
+                    'auto_sync_enabled' => false,
+                    'plugins_added_to_db' => 0,
                     'status' => 'failed',
                     'error_message' => $e->getMessage(),
+                    'scan_duration_ms' => 0,
                 ];
 
                 $this->saveScanHistory($historyData);
 
+                $website = Website::find($websiteId);
                 $results[] = [
                     'website_id' => $websiteId,
-                    'website_name' => Website::find($websiteId)->name ?? 'Unknown',
+                    'website_name' => $website->display_name ?? 'Unknown Website',
+                    'url' => $url ?? 'unknown',
                     'success' => false,
                     'error' => $e->getMessage()
                 ];

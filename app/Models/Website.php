@@ -143,4 +143,22 @@ class Website extends Model
     {
         return $this->scheduledScans()->active()->exists();
     }
+
+    /**
+     * Get display name for the website
+     */
+    public function getDisplayNameAttribute(): string
+    {
+        return $this->name ?: $this->domain_name ?: $this->url ?: 'Unknown Website';
+    }
+
+    /**
+     * Get display label for dropdowns
+     */
+    public function getDisplayLabelAttribute(): string
+    {
+        $name = $this->name ?: $this->domain_name;
+        $client = $this->client ? " ({$this->client->name})" : '';
+        return $name . $client;
+    }
 }
