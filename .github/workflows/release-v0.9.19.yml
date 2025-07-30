@@ -68,9 +68,9 @@ jobs:
         # Create Windows-specific files
         cat > windows/install.bat << 'EOF'
         @echo off
-        echo 🌙 Klioso Windows Installation v0.9.19 - Dark Mode Edition
+        echo 🌙 Klioso Windows Installation v0.9.19 - Management Interface Enhancement
         
-        echo Setting up environment...
+        echo Setting up Klioso multi-service management system...
         if not exist .env copy .env.example .env
         
         echo Generating application key...
@@ -79,25 +79,38 @@ jobs:
         echo Running database migrations...
         php artisan migrate --force
         
-        echo Building theme assets...
-        echo Theme toggle available in navigation bar
-        echo Support for Light/Dark/System themes
+        echo Building enhanced management interface...
+        echo Dark mode theme toggle now available in navigation
+        echo Professional interface for managing clients, hosting providers, and websites
         
-        echo ✅ Installation complete!
-        echo 🌙 Dark mode now available - click theme toggle in navbar
-        echo 🎨 Enhanced UI with comprehensive dark mode support
-        echo 🐛 Critical PHP model corruption fixed
+        echo ✅ Klioso installation complete!
+        echo 🌙 Dark mode available - click theme toggle in navbar
+        echo 🎨 Enhanced management interface with comprehensive dark mode
+        echo 📊 Client management, hosting providers, and website analytics ready
+        echo 🐛 Critical PHP model infrastructure fixes applied
         echo Configure your web server to point to the 'public' directory.
         pause
         EOF
         
         cat > windows/README-WINDOWS.md << EOF
         # Klioso ${VERSION} for Windows/Laragon
-        ## 🌙 Dark Mode & UI Enhancement Edition
+        ## 🌙 Dark Mode & Management Interface Enhancement
         
         ## 🎉 What's New in v0.9.19
-        - **🌙 Complete Dark Mode**: Professional theme toggle with Light/Dark/System options
-        - **🎨 Enhanced UI**: All components support dark mode with proper contrast
+        - **🌙 Professional Dark Mode**: Complete theme system with Light/Dark/System options
+        - **🎨 Enhanced Management UI**: All management modules support dark mode
+        - **📊 Better Data Visibility**: Improved contrast for client/website management
+        - **🔧 Infrastructure Fixes**: Resolved PHP model corruption and namespace issues
+        
+        ## 🚀 Management Features
+        - **Client Management**: Organize and track client relationships
+        - **Hosting Provider Config**: Manage multiple hosting providers and credentials  
+        - **Website Management**: Monitor and manage WordPress installations
+        - **Group Organization**: Categorize and organize resources
+        - **Plugin Management**: Track and manage WordPress plugins
+        - **Template System**: Manage design templates and customizations
+        - **WP Scanner**: Security scanning and vulnerability detection
+        - **Scheduled Scans**: Automated monitoring and reporting
         - **🔧 PHP Fix**: Resolved critical WebsiteAnalytics model corruption
         - **⚡ Performance**: Optimized theme switching with smooth transitions
         - **♿ Accessibility**: WCAG AA compliant contrast ratios
