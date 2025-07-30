@@ -54,11 +54,11 @@ export default function ResponsiveTableLayout({
         <AuthenticatedLayout>
             <div className="py-8">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                    <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                    <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                         {/* Header */}
-                        <div className="p-6 border-b border-gray-200">
+                        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
                             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                                <h1 className="text-2xl font-bold text-gray-800">{title}</h1>
+                                <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">{title}</h1>
                                 {createRoute && (
                                     <Button as={Link} href={createRoute} className="w-full sm:w-auto">
                                         + {createButtonText}
@@ -75,7 +75,7 @@ export default function ResponsiveTableLayout({
                                             placeholder={searchPlaceholder}
                                             value={search}
                                             onChange={(e) => setSearch(e.target.value)}
-                                            className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
+                                            className="flex-1 rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                                         />
                                         <div className="flex gap-2">
                                             <Button type="submit" variant="outline" className="flex-1 sm:flex-none">

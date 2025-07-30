@@ -145,25 +145,25 @@ export default function Index({ auth, websites, groups, pagination, filters, sor
                                             </th>
                                         </tr>
                                     </thead>
-                                    <tbody className="bg-white divide-y divide-gray-200">
+                                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                                         {websites.map((website) => (
-                                            <tr key={website.id} className="hover:bg-gray-50">
+                                            <tr key={website.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                                                 <td className="px-6 py-4">
                                                     <input
                                                         type="checkbox"
                                                         checked={selectedWebsites.includes(website.id.toString())}
                                                         onChange={() => handleSelectWebsite(website.id)}
-                                                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded"
                                                     />
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <div>
-                                                        <div className="text-sm font-medium text-gray-900">
+                                                        <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
                                                             {website.name || website.domain_name}
                                                         </div>
-                                                        <div className="text-sm text-gray-500">{website.url}</div>
+                                                        <div className="text-sm text-gray-500 dark:text-gray-400">{website.url}</div>
                                                         {website.wordpress_version && (
-                                                            <div className="text-xs text-blue-600">WordPress {website.wordpress_version}</div>
+                                                            <div className="text-xs text-blue-600 dark:text-blue-400">WordPress {website.wordpress_version}</div>
                                                         )}
                                                     </div>
                                                 </td>
@@ -181,20 +181,20 @@ export default function Index({ auth, websites, groups, pagination, filters, sor
                                                             >
                                                                 {website.group.icon === 'globe' ? '🌍' : '📁'}
                                                             </div>
-                                                            <span className="text-sm text-gray-900">{website.group.name}</span>
+                                                            <span className="text-sm text-gray-900 dark:text-gray-100">{website.group.name}</span>
                                                         </div>
                                                     ) : (
-                                                        <span className="text-sm text-gray-500">No group</span>
+                                                        <span className="text-sm text-gray-500 dark:text-gray-400">No group</span>
                                                     )}
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     {website.client ? (
-                                                        <span className="text-sm text-gray-900">{website.client.name}</span>
+                                                        <span className="text-sm text-gray-900 dark:text-gray-100">{website.client.name}</span>
                                                     ) : (
-                                                        <span className="text-sm text-gray-500">No client</span>
+                                                        <span className="text-sm text-gray-500 dark:text-gray-400">No client</span>
                                                     )}
                                                 </td>
-                                                <td className="px-6 py-4 text-sm text-gray-500">
+                                                <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
                                                     {website.last_scan ? new Date(website.last_scan).toLocaleDateString() : 'Never'}
                                                 </td>
                                                 <td className="px-6 py-4 text-right text-sm font-medium">
@@ -228,31 +228,31 @@ export default function Index({ auth, websites, groups, pagination, filters, sor
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {websites.map((website) => (
-                                <div key={website.id} className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                                <div key={website.id} className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                                     <div className="p-6">
                                         <div className="flex items-start justify-between mb-4">
                                             <input
                                                 type="checkbox"
                                                 checked={selectedWebsites.includes(website.id.toString())}
                                                 onChange={() => handleSelectWebsite(website.id)}
-                                                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded"
                                             />
                                             <div className="flex gap-1">
                                                 <Link
                                                     href={route('websites.show', website.id)}
-                                                    className="p-1 text-gray-400 hover:text-blue-600"
+                                                    className="p-1 text-gray-400 dark:text-gray-500 hover:text-blue-600 dark:hover:text-blue-400"
                                                 >
                                                     <EyeIcon className="h-4 w-4" />
                                                 </Link>
                                                 <Link
                                                     href={route('websites.edit', website.id)}
-                                                    className="p-1 text-gray-400 hover:text-gray-600"
+                                                    className="p-1 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
                                                 >
                                                     <PencilIcon className="h-4 w-4" />
                                                 </Link>
                                                 <button
                                                     onClick={() => handleDelete(website)}
-                                                    className="p-1 text-gray-400 hover:text-red-600"
+                                                    className="p-1 text-gray-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400"
                                                 >
                                                     <TrashIcon className="h-4 w-4" />
                                                 </button>
@@ -260,15 +260,15 @@ export default function Index({ auth, websites, groups, pagination, filters, sor
                                         </div>
                                         
                                         <div className="mb-4">
-                                            <h3 className="text-lg font-medium text-gray-900">
+                                            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
                                                 {website.name || website.domain_name}
                                             </h3>
-                                            <p className="text-sm text-gray-500">{website.url}</p>
+                                            <p className="text-sm text-gray-500 dark:text-gray-400">{website.url}</p>
                                         </div>
 
                                         <div className="space-y-2">
                                             <div className="flex justify-between items-center">
-                                                <span className="text-sm text-gray-600">Status</span>
+                                                <span className="text-sm text-gray-600 dark:text-gray-400">Status</span>
                                                 <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(website.status)}`}>
                                                     {website.status}
                                                 </span>
@@ -276,34 +276,34 @@ export default function Index({ auth, websites, groups, pagination, filters, sor
                                             
                                             {website.group && (
                                                 <div className="flex justify-between items-center">
-                                                    <span className="text-sm text-gray-600">Group</span>
+                                                    <span className="text-sm text-gray-600 dark:text-gray-400">Group</span>
                                                     <div className="flex items-center gap-1">
                                                         <div
                                                             className="w-3 h-3 rounded"
                                                             style={{ backgroundColor: website.group.color }}
                                                         />
-                                                        <span className="text-sm text-gray-900">{website.group.name}</span>
+                                                        <span className="text-sm text-gray-900 dark:text-gray-100">{website.group.name}</span>
                                                     </div>
                                                 </div>
                                             )}
                                             
                                             {website.client && (
                                                 <div className="flex justify-between items-center">
-                                                    <span className="text-sm text-gray-600">Client</span>
-                                                    <span className="text-sm text-gray-900">{website.client.name}</span>
+                                                    <span className="text-sm text-gray-600 dark:text-gray-400">Client</span>
+                                                    <span className="text-sm text-gray-900 dark:text-gray-100">{website.client.name}</span>
                                                 </div>
                                             )}
                                             
                                             {website.wordpress_version && (
                                                 <div className="flex justify-between items-center">
-                                                    <span className="text-sm text-gray-600">WordPress</span>
-                                                    <span className="text-sm text-gray-900">{website.wordpress_version}</span>
+                                                    <span className="text-sm text-gray-600 dark:text-gray-400">WordPress</span>
+                                                    <span className="text-sm text-gray-900 dark:text-gray-100">{website.wordpress_version}</span>
                                                 </div>
                                             )}
                                             
                                             <div className="flex justify-between items-center">
-                                                <span className="text-sm text-gray-600">Last Scan</span>
-                                                <span className="text-sm text-gray-900">
+                                                <span className="text-sm text-gray-600 dark:text-gray-400">Last Scan</span>
+                                                <span className="text-sm text-gray-900 dark:text-gray-100">
                                                     {website.last_scan ? new Date(website.last_scan).toLocaleDateString() : 'Never'}
                                                 </span>
                                             </div>
@@ -315,11 +315,11 @@ export default function Index({ auth, websites, groups, pagination, filters, sor
                     )}
 
                     {websites.length === 0 && (
-                        <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                        <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                             <div className="p-6 text-center">
-                                <div className="mx-auto h-12 w-12 text-gray-400">🌐</div>
-                                <h3 className="mt-2 text-sm font-medium text-gray-900">No websites</h3>
-                                <p className="mt-1 text-sm text-gray-500">
+                                <div className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500">🌐</div>
+                                <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">No websites</h3>
+                                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                                     Get started by adding your first website.
                                 </p>
                                 <div className="mt-6">
