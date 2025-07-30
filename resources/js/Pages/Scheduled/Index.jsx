@@ -44,10 +44,10 @@ export default function Index({ auth, scheduledScans, websites }) {
     };
 
     const getStatusColor = (scan) => {
-        if (!scan.is_active) return 'bg-gray-100 text-gray-600';
-        if (scan.failed_runs > 0 && scan.success_rate < 80) return 'bg-red-100 text-red-800';
-        if (scan.total_runs === 0) return 'bg-blue-100 text-blue-800';
-        return 'bg-green-100 text-green-800';
+        if (!scan.is_active) return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300';
+        if (scan.failed_runs > 0 && scan.success_rate < 80) return 'bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200';
+        if (scan.total_runs === 0) return 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200';
+        return 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200';
     };
 
     const getStatusText = (scan) => {
@@ -80,11 +80,11 @@ export default function Index({ auth, scheduledScans, websites }) {
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
                     {scheduledScans.length === 0 ? (
-                        <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                        <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                             <div className="p-6 text-center">
-                                <CalendarIcon className="mx-auto h-12 w-12 text-gray-400" />
-                                <h3 className="mt-2 text-sm font-medium text-gray-900">No scheduled scans</h3>
-                                <p className="mt-1 text-sm text-gray-500">
+                                <CalendarIcon className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" />
+                                <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">No scheduled scans</h3>
+                                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                                     Create automated scans to monitor your websites regularly.
                                 </p>
                                 <div className="mt-6">
@@ -101,18 +101,18 @@ export default function Index({ auth, scheduledScans, websites }) {
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {scheduledScans.map((scan) => (
-                                <div key={scan.id} className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                                <div key={scan.id} className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                                     <div className="p-6">
                                         <div className="flex items-start justify-between mb-4">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                                <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
                                                     <span className="text-lg">{getFrequencyIcon(scan.frequency)}</span>
                                                 </div>
                                                 <div className="flex-1">
-                                                    <h3 className="text-lg font-medium text-gray-900 leading-tight">
+                                                    <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 leading-tight">
                                                         {scan.name}
                                                     </h3>
-                                                    <p className="text-sm text-gray-500">
+                                                    <p className="text-sm text-gray-500 dark:text-gray-400">
                                                         {scan.scan_type === 'website' && scan.website 
                                                             ? `${scan.website.name}`
                                                             : scan.target

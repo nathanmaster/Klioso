@@ -429,14 +429,14 @@ export default function Scanner({ websites = [] }) {
 
             <div className="py-12">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                    <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                        <div className="p-6 bg-white border-b border-gray-200">
+                    <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                        <div className="p-6 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
                             <div className="flex justify-between items-center mb-6">
-                                <h2 className="text-xl font-semibold text-gray-900">WordPress Scanner</h2>
+                                <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">WordPress Scanner</h2>
                                 <div className="flex gap-3">
                                     <Link
                                         href={route('scanner.history')}
-                                        className="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition-colors text-sm font-medium"
+                                        className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors text-sm font-medium"
                                     >
                                         View History
                                     </Link>
@@ -444,14 +444,14 @@ export default function Scanner({ websites = [] }) {
                             </div>
 
                             {/* Tab Navigation */}
-                            <div className="border-b border-gray-200 mb-6">
+                            <div className="border-b border-gray-200 dark:border-gray-600 mb-6">
                                 <nav className="-mb-px flex space-x-8">
                                     <button
                                         onClick={() => setActiveTab('url')}
                                         className={`py-2 px-1 border-b-2 font-medium text-sm ${
                                             activeTab === 'url'
-                                                ? 'border-indigo-500 text-indigo-600'
-                                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                                ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
+                                                : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
                                         }`}
                                     >
                                         URL Scan
@@ -460,8 +460,8 @@ export default function Scanner({ websites = [] }) {
                                         onClick={() => setActiveTab('website')}
                                         className={`py-2 px-1 border-b-2 font-medium text-sm ${
                                             activeTab === 'website'
-                                                ? 'border-indigo-500 text-indigo-600'
-                                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                                ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
+                                                : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
                                         }`}
                                     >
                                         Website Scan
@@ -473,10 +473,10 @@ export default function Scanner({ websites = [] }) {
                             {activeTab === 'url' && (
                                 <div className="space-y-4">
                                     <div>
-                                        <h3 className="text-lg font-medium text-gray-900 mb-4">
+                                        <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">
                                             Scan WordPress Website
                                         </h3>
-                                        <p className="text-sm text-gray-600 mb-4">
+                                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                                             Enter a website URL to scan for WordPress installation, plugins, themes, and security vulnerabilities.
                                         </p>
                                     </div>
@@ -801,20 +801,20 @@ export default function Scanner({ websites = [] }) {
                                                     );
                                                     
                                                     return (
-                                                    <div key={pluginIndex} className="bg-white border rounded-lg p-4">
+                                                    <div key={pluginIndex} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
                                                         <div className="flex justify-between items-start">
                                                             <div className="flex items-start gap-3 flex-1">
                                                                 <input
                                                                     type="checkbox"
                                                                     id={`plugin-${pluginIndex}`}
-                                                                    className="mt-1 h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                                                                    className="mt-1 h-4 w-4 text-indigo-600 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 rounded focus:ring-indigo-500"
                                                                     checked={selectedPlugins.has(pluginIndex)}
                                                                     onChange={(e) => handlePluginSelect(pluginIndex, e.target.checked)}
                                                                 />
                                                                 <div className="flex-1">
-                                                                    <h5 className="font-medium">{plugin.name}</h5>
+                                                                    <h5 className="font-medium text-gray-900 dark:text-gray-100">{plugin.name}</h5>
                                                                     {plugin.description && (
-                                                                        <p className="text-sm text-gray-600 mt-1">
+                                                                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                                                                             {plugin.description}
                                                                         </p>
                                                                     )}
@@ -885,11 +885,11 @@ export default function Scanner({ websites = [] }) {
                                             </h4>
                                             <div className="space-y-3">
                                                 {scanResults.themes.map((theme, index) => (
-                                                    <div key={index} className="bg-white border rounded-lg p-4">
+                                                    <div key={index} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
                                                         <div className="flex justify-between items-start">
                                                             <div>
-                                                                <h5 className="font-medium">{theme.name}</h5>
-                                                                <div className="flex gap-4 mt-2 text-sm">
+                                                                <h5 className="font-medium text-gray-900 dark:text-gray-100">{theme.name}</h5>
+                                                                <div className="flex gap-4 mt-2 text-sm text-gray-600 dark:text-gray-400">
                                                                     {theme.slug && (
                                                                         <span>
                                                                             <strong>Slug:</strong> {theme.slug}
@@ -897,8 +897,8 @@ export default function Scanner({ websites = [] }) {
                                                                     )}
                                                                     <span className={`px-2 py-1 rounded text-xs ${
                                                                         theme.status === 'active' 
-                                                                            ? 'bg-green-100 text-green-800' 
-                                                                            : 'bg-gray-100 text-gray-800'
+                                                                            ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200' 
+                                                                            : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'
                                                                     }`}>
                                                                         {theme.status}
                                                                     </span>
