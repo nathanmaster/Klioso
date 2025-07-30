@@ -1,9 +1,9 @@
-name: "Release v0.9.9 - Dark Mode & UI Enhancement"
+name: "Release v0.9.19 - Dark Mode & UI Enhancement"
 
 on:
   push:
     tags:
-      - 'v0.9.9'
+      - 'v0.9.19'
 
 jobs:
   build-and-release:
@@ -68,7 +68,7 @@ jobs:
         # Create Windows-specific files
         cat > windows/install.bat << 'EOF'
         @echo off
-        echo 🌙 Klioso Windows Installation v0.9.9 - Dark Mode Edition
+        echo 🌙 Klioso Windows Installation v0.9.19 - Dark Mode Edition
         
         echo Setting up environment...
         if not exist .env copy .env.example .env
@@ -95,7 +95,7 @@ jobs:
         # Klioso ${VERSION} for Windows/Laragon
         ## 🌙 Dark Mode & UI Enhancement Edition
         
-        ## 🎉 What's New in v0.9.9
+        ## 🎉 What's New in v0.9.19
         - **🌙 Complete Dark Mode**: Professional theme toggle with Light/Dark/System options
         - **🎨 Enhanced UI**: All components support dark mode with proper contrast
         - **🔧 PHP Fix**: Resolved critical WebsiteAnalytics model corruption
@@ -156,7 +156,7 @@ jobs:
         # Klioso ${VERSION} for Shared Hosting
         ## 🌙 Dark Mode & Enhanced UI Edition
         
-        ## 🎨 Major UI Enhancements in v0.9.9
+        ## 🎨 Major UI Enhancements in v0.9.19
         - **Dark Mode Support**: Complete dark theme implementation
         - **Theme Toggle**: Professional Light/Dark/System switcher
         - **Enhanced Components**: All UI elements support dark mode

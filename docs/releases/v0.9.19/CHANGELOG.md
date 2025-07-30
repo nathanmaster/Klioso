@@ -1,7 +1,7 @@
-# Klioso v0.9.9 - Dark Mode & UI Enhancement Release
+# Klioso v0.9.19 - Dark Mode & UI Enhancement Release
 
 Release Date: July 30, 2025  
-Version: v0.9.9  
+Version: v0.9.19  
 Type: Feature Enhancement Release  
 Priority: **Major** - Dark mode implementation and UI improvements
 
