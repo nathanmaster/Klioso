@@ -26,8 +26,20 @@ export default function ScheduleModal({ isOpen, onClose, websites }) {
         e.preventDefault();
         setLoading(true);
 
+        // Generate default name if not provided
+        let finalName = formData.name;
+        if (!finalName.trim()) {
+            if (formData.scan_type === 'website' && formData.website_id) {
+                const selectedWebsite = websites.find(w => w.id == formData.website_id);
+                finalName = selectedWebsite ? `${selectedWebsite.domain_name} - ${formData.frequency.charAt(0).toUpperCase() + formData.frequency.slice(1)} Scan` : `Website Scan - ${formData.frequency}`;
+            } else {
+                finalName = `${formData.target || 'Manual'} - ${formData.frequency.charAt(0).toUpperCase() + formData.frequency.slice(1)} Scan`;
+            }
+        }
+
         const submitData = {
             ...formData,
+            name: finalName,
             scan_config: typeof formData.scan_config === 'string' 
                 ? formData.scan_config 
                 : JSON.stringify(formData.scan_config)
@@ -90,17 +102,17 @@ export default function ScheduleModal({ isOpen, onClose, websites }) {
     const scanConfig = getScanConfig();
 
     return (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-            <div className="relative top-20 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white">
+        <div className="fixed inset-0 bg-gray-600 dark:bg-gray-900 bg-opacity-50 dark:bg-opacity-50 overflow-y-auto h-full w-full z-50">
+            <div className="relative top-20 mx-auto p-5 border border-gray-300 dark:border-gray-600 w-full max-w-2xl shadow-lg rounded-md bg-white dark:bg-gray-800">
                 <div className="mt-3">
                     <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-medium text-gray-900 flex items-center gap-2">
+                        <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 flex items-center gap-2">
                             <CalendarIcon className="h-5 w-5" />
                             Schedule Automated Scan
                         </h3>
                         <button
                             onClick={onClose}
-                            className="text-gray-400 hover:text-gray-600"
+                            className="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
                         >
                             ✕
                         </button>
@@ -108,31 +120,30 @@ export default function ScheduleModal({ isOpen, onClose, websites }) {
 
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Schedule Name *
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                Schedule Name <span className="text-gray-400 text-xs">(optional - auto-generated if empty)</span>
                             </label>
                             <input
                                 type="text"
                                 value={formData.name}
                                 onChange={(e) => setFormData({...formData, name: e.target.value})}
-                                className={`w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
-                                    errors.name ? 'border-red-300' : ''
+                                className={`w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
+                                    errors.name ? 'border-red-300 dark:border-red-600' : ''
                                 }`}
                                 placeholder="e.g., Weekly Website Security Scan"
-                                required
                             />
-                            {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
+                            {errors.name && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.name}</p>}
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                     Scan Type *
                                 </label>
                                 <select
                                     value={formData.scan_type}
                                     onChange={(e) => setFormData({...formData, scan_type: e.target.value})}
-                                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                    className="w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                 >
                                     <option value="website">Specific Website</option>
                                     <option value="url">Custom URL</option>
@@ -141,55 +152,55 @@ export default function ScheduleModal({ isOpen, onClose, websites }) {
 
                             {formData.scan_type === 'website' ? (
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                         Website *
                                     </label>
                                     <select
                                         value={formData.website_id}
                                         onChange={(e) => setFormData({...formData, website_id: e.target.value})}
-                                        className={`w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
-                                            errors.website_id ? 'border-red-300' : ''
+                                        className={`w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
+                                            errors.website_id ? 'border-red-300 dark:border-red-500' : ''
                                         }`}
                                         required
                                     >
                                         <option value="">Select a website</option>
                                         {websites.map((website) => (
                                             <option key={website.id} value={website.id}>
-                                                {website.name} ({website.url})
+                                                {website.domain_name}
                                             </option>
                                         ))}
                                     </select>
-                                    {errors.website_id && <p className="mt-1 text-sm text-red-600">{errors.website_id}</p>}
+                                    {errors.website_id && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.website_id}</p>}
                                 </div>
                             ) : (
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                         Target URL *
                                     </label>
                                     <input
                                         type="url"
                                         value={formData.target}
                                         onChange={(e) => setFormData({...formData, target: e.target.value})}
-                                        className={`w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
-                                            errors.target ? 'border-red-300' : ''
+                                        className={`w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:border-blue-500 focus:ring-blue-500 ${
+                                            errors.target ? 'border-red-300 dark:border-red-500' : ''
                                         }`}
                                         placeholder="https://example.com"
                                         required
                                     />
-                                    {errors.target && <p className="mt-1 text-sm text-red-600">{errors.target}</p>}
+                                    {errors.target && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.target}</p>}
                                 </div>
                             )}
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                     Frequency *
                                 </label>
                                 <select
                                     value={formData.frequency}
                                     onChange={(e) => setFormData({...formData, frequency: e.target.value})}
-                                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                    className="w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                 >
                                     <option value="daily">Daily</option>
                                     <option value="weekly">Weekly</option>
@@ -198,58 +209,58 @@ export default function ScheduleModal({ isOpen, onClose, websites }) {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                     Scheduled Time *
                                 </label>
                                 <input
                                     type="time"
                                     value={formData.scheduled_time}
                                     onChange={(e) => setFormData({...formData, scheduled_time: e.target.value})}
-                                    className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                    className="w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                 />
                             </div>
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                 Scan Configuration
                             </label>
-                            <div className="space-y-2 bg-gray-50 p-3 rounded-md">
+                            <div className="space-y-2 bg-gray-50 dark:bg-gray-700 p-3 rounded-md">
                                 <label className="flex items-center">
                                     <input
                                         type="checkbox"
                                         checked={scanConfig.check_plugins}
                                         onChange={(e) => handleScanConfigChange('check_plugins', e.target.checked)}
-                                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-600 rounded"
                                     />
-                                    <span className="ml-2 text-sm text-gray-700">Check Plugins</span>
+                                    <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Check Plugins</span>
                                 </label>
                                 <label className="flex items-center">
                                     <input
                                         type="checkbox"
                                         checked={scanConfig.check_themes}
                                         onChange={(e) => handleScanConfigChange('check_themes', e.target.checked)}
-                                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-600 rounded"
                                     />
-                                    <span className="ml-2 text-sm text-gray-700">Check Themes</span>
+                                    <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Check Themes</span>
                                 </label>
                                 <label className="flex items-center">
                                     <input
                                         type="checkbox"
                                         checked={scanConfig.check_vulnerabilities}
                                         onChange={(e) => handleScanConfigChange('check_vulnerabilities', e.target.checked)}
-                                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-600 rounded"
                                     />
-                                    <span className="ml-2 text-sm text-gray-700">Check Vulnerabilities</span>
+                                    <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Check Vulnerabilities</span>
                                 </label>
                                 <label className="flex items-center">
                                     <input
                                         type="checkbox"
                                         checked={scanConfig.check_updates}
                                         onChange={(e) => handleScanConfigChange('check_updates', e.target.checked)}
-                                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-600 rounded"
                                     />
-                                    <span className="ml-2 text-sm text-gray-700">Check for Updates</span>
+                                    <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Check for Updates</span>
                                 </label>
                             </div>
                         </div>
@@ -260,17 +271,17 @@ export default function ScheduleModal({ isOpen, onClose, websites }) {
                                     type="checkbox"
                                     checked={formData.is_active}
                                     onChange={(e) => setFormData({...formData, is_active: e.target.checked})}
-                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-600 rounded"
                                 />
-                                <span className="ml-2 text-sm text-gray-700">Active (schedule will run automatically)</span>
+                                <span className="ml-2 text-sm text-gray-700 dark:text-gray-300">Active (schedule will run automatically)</span>
                             </label>
                         </div>
 
-                        <div className="flex justify-end gap-2 pt-4 border-t">
+                        <div className="flex justify-end gap-2 pt-4 border-t border-gray-200 dark:border-gray-600">
                             <button
                                 type="button"
                                 onClick={onClose}
-                                className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+                                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600"
                                 disabled={loading}
                             >
                                 Cancel

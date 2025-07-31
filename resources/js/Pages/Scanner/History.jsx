@@ -2,9 +2,62 @@ import { useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import Button from '@/Components/Button';
+import ScanDetailsModal from '@/Components/ScanDetailsModal';
 
 export default function ScanHistory({ scanHistory, filters }) {
     const [localFilters, setLocalFilters] = useState(filters);
+    const [selectedScan, setSelectedScan] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const handleViewDetails = (scan) => {
+        setSelectedScan(scan);
+        setIsModalOpen(true);
+    };
+
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+        setSelectedScan(null);
+    };
+
+    const handleRescan = (scan) => {
+        if (confirm(`Re-scan ${scan.target}?`)) {
+            // Determine the appropriate route based on scan type
+            if (scan.scan_type === 'website' && scan.website) {
+                // For website scans, use the website scan route
+                router.post(route('scanner.website', scan.website.id), {}, {
+                    onSuccess: () => {
+                        router.visit(route('scanner.index'), {
+                            onSuccess: () => {
+                                // Optional: show success message
+                            }
+                        });
+                    },
+                    onError: (errors) => {
+                        alert('Failed to start re-scan: ' + Object.values(errors)[0]);
+                    }
+                });
+            } else {
+                // For URL scans, use the general scan route
+                router.post(route('scanner.scan'), {
+                    url: scan.target,
+                    check_plugins: true,
+                    check_themes: true,
+                    check_vulnerabilities: true
+                }, {
+                    onSuccess: () => {
+                        router.visit(route('scanner.index'), {
+                            onSuccess: () => {
+                                // Optional: show success message
+                            }
+                        });
+                    },
+                    onError: (errors) => {
+                        alert('Failed to start re-scan: ' + Object.values(errors)[0]);
+                    }
+                });
+            }
+        }
+    };
 
     const handleFilterChange = (key, value) => {
         const newFilters = { ...localFilters, [key]: value };
@@ -46,15 +99,30 @@ export default function ScanHistory({ scanHistory, filters }) {
         );
     };
 
+    const getTriggerBadge = (trigger) => {
+        const badges = {
+            manual: 'bg-gray-100 text-gray-800',
+            scheduled: 'bg-indigo-100 text-indigo-800',
+            api: 'bg-green-100 text-green-800'
+        };
+        
+        return (
+            <span className={`px-2 py-1 rounded-full text-xs font-medium ${badges[trigger] || 'bg-gray-100 text-gray-800'}`}>
+                {trigger === 'manual' ? 'Manual' : trigger === 'scheduled' ? 'Scheduled' : trigger === 'api' ? 'API' : trigger}
+            </span>
+        );
+    };
+
     const getTypeBadge = (type) => {
         const badges = {
             url: 'bg-blue-100 text-blue-800',
-            website: 'bg-purple-100 text-purple-800'
+            website: 'bg-purple-100 text-purple-800',
+            bulk_scan: 'bg-orange-100 text-orange-800'
         };
         
         return (
             <span className={`px-2 py-1 rounded-full text-xs font-medium ${badges[type] || 'bg-gray-100 text-gray-800'}`}>
-                {type.toUpperCase()}
+                {type === 'bulk_scan' ? 'BULK' : type.toUpperCase()}
             </span>
         );
     };
@@ -82,7 +150,7 @@ export default function ScanHistory({ scanHistory, filters }) {
                     <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                         <div className="p-6">
                             {/* Filters */}
-                            <div className="mb-6 grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div className="mb-6 grid grid-cols-1 md:grid-cols-5 gap-4">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
                                         Search Target
@@ -108,6 +176,23 @@ export default function ScanHistory({ scanHistory, filters }) {
                                         <option value="all">All Types</option>
                                         <option value="url">URL Scans</option>
                                         <option value="website">Website Scans</option>
+                                        <option value="bulk_scan">Bulk Scans</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Trigger
+                                    </label>
+                                    <select
+                                        value={localFilters.trigger || 'all'}
+                                        onChange={(e) => handleFilterChange('trigger', e.target.value)}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                                    >
+                                        <option value="all">All Triggers</option>
+                                        <option value="manual">Manual</option>
+                                        <option value="scheduled">Scheduled</option>
+                                        <option value="api">API</option>
                                     </select>
                                 </div>
                                 
@@ -130,11 +215,11 @@ export default function ScanHistory({ scanHistory, filters }) {
                                 <div className="flex items-end">
                                     <Button
                                         onClick={() => {
-                                            setLocalFilters({ type: 'all', status: 'all', search: '' });
+                                            setLocalFilters({ type: 'all', status: 'all', trigger: 'all', search: '' });
                                             router.get(route('scanner.history'));
                                         }}
                                         variant="outline"
-                                        className="w-full"
+                                        size="sm"
                                     >
                                         Clear Filters
                                     </Button>
@@ -156,6 +241,9 @@ export default function ScanHistory({ scanHistory, filters }) {
                                             </th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                 Type
+                                            </th>
+                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Trigger
                                             </th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                 Results
@@ -186,9 +274,17 @@ export default function ScanHistory({ scanHistory, filters }) {
                                                             Website: {scan.website.domain_name}
                                                         </div>
                                                     )}
+                                                    {scan.scheduled_scan && (
+                                                        <div className="text-xs text-indigo-600">
+                                                            From: {scan.scheduled_scan.name}
+                                                        </div>
+                                                    )}
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap">
                                                     {getTypeBadge(scan.scan_type)}
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    {getTriggerBadge(scan.scan_trigger)}
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                                     <div className="flex flex-col space-y-1">
@@ -213,7 +309,7 @@ export default function ScanHistory({ scanHistory, filters }) {
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                    {formatDuration(scan.scan_duration_ms)}
+                                                    {scan.duration || formatDuration(scan.scan_duration_ms)}
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap">
                                                     {getStatusBadge(scan.status)}
@@ -227,17 +323,25 @@ export default function ScanHistory({ scanHistory, filters }) {
                                                     )}
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                    {new Date(scan.created_at).toLocaleDateString()} <br />
-                                                    <span className="text-gray-500">
-                                                        {new Date(scan.created_at).toLocaleTimeString()}
-                                                    </span>
+                                                    <div className="text-sm text-gray-900">
+                                                        {scan.formatted_date || new Date(scan.created_at).toLocaleDateString()}
+                                                    </div>
+                                                    <div className="text-xs text-gray-500">
+                                                        {scan.relative_time || new Date(scan.created_at).toLocaleTimeString()}
+                                                    </div>
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                                    <button className="text-indigo-600 hover:text-indigo-900 mr-3">
+                                                    <button 
+                                                        onClick={() => handleViewDetails(scan)}
+                                                        className="text-indigo-600 hover:text-indigo-900 mr-3 transition-colors"
+                                                    >
                                                         View Details
                                                     </button>
                                                     {scan.status === 'completed' && (
-                                                        <button className="text-green-600 hover:text-green-900">
+                                                        <button 
+                                                            onClick={() => handleRescan(scan)}
+                                                            className="text-green-600 hover:text-green-900 transition-colors"
+                                                        >
                                                             Re-scan
                                                         </button>
                                                     )}
@@ -293,6 +397,13 @@ export default function ScanHistory({ scanHistory, filters }) {
                     </div>
                 </div>
             </div>
+
+            {/* Scan Details Modal */}
+            <ScanDetailsModal 
+                scan={selectedScan}
+                isOpen={isModalOpen}
+                onClose={handleCloseModal}
+            />
         </AuthenticatedLayout>
     );
 }

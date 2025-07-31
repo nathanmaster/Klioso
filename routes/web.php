@@ -50,6 +50,7 @@ Route::middleware('auth')->group(function () {
     // Scheduled Scan management routes
     Route::post('/scheduled-scans/{scheduledScan}/toggle', [ScheduledScanController::class, 'toggleActive'])->name('scheduled-scans.toggle');
     Route::post('/scheduled-scans/{scheduledScan}/run', [ScheduledScanController::class, 'runNow'])->name('scheduled-scans.run');
+    Route::post('/scheduled-scans/{scheduledScan}/reset-progress', [ScheduledScanController::class, 'resetProgress'])->name('scheduled-scans.reset-progress');
     Route::get('/scheduled-scans-due', [ScheduledScanController::class, 'due'])->name('scheduled-scans.due');
 
     // Website-Plugin relationship routes
@@ -71,6 +72,22 @@ Route::middleware('auth')->group(function () {
     Route::post('/websites/bulk-assign-group', [WebsiteController::class, 'bulkAssignGroup'])->name('websites.bulk-assign-group');
     Route::post('/websites/bulk-status-update', [WebsiteController::class, 'bulkStatusUpdate'])->name('websites.bulk-status-update');
     Route::post('/scheduled-scans/bulk-create', [ScheduledScanController::class, 'bulkCreate'])->name('scheduled-scans.bulk-create');
+
+    // Bulk Client Operations
+    Route::post('/clients/bulk-status-update', [ClientController::class, 'bulkStatusUpdate'])->name('clients.bulk-status-update');
+    Route::delete('/clients/bulk-delete', [ClientController::class, 'bulkDelete'])->name('clients.bulk-delete');
+
+    // Bulk Hosting Provider Operations
+    Route::post('/hosting-providers/bulk-status-update', [HostingProviderController::class, 'bulkStatusUpdate'])->name('hosting-providers.bulk-status-update');
+    Route::delete('/hosting-providers/bulk-delete', [HostingProviderController::class, 'bulkDelete'])->name('hosting-providers.bulk-delete');
+
+    // Bulk Plugin Operations
+    Route::post('/plugins/bulk-type-update', [PluginController::class, 'bulkTypeUpdate'])->name('plugins.bulk-type-update');
+    Route::delete('/plugins/bulk-delete', [PluginController::class, 'bulkDelete'])->name('plugins.bulk-delete');
+
+    // Bulk Template Operations
+    Route::post('/templates/bulk-category-update', [TemplateController::class, 'bulkCategoryUpdate'])->name('templates.bulk-category-update');
+    Route::delete('/templates/bulk-delete', [TemplateController::class, 'bulkDelete'])->name('templates.bulk-delete');
 
     // Analytics Dashboard Routes
     Route::get('/analytics', [AnalyticsController::class, 'dashboard'])->name('analytics.dashboard');

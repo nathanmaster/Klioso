@@ -276,8 +276,10 @@ export default function Index({ auth, templates, pagination, sortBy, sortDirecti
 
                     {showBulkModal && (
                         <BulkActionsModal
-                            selectedItems={selectedTemplates}
+                            isOpen={showBulkModal}
                             onClose={() => setShowBulkModal(false)}
+                            selectedItems={selectedTemplates}
+                            items={templates}
                             onClearSelection={clearSelection}
                             resourceType="templates"
                         />

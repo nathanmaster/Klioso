@@ -311,10 +311,12 @@ export default function Index({ auth, hostingProviders, pagination, sortBy, sort
 
                     {showBulkModal && (
                         <BulkActionsModal
-                            selectedItems={selectedProviders}
+                            isOpen={showBulkModal}
                             onClose={() => setShowBulkModal(false)}
+                            selectedItems={selectedProviders}
+                            items={hostingProviders}
                             onClearSelection={clearSelection}
-                            resourceType="hostingProviders"
+                            resourceType="hosting-providers"
                         />
                     )}
                 </div>

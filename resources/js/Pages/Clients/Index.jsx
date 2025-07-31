@@ -253,8 +253,10 @@ export default function Index({ auth, clients, pagination, sortBy, sortDirection
 
                     {showBulkModal && (
                         <BulkActionsModal
-                            selectedItems={selectedClients}
+                            isOpen={showBulkModal}
                             onClose={() => setShowBulkModal(false)}
+                            selectedItems={selectedClients}
+                            items={clients}
                             onClearSelection={clearSelection}
                             resourceType="clients"
                         />

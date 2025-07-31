@@ -5,6 +5,7 @@ import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
 import ThemeToggle from '@/Components/ThemeToggle';
 import { Link, usePage } from '@inertiajs/react';
 import { useState } from 'react';
+import { ChevronDownIcon } from '@heroicons/react/24/outline';
 
 export default function AuthenticatedLayout({ header, children }) {
     const user = usePage().props.auth.user;
@@ -24,9 +25,9 @@ export default function AuthenticatedLayout({ header, children }) {
         { name: 'Groups', route: 'groups.index', match: 'groups.*' },
         { name: 'Plugins', route: 'plugins.index', match: 'plugins.*' },
         { name: 'Templates', route: 'templates.index', match: 'templates.*' },
-        { name: 'WP Scanner', route: 'scanner.index', match: 'scanner.*' },
-        { name: 'Scheduled Scans', route: 'scheduled-scans.index', match: 'scheduled-scans.*' },
     ];
+
+    const scannerMenuActive = route().current('scanner.*') || route().current('scheduled-scans.*');
 
     return (
         <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
@@ -52,6 +53,36 @@ export default function AuthenticatedLayout({ header, children }) {
                                         {link.name}
                                     </NavLink>
                                 ))}
+                                
+                                {/* WordPress Scanner Dropdown */}
+                                <div className="relative inline-flex items-center">
+                                    <Dropdown>
+                                        <Dropdown.Trigger>
+                                            <button
+                                                className={`inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium leading-5 transition duration-150 ease-in-out focus:outline-none ${
+                                                    scannerMenuActive
+                                                        ? 'border-indigo-400 dark:border-indigo-500 text-gray-900 dark:text-gray-100 focus:border-indigo-700 dark:focus:border-indigo-400'
+                                                        : 'border-transparent text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600 hover:text-gray-700 dark:hover:text-gray-300 focus:border-gray-300 dark:focus:border-gray-600 focus:text-gray-700 dark:focus:text-gray-300'
+                                                }`}
+                                            >
+                                                WP Scanner
+                                                <ChevronDownIcon className="ml-1 h-4 w-4" />
+                                            </button>
+                                        </Dropdown.Trigger>
+                                        <Dropdown.Content>
+                                            <Dropdown.Link href={route('scanner.index')}>
+                                                Scanner
+                                            </Dropdown.Link>
+                                            <Dropdown.Link href={route('scanner.history')}>
+                                                Scan History
+                                            </Dropdown.Link>
+                                            <hr className="border-gray-200 dark:border-gray-600" />
+                                            <Dropdown.Link href={route('scheduled-scans.index')}>
+                                                Scheduled Scans
+                                            </Dropdown.Link>
+                                        </Dropdown.Content>
+                                    </Dropdown>
+                                </div>
                             </div>
                         </div>
 
@@ -169,6 +200,33 @@ export default function AuthenticatedLayout({ header, children }) {
                                 {link.name}
                             </ResponsiveNavLink>
                         ))}
+                        
+                        {/* WordPress Scanner Menu */}
+                        <div className="px-4 py-2">
+                            <div className="text-base font-medium text-gray-800 dark:text-gray-200 mb-2">
+                                WP Scanner
+                            </div>
+                            <div className="ml-4 space-y-1">
+                                <ResponsiveNavLink
+                                    href={route('scanner.index')}
+                                    active={route().current('scanner.index')}
+                                >
+                                    Scanner
+                                </ResponsiveNavLink>
+                                <ResponsiveNavLink
+                                    href={route('scanner.history')}
+                                    active={route().current('scanner.history')}
+                                >
+                                    Scan History
+                                </ResponsiveNavLink>
+                                <ResponsiveNavLink
+                                    href={route('scheduled-scans.index')}
+                                    active={route().current('scheduled-scans.*')}
+                                >
+                                    Scheduled Scans
+                                </ResponsiveNavLink>
+                            </div>
+                        </div>
                     </div>
 
                     <div className="border-t border-gray-200 pb-1 pt-4 dark:border-gray-600">

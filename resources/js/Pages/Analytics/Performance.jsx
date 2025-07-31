@@ -67,8 +67,7 @@ export default function PerformanceAnalytics({ auth, performanceData, websites, 
     };
 
     const filteredWebsites = websites.filter(website => {
-        const matchesSearch = website.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                             website.url.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesSearch = website.domain_name.toLowerCase().includes(searchTerm.toLowerCase());
         return matchesSearch;
     });
 
@@ -283,8 +282,8 @@ export default function PerformanceAnalytics({ auth, performanceData, websites, 
                                             <tr key={index} className="border-b hover:bg-gray-50">
                                                 <td className="p-3">
                                                     <div>
-                                                        <div className="font-medium">{website.name}</div>
-                                                        <div className="text-sm text-gray-500">{website.url}</div>
+                                                        <div className="font-medium">{website.domain_name}</div>
+                                                        <div className="text-sm text-gray-500">{website.domain_name}</div>
                                                     </div>
                                                 </td>
                                                 <td className="p-3">

@@ -11,8 +11,10 @@ class ScanHistory extends Model
     
     protected $fillable = [
         'scan_type',
+        'scan_trigger',
         'target',
         'website_id',
+        'scheduled_scan_id',
         'scan_results',
         'scan_summary',
         'plugins_found',
@@ -22,7 +24,9 @@ class ScanHistory extends Model
         'plugins_added_to_db',
         'status',
         'error_message',
-        'scan_duration_ms'
+        'scan_duration_ms',
+        'scan_started_at',
+        'scan_completed_at'
     ];
 
     protected $casts = [
@@ -34,6 +38,8 @@ class ScanHistory extends Model
         'vulnerabilities_found' => 'integer',
         'plugins_added_to_db' => 'integer',
         'scan_duration_ms' => 'integer',
+        'scan_started_at' => 'datetime',
+        'scan_completed_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime'
     ];
@@ -44,6 +50,14 @@ class ScanHistory extends Model
     public function website(): BelongsTo
     {
         return $this->belongsTo(Website::class);
+    }
+
+    /**
+     * Get the scheduled scan that triggered this scan (if any).
+     */
+    public function scheduledScan(): BelongsTo
+    {
+        return $this->belongsTo(ScheduledScan::class);
     }
 
     /**
@@ -98,5 +112,46 @@ class ScanHistory extends Model
     public function getTotalItemsFoundAttribute()
     {
         return $this->plugins_found + $this->themes_found + $this->vulnerabilities_found;
+    }
+
+    /**
+     * Get formatted scan trigger label
+     */
+    public function getScanTriggerLabelAttribute(): string
+    {
+        return match($this->scan_trigger) {
+            'manual' => 'Manual Scan',
+            'scheduled' => 'Scheduled Scan',
+            'api' => 'API Triggered',
+            default => ucfirst($this->scan_trigger ?? 'manual'),
+        };
+    }
+
+    /**
+     * Get scan source information (scheduled scan name or manual)
+     */
+    public function getScanSourceAttribute(): string
+    {
+        if ($this->scheduled_scan_id && $this->scheduledScan) {
+            return $this->scheduledScan->name;
+        }
+        
+        return $this->scan_trigger_label;
+    }
+
+    /**
+     * Get formatted date time
+     */
+    public function getFormattedDateAttribute(): string
+    {
+        return $this->created_at->format('M j, Y \a\t g:i A');
+    }
+
+    /**
+     * Get relative time (e.g., "2 hours ago")
+     */
+    public function getRelativeTimeAttribute(): string
+    {
+        return $this->created_at->diffForHumans();
     }
 }

@@ -62,16 +62,16 @@ export default function WebsiteAnalytics({ auth, website, analytics, timeRange: 
                 <div className="flex justify-between items-center">
                     <div>
                         <h2 className="font-semibold text-xl text-gray-800 leading-tight">
-                            Website Analytics: {website.name}
+                            Website Analytics: {website.domain_name}
                         </h2>
                         <p className="text-sm text-gray-600 mt-1">
                             <a 
-                                href={website.url} 
+                                href={`https://${website.domain_name}`} 
                                 target="_blank" 
                                 rel="noopener noreferrer"
                                 className="text-blue-600 hover:underline inline-flex items-center"
                             >
-                                {website.url}
+                                {website.domain_name}
                                 <ExternalLink className="h-3 w-3 ml-1" />
                             </a>
                         </p>
@@ -104,7 +104,7 @@ export default function WebsiteAnalytics({ auth, website, analytics, timeRange: 
                 </div>
             }
         >
-            <Head title={`Analytics - ${website.name}`} />
+            <Head title={`Analytics - ${website.domain_name}`} />
 
             <div className="py-6">
                 <div className="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
@@ -385,7 +385,7 @@ export default function WebsiteAnalytics({ auth, website, analytics, timeRange: 
                                                 <CardContent className="space-y-3">
                                                     <div>
                                                         <label className="text-sm font-medium text-gray-600">URL</label>
-                                                        <p>{website.url}</p>
+                                                        <p>{website.domain_name}</p>
                                                     </div>
                                                     <div>
                                                         <label className="text-sm font-medium text-gray-600">Client</label>

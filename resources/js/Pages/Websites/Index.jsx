@@ -39,7 +39,7 @@ export default function Index({ auth, websites, groups, pagination, filters, sor
     };
 
     const handleDelete = (website) => {
-        if (confirm(`Are you sure you want to delete "${website.name}"?`)) {
+        if (confirm(`Are you sure you want to delete "${website.domain_name}"?`)) {
             router.delete(route('websites.destroy', website.id));
         }
     };
@@ -159,9 +159,9 @@ export default function Index({ auth, websites, groups, pagination, filters, sor
                                                 <td className="px-6 py-4">
                                                     <div>
                                                         <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                                                            {website.name || website.domain_name}
+                                                            {website.domain_name}
                                                         </div>
-                                                        <div className="text-sm text-gray-500 dark:text-gray-400">{website.url}</div>
+                                                        <div className="text-sm text-gray-500 dark:text-gray-400">{website.domain_name}</div>
                                                         {website.wordpress_version && (
                                                             <div className="text-xs text-blue-600 dark:text-blue-400">WordPress {website.wordpress_version}</div>
                                                         )}
@@ -261,9 +261,9 @@ export default function Index({ auth, websites, groups, pagination, filters, sor
                                         
                                         <div className="mb-4">
                                             <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
-                                                {website.name || website.domain_name}
+                                                {website.domain_name}
                                             </h3>
-                                            <p className="text-sm text-gray-500 dark:text-gray-400">{website.url}</p>
+                                            <p className="text-sm text-gray-500 dark:text-gray-400">{website.domain_name}</p>
                                         </div>
 
                                         <div className="space-y-2">
@@ -344,6 +344,7 @@ export default function Index({ auth, websites, groups, pagination, filters, sor
                 websites={websites}
                 groups={groups}
                 onClearSelection={clearSelection}
+                resourceType="websites"
             />
         </AuthenticatedLayout>
     );

@@ -168,8 +168,10 @@ class RunScheduledScans extends Command
     ): void {
         ScanHistory::create([
             'scan_type' => $scheduledScan->scan_type,
+            'scan_trigger' => 'scheduled',
             'target' => $scheduledScan->target,
             'website_id' => $scheduledScan->website_id,
+            'scheduled_scan_id' => $scheduledScan->id,
             'scan_results' => $scanResults,
             'scan_summary' => [
                 'scheduled_scan_id' => $scheduledScan->id,
@@ -185,6 +187,8 @@ class RunScheduledScans extends Command
             'status' => $status,
             'error_message' => $errorMessage,
             'scan_duration_ms' => $duration,
+            'scan_started_at' => $scheduledScan->started_at ?? now(),
+            'scan_completed_at' => now(),
         ]);
     }
 }

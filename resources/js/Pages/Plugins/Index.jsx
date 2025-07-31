@@ -288,8 +288,10 @@ export default function Index({ auth, plugins, pagination, sortBy, sortDirection
 
                     {showBulkModal && (
                         <BulkActionsModal
-                            selectedItems={selectedPlugins}
+                            isOpen={showBulkModal}
                             onClose={() => setShowBulkModal(false)}
+                            selectedItems={selectedPlugins}
+                            items={plugins}
                             onClearSelection={clearSelection}
                             resourceType="plugins"
                         />

@@ -102,8 +102,8 @@ export default function WebsitePlugins({ website, allPlugins = [], websitePlugin
 
             {/* Add Plugin Form */}
             {showAddForm && (
-                <div className="bg-gray-50 p-4 rounded-lg border">
-                    <h4 className="font-medium mb-3">Add Plugin to Website</h4>
+                <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg border border-gray-200 dark:border-gray-600">
+                    <h4 className="font-medium mb-3 text-gray-900 dark:text-gray-100">Add Plugin to Website</h4>
                     <form onSubmit={handleAddPlugin} className="space-y-3">
                         <Form.Select
                             label="Plugin"
@@ -153,19 +153,19 @@ export default function WebsitePlugins({ website, allPlugins = [], websitePlugin
             {safeWebsitePlugins.length > 0 ? (
                 <div className="space-y-3">
                     {safeWebsitePlugins.map(plugin => (
-                        <div key={plugin.id} className="bg-white border rounded-lg p-4">
+                        <div key={plugin.id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg p-4">
                             <div className="flex justify-between items-start">
                                 <div className="flex-1">
-                                    <h4 className="font-medium">{plugin.name}</h4>
-                                    <p className="text-sm text-gray-600 mt-1">{plugin.description}</p>
+                                    <h4 className="font-medium text-gray-900 dark:text-gray-100">{plugin.name}</h4>
+                                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{plugin.description}</p>
                                     <div className="flex gap-4 mt-2 text-sm">
-                                        <span>
+                                        <span className="text-gray-700 dark:text-gray-300">
                                             <strong>Version:</strong> {plugin.pivot?.version || 'Not specified'}
                                         </span>
                                         <span className={`px-2 py-1 rounded text-xs ${
                                             plugin.pivot?.is_active 
-                                                ? 'bg-green-100 text-green-800' 
-                                                : 'bg-red-100 text-red-800'
+                                                ? 'bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200' 
+                                                : 'bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-200'
                                         }`}>
                                             {plugin.pivot?.is_active ? 'Active' : 'Inactive'}
                                         </span>
@@ -203,7 +203,7 @@ export default function WebsitePlugins({ website, allPlugins = [], websitePlugin
                     ))}
                 </div>
             ) : (
-                <div className="text-center py-8 text-gray-500">
+                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                     <p>No plugins assigned to this website yet.</p>
                     {availablePlugins.length > 0 && (
                         <Button 
@@ -234,12 +234,12 @@ export default function WebsitePlugins({ website, allPlugins = [], websitePlugin
                     }}
                 >
                     <div 
-                        className="bg-white rounded-lg p-6 max-w-md w-full mx-4" 
+                        className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4" 
                         tabIndex="-1"
                         ref={(el) => el && el.focus()}
                     >
-                        <h3 id="update-plugin-title" className="text-lg font-semibold mb-4">Update Plugin Version</h3>
-                        <p id="update-plugin-description" className="text-gray-600 mb-4">
+                        <h3 id="update-plugin-title" className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Update Plugin Version</h3>
+                        <p id="update-plugin-description" className="text-gray-600 dark:text-gray-400 mb-4">
                             Updating version for: <strong>{editingPlugin?.name}</strong>
                         </p>
                         <input
@@ -247,7 +247,7 @@ export default function WebsitePlugins({ website, allPlugins = [], websitePlugin
                             value={newVersion}
                             onChange={(e) => setNewVersion(e.target.value)}
                             placeholder="Enter new version"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4"
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                             autoFocus
                         />
                         <div className="flex gap-2 justify-end">
@@ -289,12 +289,12 @@ export default function WebsitePlugins({ website, allPlugins = [], websitePlugin
                     }}
                 >
                     <div 
-                        className="bg-white rounded-lg p-6 max-w-md w-full mx-4"
+                        className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4"
                         tabIndex="-1"
                         ref={(el) => el && el.focus()}
                     >
-                        <h3 id="remove-plugin-title" className="text-lg font-semibold mb-4">Remove Plugin</h3>
-                        <p id="remove-plugin-description" className="text-gray-600 mb-6">
+                        <h3 id="remove-plugin-title" className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Remove Plugin</h3>
+                        <p id="remove-plugin-description" className="text-gray-600 dark:text-gray-400 mb-6">
                             Are you sure you want to remove this plugin from the website? This action cannot be undone.
                         </p>
                         <div className="flex gap-2 justify-end">

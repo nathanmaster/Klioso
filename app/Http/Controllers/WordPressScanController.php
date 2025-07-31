@@ -44,7 +44,7 @@ class WordPressScanController extends Controller
      */
     public function history(Request $request)
     {
-        $query = ScanHistory::with('website')
+        $query = ScanHistory::with(['website', 'scheduledScan'])
             ->orderBy('created_at', 'desc');
 
         // Apply filters if provided
@@ -56,17 +56,61 @@ class WordPressScanController extends Controller
             $query->where('status', $request->status);
         }
 
+        if ($request->has('trigger') && $request->trigger !== 'all') {
+            $query->where('scan_trigger', $request->trigger);
+        }
+
         if ($request->has('search') && $request->search) {
-            $query->where('target', 'like', '%' . $request->search . '%');
+            $query->where(function ($q) use ($request) {
+                $q->where('target', 'like', '%' . $request->search . '%')
+                  ->orWhereHas('scheduledScan', function ($sq) use ($request) {
+                      $sq->where('name', 'like', '%' . $request->search . '%');
+                  });
+            });
         }
 
         $scanHistory = $query->paginate(20)->withQueryString();
+
+        // Transform data for frontend
+        $scanHistory->getCollection()->transform(function ($scan) {
+            return [
+                'id' => $scan->id,
+                'scan_type' => $scan->scan_type,
+                'scan_trigger' => $scan->scan_trigger,
+                'scan_source' => $scan->scan_source,
+                'target' => $scan->target,
+                'website' => $scan->website ? [
+                    'id' => $scan->website->id,
+                    'domain_name' => $scan->website->domain_name,
+                ] : null,
+                'scheduled_scan' => $scan->scheduledScan ? [
+                    'id' => $scan->scheduledScan->id,
+                    'name' => $scan->scheduledScan->name,
+                ] : null,
+                'plugins_found' => $scan->plugins_found,
+                'themes_found' => $scan->themes_found,
+                'vulnerabilities_found' => $scan->vulnerabilities_found,
+                'total_items_found' => $scan->total_items_found,
+                'auto_sync_enabled' => $scan->auto_sync_enabled,
+                'plugins_added_to_db' => $scan->plugins_added_to_db,
+                'status' => $scan->status,
+                'error_message' => $scan->error_message,
+                'scan_duration_ms' => $scan->scan_duration_ms,
+                'scan_results' => $scan->scan_results, // Add the actual scan results
+                'scan_summary' => $scan->scan_summary, // Add the scan summary
+                'duration' => $scan->duration,
+                'formatted_date' => $scan->formatted_date,
+                'relative_time' => $scan->relative_time,
+                'created_at' => $scan->created_at,
+            ];
+        });
 
         return Inertia::render('Scanner/History', [
             'scanHistory' => $scanHistory,
             'filters' => [
                 'type' => $request->get('type', 'all'),
                 'status' => $request->get('status', 'all'),
+                'trigger' => $request->get('trigger', 'all'),
                 'search' => $request->get('search', '')
             ]
         ]);
@@ -268,6 +312,7 @@ class WordPressScanController extends Controller
             // Save scan history
             $this->saveScanHistory([
                 'scan_type' => 'url',
+                'scan_trigger' => 'manual',
                 'target' => $url,
                 'website_id' => null,
                 'scan_results' => $scanResults,
@@ -283,6 +328,8 @@ class WordPressScanController extends Controller
                 'plugins_added_to_db' => 0,
                 'status' => 'completed',
                 'scan_duration_ms' => $scanDurationMs,
+                'scan_started_at' => now()->subMilliseconds($scanDurationMs),
+                'scan_completed_at' => now(),
             ]);
 
             return response()->json([
@@ -301,6 +348,7 @@ class WordPressScanController extends Controller
             // Save failed scan history
             $this->saveScanHistory([
                 'scan_type' => 'url',
+                'scan_trigger' => 'manual',
                 'target' => $url,
                 'website_id' => null,
                 'scan_results' => [],
@@ -315,6 +363,10 @@ class WordPressScanController extends Controller
                 'auto_sync_enabled' => false,
                 'plugins_added_to_db' => 0,
                 'status' => 'failed',
+                'error_message' => $e->getMessage(),
+                'scan_duration_ms' => $scanDurationMs,
+                'scan_started_at' => now()->subMilliseconds($scanDurationMs),
+                'scan_completed_at' => now(),
                 'error_message' => $e->getMessage(),
                 'scan_duration_ms' => $scanDurationMs,
             ]);
@@ -574,6 +626,7 @@ class WordPressScanController extends Controller
                 // Save scan history
                 $historyData = [
                     'scan_type' => 'bulk_scan',
+                    'scan_trigger' => 'manual',
                     'target' => $url,
                     'website_id' => $websiteId,
                     'scan_results' => $scanResult,
@@ -590,6 +643,8 @@ class WordPressScanController extends Controller
                     'plugins_added_to_db' => 0,
                     'status' => 'completed',
                     'scan_duration_ms' => ($scanResult['scan_duration'] ?? 0) * 1000,
+                    'scan_started_at' => now()->subSeconds($scanResult['scan_duration'] ?? 0),
+                    'scan_completed_at' => now(),
                 ];
 
                 $this->saveScanHistory($historyData);
@@ -621,6 +676,7 @@ class WordPressScanController extends Controller
                 // Save failed scan history with correct structure
                 $historyData = [
                     'scan_type' => 'bulk_scan',
+                    'scan_trigger' => 'manual',
                     'target' => $url ?? 'unknown',
                     'website_id' => $websiteId,
                     'scan_results' => ['error' => $e->getMessage()],
@@ -638,6 +694,8 @@ class WordPressScanController extends Controller
                     'status' => 'failed',
                     'error_message' => $e->getMessage(),
                     'scan_duration_ms' => 0,
+                    'scan_started_at' => now(),
+                    'scan_completed_at' => now(),
                 ];
 
                 $this->saveScanHistory($historyData);

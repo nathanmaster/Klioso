@@ -5,7 +5,68 @@ All notable changes to Klioso (formerly WordPress Management System) will be doc
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+# Changelog
+
+All notable changes to Klioso (formerly WordPress Management System) will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
 ## [Unreleased]
+
+## [0.9.20] - 2025-07-31
+
+### 🚀 Enhanced Scheduled Scanning System
+
+#### Real-time Progress Tracking
+- **Progress Bar Integration**: Reusable `ScanProgressBar` component with WP scanner-style animations
+- **Live Status Updates**: Real-time progress percentages and stage descriptions during scan execution
+- **Queue Management**: Visual indicators for queued, running, and stuck scan detection
+- **Time Estimation**: Accurate duration tracking and remaining time calculations
+
+#### Advanced Scan Management
+- **Stuck Scan Detection**: Automatic detection of scans running longer than 30 minutes
+- **Progress Reset Functionality**: Manual reset for stuck scans with confirmation dialogs
+- **Enhanced Status Display**: Color-coded status badges with animation for running scans
+- **Schedule Auto-naming**: Intelligent default names when no name is provided
+
+### 🎨 Navigation & UI Improvements
+
+#### Redesigned WordPress Scanner Navigation
+- **Dropdown Menu Structure**: Consolidated WP Scanner menu with organized submenu items
+- **Proper Alignment**: Fixed navbar dropdown positioning and alignment issues
+- **Consistent Styling**: Matching active/inactive states with other navigation items
+- **Mobile Responsive**: Enhanced mobile navigation with organized scanner sections
+
+#### Comprehensive Dark Mode Enhancements
+- **Component Coverage**: All form controls, modals, and progress bars now support dark mode
+- **Button Variants**: Complete dark mode styling for primary, outline, and ghost button variants
+- **Modal Improvements**: ScheduleModal, WebsitePlugins, and ScanDetailsModal with dark backgrounds
+- **Accessibility**: WCAG AA compliant contrast ratios for all dark mode components
+
+### 🛠 Technical Implementation
+
+#### Backend Infrastructure
+- **New Database Migrations**: Added status tracking and relationship fields
+- **Enhanced Controllers**: New `resetProgress()` method in ScheduledScanController
+- **Bulk Operations**: Extended bulk operations for all resource types
+- **Route Optimization**: New routes for progress reset and enhanced bulk operations
+
+#### Frontend Architecture
+- **Component Reusability**: `ScanProgressBar` component with configurable sizes and display options
+- **Modal System**: `ScanDetailsModal` with comprehensive scan information display
+- **State Management**: Enhanced React hooks for progress tracking and scan monitoring
+- **Performance**: Optimized component rendering and reduced unnecessary re-renders
+
+### 🐛 Bug Fixes
+- **Fixed Scanner Dropdown**: Resolved positioning issues causing dropdown to appear at page top
+- **Progress Tracking**: Fixed progress bars not updating during scan execution
+- **Dark Mode Compatibility**: All form controls now properly support dark mode
+- **Data Display**: Consistent use of `domain_name` across all components
+
+### 📊 Database Schema Changes
+- **Scheduled Scans**: Added `status`, `started_at`, `current_stage`, `progress_percent`, `last_error` fields
+- **Scan History**: Added `scheduled_scan_id`, `scan_trigger`, `scan_started_at`, `scan_completed_at` fields
 
 ## [0.9.0-beta.1] - 2025-07-28
 
