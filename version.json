@@ -1,8 +1,8 @@
 {
   "name": "Klioso",
-  "version": "0.9.20",
+  "version": "0.9.46",
   "description": "Multi-Service Provider Management System for WordPress and Web Development with Enhanced Scanner",
-  "codename": "Enhanced Scanning",
+  "codename": "Enhanced Scanning & Dark Mode",
   "release_date": "2025-07-31",
   "stability": "stable",
   "minimum_requirements": {
