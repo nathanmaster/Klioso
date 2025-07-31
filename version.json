@@ -14,7 +14,7 @@
   "features": [
     "multi-service-providers",
     "responsive-tables",
-    "wordpress-scanner",
+    "klioso-scanner",
     "scheduled-scanning",
     "real-time-progress",
     "dark-mode-support",

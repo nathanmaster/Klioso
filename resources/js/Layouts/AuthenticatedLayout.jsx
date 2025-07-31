@@ -54,7 +54,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                     </NavLink>
                                 ))}
                                 
-                                {/* WordPress Scanner Dropdown */}
+                                {/* Klioso Scanner Dropdown */}
                                 <div className="relative inline-flex items-center">
                                     <Dropdown>
                                         <Dropdown.Trigger>
@@ -65,7 +65,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                                         : 'border-transparent text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-600 hover:text-gray-700 dark:hover:text-gray-300 focus:border-gray-300 dark:focus:border-gray-600 focus:text-gray-700 dark:focus:text-gray-300'
                                                 }`}
                                             >
-                                                WP Scanner
+                                                Klioso Scanner
                                                 <ChevronDownIcon className="ml-1 h-4 w-4" />
                                             </button>
                                         </Dropdown.Trigger>
@@ -201,10 +201,10 @@ export default function AuthenticatedLayout({ header, children }) {
                             </ResponsiveNavLink>
                         ))}
                         
-                        {/* WordPress Scanner Menu */}
+                        {/* Klioso Scanner Menu */}
                         <div className="px-4 py-2">
                             <div className="text-base font-medium text-gray-800 dark:text-gray-200 mb-2">
-                                WP Scanner
+                                Klioso Scanner
                             </div>
                             <div className="ml-4 space-y-1">
                                 <ResponsiveNavLink

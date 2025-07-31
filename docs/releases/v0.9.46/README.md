@@ -47,7 +47,7 @@ This release demonstrates our new approach to semantic versioning where version 
 - Professional theme toggle with three states (Light/Dark/System)
 
 #### **3. Navigation & UI Improvements**
-- Fixed WordPress Scanner dropdown positioning issues
+- Fixed Klioso Scanner dropdown positioning issues
 - Consistent styling across navigation elements
 - Enhanced mobile responsive design
 - Improved accessibility features

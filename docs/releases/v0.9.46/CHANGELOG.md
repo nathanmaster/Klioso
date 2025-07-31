@@ -79,8 +79,8 @@ ALTER TABLE scan_histories ADD COLUMN scan_completed_at TIMESTAMP NULL;
 
 ## 🎨 **Navigation & UI Improvements**
 
-### **Redesigned WordPress Scanner Navigation**
-- **Dropdown Menu Structure**: Consolidated WP Scanner menu with organized submenu items
+### **Redesigned Klioso Scanner Navigation**
+- **Dropdown Menu Structure**: Consolidated Klioso Scanner menu with organized submenu items
 - **Proper Alignment**: Fixed navbar dropdown positioning issues
 - **Consistent Styling**: Matching active/inactive states with other navigation items
 - **Mobile Responsive**: Enhanced mobile navigation with organized scanner sections
@@ -92,7 +92,7 @@ ALTER TABLE scan_histories ADD COLUMN scan_completed_at TIMESTAMP NULL;
     <Dropdown>
         <Dropdown.Trigger>
             <button className="inline-flex items-center px-1 pt-1...">
-                WP Scanner
+                Klioso Scanner
             </button>
         </Dropdown.Trigger>
     </Dropdown>
@@ -103,7 +103,7 @@ ALTER TABLE scan_histories ADD COLUMN scan_completed_at TIMESTAMP NULL;
     <Dropdown>
         <Dropdown.Trigger>
             <button className="inline-flex items-center border-b-2 px-1 pt-1...">
-                WP Scanner
+                Klioso Scanner
                 <ChevronDownIcon className="ml-1 h-4 w-4" />
             </button>
         </Dropdown.Trigger>

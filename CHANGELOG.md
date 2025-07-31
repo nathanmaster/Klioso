@@ -36,7 +36,7 @@ This substantial release represents 26 significant commits implementing major sy
 
 ### 🎨 Navigation & UI Improvements
 
-#### Redesigned WordPress Scanner Navigation
+#### Redesigned Klioso Scanner Navigation
 - **Dropdown Menu Structure**: Consolidated WP Scanner menu with organized submenu items
 - **Proper Alignment**: Fixed navbar dropdown positioning and alignment issues
 - **Consistent Styling**: Matching active/inactive states with other navigation items

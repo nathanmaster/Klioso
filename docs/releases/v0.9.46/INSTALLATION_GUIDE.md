@@ -323,7 +323,7 @@ php artisan queue:work --once
 - [ ] **User Authentication**: Login/logout functionality
 - [ ] **Dashboard Access**: Main dashboard loads correctly
 - [ ] **Dark Mode Toggle**: Theme switching works properly
-- [ ] **WordPress Scanner**: Scan functionality operational
+- [ ] **Klioso Scanner**: Scan functionality operational
 - [ ] **Scheduled Scans**: New progress tracking system functional
 - [ ] **Navigation**: Dropdown menus aligned and functional
 - [ ] **Mobile Responsive**: Interface works on mobile devices

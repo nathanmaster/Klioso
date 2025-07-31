@@ -152,7 +152,7 @@ const ThemeToggle = () => {
 
 ### **3. Navigation & UI Improvements**
 
-#### **WordPress Scanner Dropdown**
+#### **Klioso Scanner Dropdown**
 - **Issue Fixed**: Dropdown positioning at page top instead of navbar
 - **Solution**: Added proper `relative` positioning container with `inline-flex` alignment
 - **Styling**: Consistent with other navigation items
