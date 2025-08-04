@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import BulkActionsModal from '@/Components/BulkActionsModal';
+import Pagination from '@/Components/Pagination';
 import { 
     PlusIcon, 
     CheckIcon,
@@ -271,6 +272,13 @@ export default function Index({ auth, templates, pagination, sortBy, sortDirecti
                                     </div>
                                 </div>
                             ))}
+                        </div>
+                    )}
+
+                    {/* Pagination */}
+                    {pagination && pagination.last_page > 1 && (
+                        <div className="mt-6">
+                            <Pagination {...pagination} />
                         </div>
                     )}
 
