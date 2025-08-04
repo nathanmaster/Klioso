@@ -30,7 +30,7 @@ export default function AnalyticsDashboard({ auth, analytics, securityOverview, 
     };
 
     const handleExport = () => {
-        window.location.href = `/analytics/export?period=${timeRange}`;
+        router.visit(`/analytics/export?period=${timeRange}`, { preserveState: true });
     };
 
     // Health score color mapping

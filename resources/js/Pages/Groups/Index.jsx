@@ -2,17 +2,21 @@ import React, { useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { PlusIcon, PencilIcon, TrashIcon, EyeIcon, UserGroupIcon } from '@heroicons/react/24/outline';
+import { getIconComponent } from '@/Utils/iconMapping';
 
 export default function Index({ auth, groups, availableColors, availableIcons }) {
     const [isCreating, setIsCreating] = useState(false);
     const [editingGroup, setEditingGroup] = useState(null);
-    const [formData, setFormData] = useState({
+    
+    const getDefaultFormData = () => ({
         name: '',
         description: '',
         color: '#3B82F6',
         icon: 'globe',
         is_active: true,
     });
+
+    const [formData, setFormData] = useState(getDefaultFormData());
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -21,26 +25,14 @@ export default function Index({ auth, groups, availableColors, availableIcons })
             router.put(route('groups.update', editingGroup.id), formData, {
                 onSuccess: () => {
                     setEditingGroup(null);
-                    setFormData({
-                        name: '',
-                        description: '',
-                        color: '#3B82F6',
-                        icon: 'globe',
-                        is_active: true,
-                    });
+                    setFormData(getDefaultFormData());
                 },
             });
         } else {
             router.post(route('groups.store'), formData, {
                 onSuccess: () => {
                     setIsCreating(false);
-                    setFormData({
-                        name: '',
-                        description: '',
-                        color: '#3B82F6',
-                        icon: 'globe',
-                        is_active: true,
-                    });
+                    setFormData(getDefaultFormData());
                 },
             });
         }
@@ -61,23 +53,6 @@ export default function Index({ auth, groups, availableColors, availableIcons })
     const handleDelete = (group) => {
         if (confirm(`Are you sure you want to delete the group "${group.name}"?`)) {
             router.delete(route('groups.destroy', group.id));
-        }
-    };
-
-    const getIconComponent = (iconName) => {
-        const iconClass = "h-5 w-5";
-        switch (iconName) {
-            case 'globe': return <div className={iconClass}>🌍</div>;
-            case 'server': return <div className={iconClass}>🖥️</div>;
-            case 'briefcase': return <div className={iconClass}>💼</div>;
-            case 'folder': return <div className={iconClass}>📁</div>;
-            case 'star': return <div className={iconClass}>⭐</div>;
-            case 'heart': return <div className={iconClass}>❤️</div>;
-            case 'shield': return <div className={iconClass}>🛡️</div>;
-            case 'lightning-bolt': return <div className={iconClass}>⚡</div>;
-            case 'fire': return <div className={iconClass}>🔥</div>;
-            case 'sparkles': return <div className={iconClass}>✨</div>;
-            default: return <UserGroupIcon className={iconClass} />;
         }
     };
 
@@ -206,7 +181,7 @@ export default function Index({ auth, groups, availableColors, availableIcons })
                                                 className="w-10 h-10 rounded-lg flex items-center justify-center"
                                                 style={{ backgroundColor: group.color }}
                                             >
-                                                {getIconComponent(group.icon)}
+                                                {React.createElement(getIconComponent(group.icon), { className: "h-5 w-5 text-white" })}
                                             </div>
                                             <div>
                                                 <h3 className="text-lg font-medium text-gray-900">{group.name}</h3>

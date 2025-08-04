@@ -52,7 +52,7 @@ export default function WebsiteAnalytics({ auth, website, analytics, timeRange: 
 
     const handleRunScan = () => {
         // Trigger a new scan for this website
-        window.location.href = `/websites/${website.id}/scan`;
+        router.visit(`/websites/${website.id}/scan`);
     };
 
     return (

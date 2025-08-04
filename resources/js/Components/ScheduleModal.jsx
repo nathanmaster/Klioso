@@ -10,12 +10,12 @@ export default function ScheduleModal({ isOpen, onClose, websites }) {
         website_id: '',
         frequency: 'weekly',
         scheduled_time: '02:00',
-        scan_config: JSON.stringify({
+        scan_config: {
             check_plugins: true,
             check_themes: true,
             check_vulnerabilities: true,
             check_updates: true,
-        }),
+        },
         is_active: true,
     });
 
@@ -40,9 +40,7 @@ export default function ScheduleModal({ isOpen, onClose, websites }) {
         const submitData = {
             ...formData,
             name: finalName,
-            scan_config: typeof formData.scan_config === 'string' 
-                ? formData.scan_config 
-                : JSON.stringify(formData.scan_config)
+            scan_config: JSON.stringify(formData.scan_config)
         };
 
         router.post(route('scheduled-scans.store'), submitData, {
@@ -59,12 +57,12 @@ export default function ScheduleModal({ isOpen, onClose, websites }) {
                     website_id: '',
                     frequency: 'weekly',
                     scheduled_time: '02:00',
-                    scan_config: JSON.stringify({
+                    scan_config: {
                         check_plugins: true,
                         check_themes: true,
                         check_vulnerabilities: true,
                         check_updates: true,
-                    }),
+                    },
                     is_active: true,
                 });
                 setErrors({});
@@ -74,27 +72,18 @@ export default function ScheduleModal({ isOpen, onClose, websites }) {
     };
 
     const handleScanConfigChange = (key, value) => {
-        const config = typeof formData.scan_config === 'string' 
-            ? JSON.parse(formData.scan_config) 
-            : formData.scan_config;
-        
+        const config = formData.scan_config;
         const updatedConfig = { ...config, [key]: value };
-        setFormData({ ...formData, scan_config: JSON.stringify(updatedConfig) });
+        setFormData({ ...formData, scan_config: updatedConfig });
     };
 
     const getScanConfig = () => {
-        try {
-            return typeof formData.scan_config === 'string' 
-                ? JSON.parse(formData.scan_config) 
-                : formData.scan_config;
-        } catch {
-            return {
-                check_plugins: true,
-                check_themes: true,
-                check_vulnerabilities: true,
-                check_updates: true,
-            };
-        }
+        return formData.scan_config || {
+            check_plugins: true,
+            check_themes: true,
+            check_vulnerabilities: true,
+            check_updates: true,
+        };
     };
 
     if (!isOpen) return null;

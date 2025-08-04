@@ -31,32 +31,28 @@ export default function ThemeToggle() {
     }, []); // Remove theme from dependencies to avoid infinite loops
 
     const applyTheme = (newTheme) => {
-        console.log('applyTheme called with:', newTheme);
         const root = document.documentElement;
-        console.log('Current HTML classList before:', root.classList.toString());
         
         if (newTheme === 'dark') {
             root.classList.add('dark');
             localStorage.setItem('theme', 'dark');
-            console.log('Applied dark theme');
         } else if (newTheme === 'light') {
             root.classList.remove('dark');
             localStorage.setItem('theme', 'light');
-            console.log('Applied light theme');
         } else {
             // System theme
             localStorage.setItem('theme', 'system');
             if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
                 root.classList.add('dark');
-                console.log('Applied system dark theme');
             } else {
                 root.classList.remove('dark');
-                console.log('Applied system light theme');
             }
         }
         setTheme(newTheme);
-        console.log('New theme state:', newTheme);
-        console.log('HTML classList after:', root.classList.toString());
+    };
+
+    const handleThemeChange = (themeName) => {
+        applyTheme(themeName);
     };
 
     const getIcon = () => {
@@ -84,24 +80,15 @@ export default function ThemeToggle() {
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" aria-label="Theme selection">
-                <DropdownMenuItem onClick={() => {
-                    console.log('Light theme clicked');
-                    applyTheme('light');
-                }}>
+                <DropdownMenuItem onClick={() => handleThemeChange('light')}>
                     <Sun className="mr-2 h-4 w-4" aria-hidden="true" />
                     <span>Light</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => {
-                    console.log('Dark theme clicked');
-                    applyTheme('dark');
-                }}>
+                <DropdownMenuItem onClick={() => handleThemeChange('dark')}>
                     <Moon className="mr-2 h-4 w-4" aria-hidden="true" />
                     <span>Dark</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => {
-                    console.log('System theme clicked');
-                    applyTheme('system');
-                }}>
+                <DropdownMenuItem onClick={() => handleThemeChange('system')}>
                     <Monitor className="mr-2 h-4 w-4" aria-hidden="true" />
                     <span>System</span>
                 </DropdownMenuItem>

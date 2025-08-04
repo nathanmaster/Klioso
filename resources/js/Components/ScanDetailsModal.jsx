@@ -1,6 +1,10 @@
 import React from 'react';
 import { XMarkIcon, ClockIcon, CalendarIcon, GlobeAltIcon, ShieldExclamationIcon } from '@heroicons/react/24/outline';
 
+const isDevelopment = () => {
+    return import.meta.env.DEV || import.meta.env.MODE === 'development';
+};
+
 export default function ScanDetailsModal({ scan, isOpen, onClose }) {
     if (!isOpen || !scan) return null;
 
@@ -479,7 +483,7 @@ export default function ScanDetailsModal({ scan, isOpen, onClose }) {
                         )}
 
                         {/* Raw Data (for debugging) */}
-                        {process.env.NODE_ENV === 'development' && (
+                        {isDevelopment() && (
                             <div className="mb-8">
                                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Raw Scan Data (Debug)</h3>
                                 <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
