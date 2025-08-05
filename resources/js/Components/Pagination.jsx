@@ -22,9 +22,28 @@ export default function Pagination({
     to, 
     links = [],
     path = '',
-    preserveScroll = true 
+    preserveScroll = true,
+    preserveState = true,
+    queryParams = {} // New prop to preserve additional query parameters
 }) {
     if (last_page <= 1) return null;
+
+    // Helper function to build URL with preserved query parameters
+    const buildUrl = (page) => {
+        const params = new URLSearchParams();
+        
+        // Add the page parameter
+        params.set('page', page);
+        
+        // Preserve existing query parameters
+        Object.entries(queryParams).forEach(([key, value]) => {
+            if (value !== null && value !== undefined && value !== '') {
+                params.set(key, value);
+            }
+        });
+        
+        return `${path}?${params.toString()}`;
+    };
 
     const getPageNumbers = () => {
         const pages = [];
@@ -67,7 +86,7 @@ export default function Pagination({
     return (
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             {/* Results info */}
-            <div className="text-sm text-gray-700 order-2 sm:order-1">
+            <div className="text-sm text-gray-700 dark:text-gray-300 order-2 sm:order-1">
                 Showing <span className="font-medium">{from}</span> to <span className="font-medium">{to}</span> of{' '}
                 <span className="font-medium">{total}</span> results
             </div>
@@ -77,15 +96,16 @@ export default function Pagination({
                 {/* Previous button */}
                 {current_page > 1 ? (
                     <Link
-                        href={`${path}?page=${current_page - 1}`}
+                        href={buildUrl(current_page - 1)}
                         preserveScroll={preserveScroll}
-                        className="relative inline-flex items-center px-2 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-l-md hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                        preserveState={preserveState}
+                        className="relative inline-flex items-center px-2 py-2 text-sm font-medium text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-l-md hover:bg-gray-50 dark:hover:bg-gray-700 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
                     >
                         <ChevronLeftIcon className="h-5 w-5" />
                         <span className="sr-only">Previous</span>
                     </Link>
                 ) : (
-                    <span className="relative inline-flex items-center px-2 py-2 text-sm font-medium text-gray-300 bg-white border border-gray-300 rounded-l-md cursor-not-allowed">
+                    <span className="relative inline-flex items-center px-2 py-2 text-sm font-medium text-gray-300 dark:text-gray-600 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-l-md cursor-not-allowed">
                         <ChevronLeftIcon className="h-5 w-5" />
                         <span className="sr-only">Previous</span>
                     </span>
@@ -97,7 +117,7 @@ export default function Pagination({
                         return (
                             <span
                                 key={`ellipsis-${index}`}
-                                className="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300"
+                                className="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600"
                             >
                                 ...
                             </span>
@@ -116,9 +136,10 @@ export default function Pagination({
                     ) : (
                         <Link
                             key={page}
-                            href={`${path}?page=${page}`}
+                            href={buildUrl(page)}
                             preserveScroll={preserveScroll}
-                            className="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                            preserveState={preserveState}
+                            className="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
                         >
                             {page}
                         </Link>
@@ -128,15 +149,16 @@ export default function Pagination({
                 {/* Next button */}
                 {current_page < last_page ? (
                     <Link
-                        href={`${path}?page=${current_page + 1}`}
+                        href={buildUrl(current_page + 1)}
                         preserveScroll={preserveScroll}
-                        className="relative inline-flex items-center px-2 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-r-md hover:bg-gray-50 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                        preserveState={preserveState}
+                        className="relative inline-flex items-center px-2 py-2 text-sm font-medium text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-r-md hover:bg-gray-50 dark:hover:bg-gray-700 focus:z-10 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
                     >
                         <ChevronRightIcon className="h-5 w-5" />
                         <span className="sr-only">Next</span>
                     </Link>
                 ) : (
-                    <span className="relative inline-flex items-center px-2 py-2 text-sm font-medium text-gray-300 bg-white border border-gray-300 rounded-r-md cursor-not-allowed">
+                    <span className="relative inline-flex items-center px-2 py-2 text-sm font-medium text-gray-300 dark:text-gray-600 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-r-md cursor-not-allowed">
                         <ChevronRightIcon className="h-5 w-5" />
                         <span className="sr-only">Next</span>
                     </span>

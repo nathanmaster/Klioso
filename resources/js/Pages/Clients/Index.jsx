@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Head, Link, router } from '@inertiajs/react';
+import React, { useState, useEffect } from 'react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import BulkActionsModal from '@/Components/BulkActionsModal';
 import Pagination from '@/Components/Pagination';
@@ -16,9 +16,34 @@ import {
 
 // Clients Index Page
 export default function Index({ auth, clients, pagination, sortBy, sortDirection, filters }) {
+    const { url } = usePage();
+    const urlParams = new URLSearchParams(url.split('?')[1] || '');
+    const currentView = urlParams.get('view') || 'table';
+    
     const [selectedClients, setSelectedClients] = useState([]);
     const [showBulkModal, setShowBulkModal] = useState(false);
-    const [viewMode, setViewMode] = useState('table'); // 'table' or 'grid'
+    const [viewMode, setViewMode] = useState(currentView);
+
+    // Update view mode when URL changes
+    useEffect(() => {
+        const newView = urlParams.get('view') || 'table';
+        setViewMode(newView);
+    }, [url]);
+
+    // Update URL when view mode changes
+    const handleViewModeChange = (newViewMode) => {
+        const params = new URLSearchParams(window.location.search);
+        params.set('view', newViewMode);
+        
+        // Remove page parameter when changing view to start from page 1
+        params.delete('page');
+        
+        router.visit(`${window.location.pathname}?${params.toString()}`, {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true
+        });
+    };
 
     const handleSelectClient = (clientId) => {
         setSelectedClients(prev => 
@@ -77,13 +102,13 @@ export default function Index({ auth, clients, pagination, sortBy, sortDirection
                         )}
                         <div className="flex items-center border border-gray-300 dark:border-gray-600 rounded-lg">
                             <button
-                                onClick={() => setViewMode('table')}
+                                onClick={() => handleViewModeChange('table')}
                                 className={`p-2 ${viewMode === 'table' ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100' : 'text-gray-500 dark:text-gray-400'}`}
                             >
                                 <QueueListIcon className="h-4 w-4" />
                             </button>
                             <button
-                                onClick={() => setViewMode('grid')}
+                                onClick={() => handleViewModeChange('grid')}
                                 className={`p-2 ${viewMode === 'grid' ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100' : 'text-gray-500 dark:text-gray-400'}`}
                             >
                                 <Squares2X2Icon className="h-4 w-4" />
@@ -255,7 +280,13 @@ export default function Index({ auth, clients, pagination, sortBy, sortDirection
                     {/* Pagination */}
                     {pagination && pagination.last_page > 1 && (
                         <div className="mt-6">
-                            <Pagination {...pagination} />
+                            <Pagination 
+                                {...pagination} 
+                                queryParams={{
+                                    view: viewMode,
+                                    ...Object.fromEntries(urlParams.entries())
+                                }}
+                            />
                         </div>
                     )}
 
