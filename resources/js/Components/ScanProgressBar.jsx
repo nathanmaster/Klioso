@@ -39,15 +39,15 @@ export default function ScanProgressBar({
     return (
         <div className={`space-y-2 ${className}`}>
             {/* Progress Bar */}
-            <div className={`w-full bg-gray-200 rounded-full ${sizeClasses[size]} overflow-hidden`}>
+            <div className={`w-full bg-gray-200 dark:bg-gray-700 rounded-full ${sizeClasses[size]} overflow-hidden`}>
                 <div 
-                    className="bg-blue-500 h-full rounded-full transition-all duration-300 ease-out"
+                    className="bg-blue-500 dark:bg-blue-600 h-full rounded-full transition-all duration-300 ease-out"
                     style={{ width: `${Math.min(progress.percent || 0, 100)}%` }}
                 />
             </div>
 
             {/* Progress Info */}
-            <div className={`flex items-center justify-between ${textSizeClasses[size]} text-gray-600`}>
+            <div className={`flex items-center justify-between ${textSizeClasses[size]} text-gray-600 dark:text-gray-400`}>
                 <div className="flex items-center space-x-2">
                     {isScanning && (
                         <div className="animate-spin">
@@ -74,14 +74,14 @@ export default function ScanProgressBar({
                     </span>
                     
                     {showStage && progress.stage && (
-                        <span className="text-gray-500">
+                        <span className="text-gray-500 dark:text-gray-400">
                             - {progress.stage}
                         </span>
                     )}
                 </div>
 
                 {showTimeLeft && progress.timeLeft && (
-                    <span className="text-gray-500">
+                    <span className="text-gray-500 dark:text-gray-400">
                         {formatTime(progress.timeLeft)} remaining
                     </span>
                 )}
