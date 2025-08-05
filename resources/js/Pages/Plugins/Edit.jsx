@@ -14,19 +14,19 @@ export default function Edit({ plugin }) {
     });
 
     return (
-        <AuthenticatedLayout header={<h1 className="text-2xl font-bold text-gray-800">Edit Plugin</h1>}>
+        <AuthenticatedLayout header={<h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Edit Plugin</h1>}>
             <div className="flex gap-8 py-8">
                 {/* Sidebar Navigation */}
-                <nav className="w-64 bg-white rounded-lg shadow p-6 flex flex-col gap-4">
-                    <Link href="/clients" className="text-blue-600 hover:underline font-medium">Clients</Link>
-                    <Link href="/websites" className="text-blue-600 hover:underline font-medium">Websites</Link>
-                    <Link href="/plugins" className="text-blue-600 hover:underline font-medium">Plugins</Link>
-                    <Link href="/templates" className="text-blue-600 hover:underline font-medium">Templates</Link>
-                    <Link href="/hosting-providers" className="text-blue-600 hover:underline font-medium">Hosting Providers</Link>
+                <nav className="w-64 bg-white dark:bg-gray-800 rounded-lg shadow p-6 flex flex-col gap-4">
+                    <Link href="/clients" className="text-blue-600 dark:text-blue-400 hover:underline font-medium">Clients</Link>
+                    <Link href="/websites" className="text-blue-600 dark:text-blue-400 hover:underline font-medium">Websites</Link>
+                    <Link href="/plugins" className="text-blue-600 dark:text-blue-400 hover:underline font-medium">Plugins</Link>
+                    <Link href="/templates" className="text-blue-600 dark:text-blue-400 hover:underline font-medium">Templates</Link>
+                    <Link href="/hosting-providers" className="text-blue-600 dark:text-blue-400 hover:underline font-medium">Hosting Providers</Link>
                 </nav>
                 {/* Main Content */}
                 <div className="flex-1">
-                    <div className="bg-white rounded-lg shadow p-6 max-w-xl mx-auto">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 max-w-xl mx-auto">
                         <Form onSubmit={e => { e.preventDefault(); put(`/plugins/${plugin.id}`); }}>
                             <Form.Input
                                 label="Name"
@@ -62,7 +62,7 @@ export default function Edit({ plugin }) {
                             />
                             <Button type="submit">Update</Button>
                         </Form>
-                        {errors && <div className="mt-4 text-red-500 text-sm">{Object.values(errors).join(', ')}</div>}
+                        {errors && <div className="mt-4 text-red-500 dark:text-red-400 text-sm">{Object.values(errors).join(', ')}</div>}
                     </div>
                 </div>
             </div>

@@ -24,11 +24,11 @@ export default function Create({ clients, hostingProviders }) {
     const domainRegistrars = hostingProviders?.filter(p => p.provides_domain_registration) || [];
 
     return (
-        <AuthenticatedLayout header={<h1 className="text-2xl font-bold text-gray-800">Add Website</h1>}>
-            <div className="max-w-xl mx-auto bg-white rounded-lg shadow p-6 mt-8">
+        <AuthenticatedLayout header={<h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">Add Website</h1>}>
+            <div className="max-w-xl mx-auto bg-white dark:bg-gray-800 rounded-lg shadow p-6 mt-8">
                 <div className="flex justify-between items-center mb-6">
                     <BackButton fallbackRoute="/websites" />
-                    <h2 className="text-lg font-semibold">New Website</h2>
+                    <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">New Website</h2>
                 </div>
                 <Form onSubmit={e => { e.preventDefault(); post('/websites'); }}>
                     <Form.Input

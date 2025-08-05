@@ -25,13 +25,13 @@ export default function Edit({ website, clients, hostingProviders, allPlugins = 
     const domainRegistrars = hostingProviders?.filter(p => p.provides_domain_registration) || [];
 
     return (
-        <AuthenticatedLayout header={<h1 className="text-2xl font-bold text-gray-800">Edit Website</h1>}>
+        <AuthenticatedLayout header={<h1 className="text-2xl font-bold text-gray-800 dark:text-gray-200">Edit Website</h1>}>
             <div className="max-w-4xl mx-auto space-y-6 mt-8">
                 {/* Website Details Form */}
-                <div className="bg-white rounded-lg shadow p-6">
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
                     <div className="flex justify-between items-center mb-6">
                         <BackButton fallbackRoute={`/websites/${website.id}`} />
-                        <h2 className="text-lg font-semibold">Edit Website</h2>
+                        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Edit Website</h2>
                     </div>
                     <Form onSubmit={e => { e.preventDefault(); put(`/websites/${website.id}`); }}>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -130,7 +130,7 @@ export default function Edit({ website, clients, hostingProviders, allPlugins = 
                 </div>
 
                 {/* Website Plugins Management */}
-                <div className="bg-white rounded-lg shadow p-6">
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
                     <WebsitePlugins 
                         website={website}
                         allPlugins={allPlugins}

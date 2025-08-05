@@ -1,1 +1,1 @@
-2ef6512761195436211b15b137f1c9813479b9affdfb0f713f1ece2e05ad9ade  klioso-v0.8.0-beta.1-windows.zip
+﻿2ef6512761195436211b15b137f1c9813479b9affdfb0f713f1ece2e05ad9ade  klioso-v0.8.0-beta.1-windows.zip

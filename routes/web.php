@@ -4,9 +4,12 @@ use App\Http\Controllers\ClientController;
 use App\Http\Controllers\HostingProviderController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\WebsiteController;
+use App\Http\Controllers\WebsiteGroupController;
+use App\Http\Controllers\ScheduledScanController;
 use App\Http\Controllers\PluginController;
 use App\Http\Controllers\TemplateController;
 use App\Http\Controllers\WordPressScanController;
+use App\Http\Controllers\AnalyticsController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -35,6 +38,20 @@ Route::middleware('auth')->group(function () {
     Route::resource('websites', WebsiteController::class);
     Route::resource('plugins', PluginController::class);
     Route::resource('templates', TemplateController::class);
+    Route::resource('groups', WebsiteGroupController::class);
+    Route::resource('scheduled-scans', ScheduledScanController::class);
+
+    // Website Group management routes
+    Route::put('/groups/{group}/order', [WebsiteGroupController::class, 'updateOrder'])->name('groups.update-order');
+    Route::post('/groups/{group}/websites', [WebsiteGroupController::class, 'addWebsites'])->name('groups.add-websites');
+    Route::delete('/groups/{group}/websites', [WebsiteGroupController::class, 'removeWebsites'])->name('groups.remove-websites');
+    Route::get('/ungrouped-websites', [WebsiteGroupController::class, 'ungroupedWebsites'])->name('groups.ungrouped-websites');
+
+    // Scheduled Scan management routes
+    Route::post('/scheduled-scans/{scheduledScan}/toggle', [ScheduledScanController::class, 'toggleActive'])->name('scheduled-scans.toggle');
+    Route::post('/scheduled-scans/{scheduledScan}/run', [ScheduledScanController::class, 'runNow'])->name('scheduled-scans.run');
+    Route::post('/scheduled-scans/{scheduledScan}/reset-progress', [ScheduledScanController::class, 'resetProgress'])->name('scheduled-scans.reset-progress');
+    Route::get('/scheduled-scans-due', [ScheduledScanController::class, 'due'])->name('scheduled-scans.due');
 
     // Website-Plugin relationship routes
     Route::post('/websites/{website}/plugins', [WebsiteController::class, 'attachPlugin'])->name('websites.plugins.attach');
@@ -43,9 +60,45 @@ Route::middleware('auth')->group(function () {
 
     // WordPress Scanner routes
     Route::get('/scanner', [WordPressScanController::class, 'index'])->name('scanner.index');
+    Route::get('/scanner/history', [WordPressScanController::class, 'history'])->name('scanner.history');
+    Route::post('/scanner/export', [WordPressScanController::class, 'export'])->name('scanner.export');
     Route::post('/scan', [WordPressScanController::class, 'scan'])->name('scanner.scan');
     Route::post('/websites/{website}/scan', [WordPressScanController::class, 'scanWebsite'])->name('scanner.website');
     Route::post('/scanner/add-plugin', [WordPressScanController::class, 'addPlugin'])->name('scanner.add-plugin');
+    Route::post('/scanner/bulk-add-plugins', [WordPressScanController::class, 'bulkAddPlugins'])->name('scanner.bulk-add-plugins');
+    Route::post('/scanner/bulk-scan', [WordPressScanController::class, 'bulkScan'])->name('scanner.bulk-scan');
+
+    // Bulk Website Operations
+    Route::post('/websites/bulk-assign-group', [WebsiteController::class, 'bulkAssignGroup'])->name('websites.bulk-assign-group');
+    Route::post('/websites/bulk-status-update', [WebsiteController::class, 'bulkStatusUpdate'])->name('websites.bulk-status-update');
+    Route::post('/scheduled-scans/bulk-create', [ScheduledScanController::class, 'bulkCreate'])->name('scheduled-scans.bulk-create');
+
+    // Bulk Client Operations
+    Route::post('/clients/bulk-status-update', [ClientController::class, 'bulkStatusUpdate'])->name('clients.bulk-status-update');
+    Route::delete('/clients/bulk-delete', [ClientController::class, 'bulkDelete'])->name('clients.bulk-delete');
+
+    // Bulk Hosting Provider Operations
+    Route::post('/hosting-providers/bulk-status-update', [HostingProviderController::class, 'bulkStatusUpdate'])->name('hosting-providers.bulk-status-update');
+    Route::delete('/hosting-providers/bulk-delete', [HostingProviderController::class, 'bulkDelete'])->name('hosting-providers.bulk-delete');
+
+    // Bulk Plugin Operations
+    Route::post('/plugins/bulk-type-update', [PluginController::class, 'bulkTypeUpdate'])->name('plugins.bulk-type-update');
+    Route::delete('/plugins/bulk-delete', [PluginController::class, 'bulkDelete'])->name('plugins.bulk-delete');
+
+    // Bulk Template Operations
+    Route::post('/templates/bulk-category-update', [TemplateController::class, 'bulkCategoryUpdate'])->name('templates.bulk-category-update');
+    Route::delete('/templates/bulk-delete', [TemplateController::class, 'bulkDelete'])->name('templates.bulk-delete');
+
+    // Analytics Dashboard Routes
+    Route::get('/analytics', [AnalyticsController::class, 'dashboard'])->name('analytics.dashboard');
+    Route::get('/analytics/website/{website}', [AnalyticsController::class, 'website'])->name('analytics.website');
+    Route::get('/analytics/security', [AnalyticsController::class, 'security'])->name('analytics.security');
+    Route::get('/analytics/performance', [AnalyticsController::class, 'performance'])->name('analytics.performance');
+    Route::post('/analytics/export', [AnalyticsController::class, 'exportReport'])->name('analytics.export');
+    
+    // Analytics Collection Routes
+    Route::post('/websites/{website}/collect-analytics', [WebsiteController::class, 'collectAnalytics'])->name('websites.collect-analytics');
+    Route::post('/websites/bulk-collect-analytics', [WebsiteController::class, 'bulkCollectAnalytics'])->name('websites.bulk-collect-analytics');
 });
 
 require __DIR__.'/auth.php';

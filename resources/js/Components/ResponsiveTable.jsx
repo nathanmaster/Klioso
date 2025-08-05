@@ -47,14 +47,14 @@ export default function ResponsiveTable({
         <>
             {/* Desktop Table */}
             <div className="hidden md:block overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead className="bg-gray-50 dark:bg-gray-700">
                         <tr>
                             {columns.map((col, idx) => (
                                 <th 
                                     key={col?.key || col?.label || `header-${idx}`} 
-                                    className={`px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider ${
-                                        col.sortable !== false && onSort ? 'cursor-pointer hover:bg-gray-100' : ''
+                                    className={`px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider ${
+                                        col.sortable !== false && onSort ? 'cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600' : ''
                                     }`}
                                     onClick={() => handleHeaderClick(col)}
                                 >
@@ -70,12 +70,12 @@ export default function ResponsiveTable({
                             ))}
                         </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                         {loading ? (
                             <tr>
-                                <td colSpan={columns.length} className="px-6 py-8 text-center text-gray-400">
+                                <td colSpan={columns.length} className="px-6 py-8 text-center text-gray-400 dark:text-gray-500">
                                     <div className="flex items-center justify-center">
-                                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-gray-400 dark:text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                         </svg>
@@ -85,7 +85,7 @@ export default function ResponsiveTable({
                             </tr>
                         ) : (!data || data.length === 0) ? (
                             <tr>
-                                <td colSpan={columns.length} className="px-6 py-8 text-center text-gray-400">
+                                <td colSpan={columns.length} className="px-6 py-8 text-center text-gray-400 dark:text-gray-500">
                                     No records found.
                                 </td>
                             </tr>
@@ -93,11 +93,11 @@ export default function ResponsiveTable({
                             data.map((row, idx) => (
                                 <tr
                                     key={row?.id || `row-${idx}`}
-                                    className={`${onRowClick ? "cursor-pointer hover:bg-gray-50" : ""} transition-colors duration-150`}
+                                    className={`${onRowClick ? "cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700" : ""} transition-colors duration-150`}
                                     onClick={onRowClick ? () => onRowClick(row) : undefined}
                                 >
                                     {columns.map((col, colIdx) => (
-                                        <td key={col?.key || col?.label || `col-${colIdx}`} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        <td key={col?.key || col?.label || `col-${colIdx}`} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                                             {col.render ? col.render(row) : row?.[col.key]}
                                         </td>
                                     ))}
@@ -111,9 +111,9 @@ export default function ResponsiveTable({
             {/* Mobile Card View */}
             <div className="md:hidden">
                 {loading ? (
-                    <div className="p-8 text-center text-gray-400">
+                    <div className="p-8 text-center text-gray-400 dark:text-gray-500">
                         <div className="flex items-center justify-center">
-                            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-gray-400 dark:text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
@@ -121,15 +121,15 @@ export default function ResponsiveTable({
                         </div>
                     </div>
                 ) : (!data || data.length === 0) ? (
-                    <div className="p-8 text-center text-gray-400">
+                    <div className="p-8 text-center text-gray-400 dark:text-gray-500">
                         No records found.
                     </div>
                 ) : (
-                    <div className="divide-y divide-gray-200">
+                    <div className="divide-y divide-gray-200 dark:divide-gray-700">
                         {data.map((row, idx) => (
                             <div 
                                 key={row?.id || `card-${idx}`}
-                                className={`p-4 ${onRowClick ? "cursor-pointer hover:bg-gray-50" : ""} transition-colors duration-150`}
+                                className={`p-4 ${onRowClick ? "cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700" : ""} transition-colors duration-150`}
                                 onClick={onRowClick ? () => onRowClick(row) : undefined}
                             >
                                 <div className="space-y-2">
@@ -144,10 +144,10 @@ export default function ResponsiveTable({
                                         
                                         return (
                                             <div key={col?.key || col?.label || `mobile-col-${colIdx}`} className="flex justify-between items-start">
-                                                <span className="text-sm font-medium text-gray-500 w-1/3 flex-shrink-0">
+                                                <span className="text-sm font-medium text-gray-500 dark:text-gray-400 w-1/3 flex-shrink-0">
                                                     {col?.label}:
                                                 </span>
-                                                <span className="text-sm text-gray-900 w-2/3 text-right">
+                                                <span className="text-sm text-gray-900 dark:text-gray-100 w-2/3 text-right">
                                                     {value}
                                                 </span>
                                             </div>

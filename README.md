@@ -6,7 +6,7 @@
 [![Inertia.js](https://img.shields.io/badge/Inertia.js-v2.0-purple.svg)](https://inertiajs.com)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-v3.x-blue.svg)](https://tailwindcss.com)
 
-> A comprehensive Laravel-based management system for WordPress websites, clients, hosting providers, and plugin tracking with advanced WordPress scanning capabilities.
+> Klioso is a comprehensive Laravel-based management system for WordPress websites, clients, hosting providers, and plugin tracking with advanced analytics and security monitoring capabilities.
 
 ## 📋 Table of Contents
 
@@ -16,7 +16,7 @@
 - [Quick Start](#quick-start)
 - [Project Structure](#project-structure)
 - [Key Components](#key-components)
-- [WordPress Scanner](#wordpress-scanner)
+- [Klioso Scanner](#klioso-scanner)
 - [Database Schema](#database-schema)
 - [API Documentation](#api-documentation)
 - [Known Issues](#known-issues)
@@ -26,7 +26,7 @@
 
 ## 🎯 About
 
-This WordPress Management System is a comprehensive internal tool designed for agencies, developers, and WordPress professionals who manage multiple websites and clients. The system provides a centralized platform to track clients, hosting providers, websites, plugins, and perform automated WordPress scans for security and maintenance purposes.
+This Klioso management system is a comprehensive internal tool designed for agencies, developers, and WordPress professionals who manage multiple websites and clients. The system provides a centralized platform to track clients, hosting providers, websites, plugins, and perform automated WordPress scans for security and maintenance purposes.
 
 ### Core Philosophy
 
@@ -66,7 +66,7 @@ The primary goal is to create a **single source of truth** for all client, websi
 - Website template tracking and categorization
 - Template-website relationships
 
-### 🔍 WordPress Scanner ⭐
+### 🔍 Klioso Scanner ⭐
 **Advanced WordPress website scanning capabilities:**
 
 - **URL-based scanning**: Scan any WordPress website by URL
@@ -246,7 +246,7 @@ class Plugin extends Model {
 }
 ```
 
-### WordPress Scanner Service
+### Klioso Scanner Service
 
 The `WordPressScanService` is the core component for WordPress website analysis:
 
@@ -272,7 +272,7 @@ Key frontend components built with React and Tailwind CSS:
 - **Scanner Interface**: Real-time WordPress scanning with progress indicators
 - **DeleteButton**: Confirmable delete actions with user feedback
 
-## 🔍 WordPress Scanner
+## 🔍 Klioso Scanner
 
 ### Features
 - **Multi-method detection**: HTML parsing, README.txt analysis, common plugin path checking
@@ -381,7 +381,7 @@ POST   /websites/{id}/plugins      # Attach plugin to website
 PUT    /websites/{id}/plugins/{plugin} # Update plugin on website
 DELETE /websites/{id}/plugins/{plugin} # Remove plugin from website
 
-# WordPress Scanner
+# Klioso Scanner
 GET    /scanner                    # Scanner interface
 POST   /scan                       # Scan custom URL
 POST   /websites/{id}/scan         # Scan database website
@@ -417,7 +417,7 @@ POST   /scanner/add-plugin         # Add discovered plugin to database
 
 ### Current Limitations
 
-1. **WordPress Scanner**
+1. **Klioso Scanner**
    - Limited to publicly accessible information only
    - Cannot detect heavily obfuscated or custom plugin structures
    - Rate limiting may affect large-scale scanning operations
@@ -554,7 +554,7 @@ We welcome contributions! Please follow these guidelines:
 
 ### Contribution Areas
 
-- **WordPress Scanner Improvements**: New detection methods, vulnerability databases
+- **Klioso Scanner Improvements**: New detection methods, vulnerability databases
 - **UI/UX Enhancements**: Better responsive design, accessibility improvements
 - **Performance Optimizations**: Database queries, caching strategies
 - **Security Features**: Enhanced authentication, permission systems

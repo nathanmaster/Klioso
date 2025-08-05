@@ -1,0 +1,180 @@
+name: 🐛 Bug Report
+description: Create a report to help us improve the WordPress Scanner
+title: '[Bug]: '
+labels: ['bug', 'needs-triage']
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report! Please provide as much detail as possible to help us understand and reproduce the issue.
+
+  - type: checkboxes
+    id: prerequisites
+    attributes:
+      label: Prerequisites
+      description: Please confirm you have completed the following
+      options:
+        - label: I have searched existing issues to ensure this is not a duplicate
+          required: true
+        - label: I have updated to the latest version
+          required: true
+        - label: I have read the documentation
+          required: true
+
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Environment
+      description: Where are you running the application?
+      options:
+        - Development (Laragon/Local)
+        - Production (VPS/Dedicated Server)
+        - Shared Hosting
+        - Docker Container
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: What version of WordPress Scanner are you running?
+      placeholder: e.g., v0.9.2
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      description: How severe is this bug?
+      options:
+        - Critical (Application crashes, data loss)
+        - High (Major functionality broken)
+        - Medium (Feature partially working)
+        - Low (Minor issue, workaround available)
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is
+      placeholder: Describe what happened and what you expected to happen
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: Detailed steps to reproduce the behavior
+      placeholder: |
+        1. Go to '...'
+        2. Click on '...'
+        3. Scroll down to '...'
+        4. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What you expected to happen
+      placeholder: Describe the expected behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happened
+      placeholder: Describe what actually happened instead
+    validations:
+      required: true
+
+  - type: textarea
+    id: error-logs
+    attributes:
+      label: Error Messages/Logs
+      description: Include any error messages, stack traces, or relevant log entries
+      placeholder: |
+        Paste error messages here (check Laravel logs in storage/logs/laravel.log)
+      render: text
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots
+      description: If applicable, add screenshots to help explain your problem
+      placeholder: Drag and drop screenshots here
+
+  - type: dropdown
+    id: browser
+    attributes:
+      label: Browser
+      description: Which browser are you using? (if applicable)
+      options:
+        - Chrome
+        - Firefox
+        - Safari
+        - Edge
+        - Other
+        - Not Applicable
+
+  - type: input
+    id: browser-version
+    attributes:
+      label: Browser Version
+      description: Browser version (if applicable)
+      placeholder: e.g., Chrome 119.0.6045.105
+
+  - type: dropdown
+    id: device
+    attributes:
+      label: Device Type
+      description: What type of device are you using?
+      options:
+        - Desktop
+        - Mobile
+        - Tablet
+
+  - type: textarea
+    id: system-info
+    attributes:
+      label: System Information
+      description: Provide system details
+      placeholder: |
+        - OS: (e.g., Windows 11, macOS 13, Ubuntu 20.04)
+        - PHP Version: (e.g., 8.3.0)
+        - Laravel Version: (e.g., 12.20.0)
+        - Node.js Version: (e.g., 18.17.0)
+        - Database: (e.g., MySQL 8.0, SQLite)
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Add any other context about the problem
+      placeholder: |
+        - Recent changes made to the system
+        - Specific configuration settings
+        - Related issues or workarounds
+        - Any other relevant information
+
+  - type: checkboxes
+    id: assistance
+    attributes:
+      label: Assistance
+      description: How can you help resolve this issue?
+      options:
+        - label: I can provide additional testing
+        - label: I can provide more detailed logs
+        - label: I am willing to test fixes
+        - label: I can help with debugging

@@ -13,11 +13,11 @@ export default function Edit({ template }) {
     });
 
     return (
-        <AuthenticatedLayout header={<h1 className="text-2xl font-bold text-gray-800">Edit Template</h1>}>
-            <div className="max-w-xl mx-auto bg-white rounded-lg shadow p-6 mt-8">
+        <AuthenticatedLayout header={<h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Edit Template</h1>}>
+            <div className="max-w-xl mx-auto bg-white dark:bg-gray-800 rounded-lg shadow p-6 mt-8">
                 <div className="flex justify-between items-center mb-6">
                     <BackButton fallbackRoute={`/templates/${template.id}`} />
-                    <h2 className="text-lg font-semibold">Edit {template.name}</h2>
+                    <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Edit {template.name}</h2>
                 </div>
                 <Form onSubmit={e => { e.preventDefault(); put(`/templates/${template.id}`); }}>
                     <Form.Input
@@ -48,7 +48,7 @@ export default function Edit({ template }) {
                     />
                     <Button type="submit">Update</Button>
                 </Form>
-                {errors && <div className="mt-4 text-red-500 text-sm">{Object.values(errors).join(', ')}</div>}
+                {errors && <div className="mt-4 text-red-500 dark:text-red-400 text-sm">{Object.values(errors).join(', ')}</div>}
             </div>
         </AuthenticatedLayout>
     );

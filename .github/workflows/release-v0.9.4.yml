@@ -1,0 +1,290 @@
+name: "Release v0.9.4 - Critical Bug Fixes"
+
+on:
+  push:
+    tags:
+      - 'v0.9.4'
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.3'
+        extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, pdo_mysql, gd, zip
+        
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        
+    - name: Install Composer dependencies
+      run: composer install --optimize-autoloader --no-dev
+      
+    - name: Install NPM dependencies and build assets
+      run: |
+        npm install
+        npm run build
+        
+    - name: Create production build
+      run: |
+        mkdir -p releases
+        cp -r . production
+        cd production
+        
+        # Remove development files
+        rm -rf node_modules
+        rm -rf .git
+        rm -rf tests
+        rm -rf .github
+        rm package-lock.json
+        rm vite.config.js
+        rm tailwind.config.js
+        rm postcss.config.js
+        rm -rf resources/js
+        rm -rf resources/css
+        
+        # Keep only built assets
+        mkdir -p public/build_temp
+        cp -r public/build/* public/build_temp/
+        rm -rf public/build
+        mv public/build_temp public/build
+        
+        cd ..
+        
+    - name: Create release packages
+      run: |
+        VERSION=${GITHUB_REF#refs/tags/}
+        
+        # Windows package (copy from production)
+        cp -r production windows
+        
+        # Create Windows-specific files
+        cat > windows/install.bat << 'EOF'
+        @echo off
+        echo 🪟 Klioso Windows Installation v0.9.4 - Bug Fixes
+        
+        echo Setting up environment...
+        if not exist .env copy .env.example .env
+        
+        echo Generating application key...
+        php artisan key:generate --force
+        
+        echo Running database migrations (Critical Fixes)...
+        php artisan migrate --force
+        
+        echo Setting up analytics queue worker...
+        echo @echo off > start-analytics.bat
+        echo php artisan queue:work --queue=analytics --tries=3 --timeout=300 --sleep=3 >> start-analytics.bat
+        
+        echo ✅ Installation complete!
+        echo 🔧 Critical bug fixes applied in v0.9.4
+        echo 📊 Analytics dashboard available at /analytics
+        echo 🔧 Run start-analytics.bat to enable background monitoring
+        echo Configure your web server to point to the 'public' directory.
+        pause
+        EOF
+        
+        cat > windows/README-WINDOWS.md << EOF
+        # Klioso ${VERSION} for Windows/Laragon
+        ## 🔧 Critical Bug Fixes Release
+        
+        ## 🚨 What's Fixed in v0.9.4
+        - **✅ Client Creation**: Fixed missing database columns preventing client creation
+        - **✅ Scheduled Scans**: Resolved POST errors and schema issues
+        - **✅ Bulk Scanning**: Fixed method calls and website display issues
+        - **✅ Scan History**: Corrected table naming and data structure
+        - **📧 Mailpit Integration**: Added local email testing for development
+        
+        ## Quick Start
+        1. Extract this archive to your web directory
+        2. Run install.bat as administrator
+        3. Configure your web server to point to the 'public' directory
+        4. Access the application at http://localhost/your-directory
+        
+        ## Critical Migration Required
+        This version includes database migrations that MUST be run:
+        \`\`\`
+        php artisan migrate
+        \`\`\`
+        
+        ## Requirements
+        - PHP 8.3+ with required extensions
+        - MySQL 8+ or SQLite
+        - Web server (Apache/Nginx)
+        - 512MB+ RAM for analytics processing
+        
+        ## Development Features
+        - Mailpit integration for email testing
+        - Enhanced error logging and debugging
+        - Improved bulk operation handling
+        EOF
+        
+        # Shared hosting package
+        cp -r production shared-hosting
+        
+        # Create shared hosting specific configuration
+        cat > shared-hosting/.htaccess << 'EOF'
+        <IfModule mod_rewrite.c>
+            RewriteEngine On
+            RewriteRule ^$ public/ [L]
+            RewriteRule (.*) public/$1 [L]
+        </IfModule>
+        
+        <IfModule mod_headers.c>
+            Header always set X-Frame-Options "SAMEORIGIN"
+            Header always set X-Content-Type-Options "nosniff"
+            Header always set X-XSS-Protection "1; mode=block"
+            Header always set Referrer-Policy "strict-origin-when-cross-origin"
+            
+            # Analytics API security
+            <FilesMatch "^(analytics|api)">
+                Header always set Cache-Control "no-cache, no-store, must-revalidate"
+            </FilesMatch>
+        </IfModule>
+        EOF
+        
+        cat > shared-hosting/README-SHARED-HOSTING.md << EOF
+        # Klioso ${VERSION} for Shared Hosting
+        ## 🔧 Bug Fixes & Stability Edition
+        
+        ## 🚨 Critical Fixes in v0.9.4
+        - **Database Schema**: Fixed clients, scheduled_scans, and scan_histories tables
+        - **Core Functionality**: Resolved bulk scanning and website display issues
+        - **Error Handling**: Comprehensive logging and exception management
+        - **Stability**: All major bugs from v0.9.3 resolved
+        
+        ## Installation
+        1. Upload all files to your hosting account
+        2. Move contents of 'public' directory to your domain's document root
+        3. Edit .env file with database credentials
+        4. Run migrations: php artisan migrate (REQUIRED - includes critical fixes)
+        5. Configure queue processing for background analytics
+        6. Access analytics dashboard at /analytics
+        
+        ## Requirements
+        - PHP 8.3+ with required extensions
+        - MySQL 8+ database with CREATE/ALTER permissions
+        - 512MB+ memory limit
+        - Web server with mod_rewrite enabled
+        
+        ## ⚠️ Important Migration Notice
+        This version includes critical database migrations. You MUST run:
+        \`\`\`
+        php artisan migrate
+        \`\`\`
+        
+        Failure to run migrations will result in errors when:
+        - Creating clients
+        - Setting up scheduled scans
+        - Viewing scan history
+        - Using bulk operations
+        
+        ## Support
+        - Documentation: /docs folder
+        - GitHub Issues: https://github.com/nathanmaster/Klioso/issues
+        - Migration Guide: /docs/releases/v0.9.4/
+        EOF
+        
+        # Create archives
+        tar -czf releases/klioso-$VERSION-windows.tar.gz windows/
+        tar -czf releases/klioso-$VERSION-shared-hosting.tar.gz shared-hosting/
+        
+        # Create zip files for Windows users
+        cd windows && zip -r ../releases/klioso-$VERSION-windows.zip . && cd ..
+        cd shared-hosting && zip -r ../releases/klioso-$VERSION-shared-hosting.zip . && cd ..
+        
+        # Generate checksums
+        cd releases
+        sha256sum *.tar.gz *.zip > checksums.txt
+        cd ..
+        
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: ${{ github.ref_name }}
+        name: "Klioso ${{ github.ref_name }} - Critical Bug Fixes"
+        files: |
+          releases/klioso-${{ github.ref_name }}-windows.tar.gz
+          releases/klioso-${{ github.ref_name }}-windows.zip
+          releases/klioso-${{ github.ref_name }}-shared-hosting.tar.gz
+          releases/klioso-${{ github.ref_name }}-shared-hosting.zip
+          releases/checksums.txt
+        draft: false
+        prerelease: false
+        generate_release_notes: false
+        body: |
+          # 🔧 Klioso ${{ github.ref_name }} - Critical Bug Fixes & Stability
+          
+          ## 🚨 Critical Issues Resolved
+          
+          ### Database Schema Fixes
+          - **✅ Client Creation**: Fixed missing `company` and `address` columns preventing client creation
+          - **✅ Scheduled Scans**: Added all required columns to scheduled_scans table
+          - **✅ Scan History**: Renamed table from `scan_history` to `scan_histories` 
+          - **✅ Migration Required**: Database schema updates mandatory for this release
+          
+          ### Core Functionality Restored
+          - **✅ Bulk Scanning**: Fixed `scanWordPressSite()` method and parameter handling
+          - **✅ Website Display**: Proper names now show in dropdowns instead of "()"
+          - **✅ Scheduled Scans**: POST errors resolved, creation works correctly
+          - **✅ Error Handling**: Comprehensive logging and exception management
+          
+          ### Development Improvements
+          - **📧 Mailpit Integration**: Local email testing configuration for dev environments
+          - **🔧 Enhanced Debugging**: Better error tracking and logging capabilities
+          - **📊 Data Structure**: Aligned all models with corrected database schema
+          
+          ## 🚀 Installation Instructions
+          
+          ### ⚠️ CRITICAL: Migration Required
+          This release includes **mandatory database migrations**. You must run:
+          ```bash
+          php artisan migrate
+          ```
+          
+          ### Windows/Laragon Installation
+          1. Extract `klioso-${{ github.ref_name }}-windows.zip`
+          2. Run `install.bat` as administrator
+          3. Point web server to `public` directory
+          4. Access application at your local URL
+          
+          ### Shared Hosting Installation
+          1. Extract `klioso-${{ github.ref_name }}-shared-hosting.zip`
+          2. Upload files to hosting account
+          3. Move `public` contents to document root
+          4. Configure `.env` with database credentials
+          5. Run `php artisan migrate` via terminal/cPanel
+          
+          ## 📋 Verification Checklist
+          After installation, verify these fixes work:
+          - ✅ Create new clients with company/address fields
+          - ✅ Set up scheduled scans without POST errors
+          - ✅ View scan history without table errors
+          - ✅ See proper website names in bulk actions
+          - ✅ Run bulk scanning operations successfully
+          
+          ## 📁 Package Contents
+          - `klioso-${{ github.ref_name }}-windows.zip`: Windows/Laragon optimized package
+          - `klioso-${{ github.ref_name }}-shared-hosting.zip`: cPanel/shared hosting package
+          - Both packages include installation guides and configuration examples
+          
+          ## 🔗 Resources & Support
+          - 📖 **Documentation**: `/docs` folder in each package
+          - 🐛 **Bug Reports**: [GitHub Issues](https://github.com/nathanmaster/Klioso/issues)
+          - 💬 **Community**: [GitHub Discussions](https://github.com/nathanmaster/Klioso/discussions)
+          - 📋 **Migration Guide**: [v0.9.3 to v0.9.4 Migration](https://github.com/nathanmaster/Klioso/blob/main/docs/releases/v0.9.4/)
+          
+          ---
+          
+          **Klioso ${{ github.ref_name }}** - Essential stability and bug fixes! 🔧✨
+          
+          *This critical release resolves all major issues preventing normal operation in v0.9.3. Upgrade is highly recommended for all users.*
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

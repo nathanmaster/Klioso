@@ -12,7 +12,7 @@ class WebsiteController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Website::with(['client', 'hostingProvider', 'dnsProvider', 'emailProvider', 'domainRegistrar']);
+        $query = Website::with(['client', 'hostingProvider', 'dnsProvider', 'emailProvider', 'domainRegistrar', 'group']);
         
         // Search functionality
         if ($request->search) {
@@ -45,10 +45,18 @@ class WebsiteController extends Controller
         $websiteData = $websites->getCollection()->map(function ($website) {
             return [
                 'id' => $website->id,
+                'name' => $website->name,
+                'url' => $website->url,
                 'domain_name' => $website->domain_name,
+                'display_name' => $website->display_name,
+                'display_label' => $website->display_label,
                 'platform' => $website->platform,
                 'status' => $website->status,
                 'notes' => $website->notes,
+                'wordpress_version' => $website->wordpress_version,
+                'last_scan' => $website->last_scan,
+                'created_at' => $website->created_at,
+                'updated_at' => $website->updated_at,
                 'client' => $website->client ? [
                     'id' => $website->client->id,
                     'name' => $website->client->name,
@@ -69,11 +77,29 @@ class WebsiteController extends Controller
                     'id' => $website->domainRegistrar->id,
                     'name' => $website->domainRegistrar->name,
                 ] : null,
+                'group' => $website->group ? [
+                    'id' => $website->group->id,
+                    'name' => $website->group->name,
+                    'color' => $website->group->color,
+                    'icon' => $website->group->icon,
+                ] : null,
+            ];
+        });
+
+        // Get website groups for bulk operations
+        $groups = \App\Models\WebsiteGroup::active()->ordered()->get()->map(function ($group) {
+            return [
+                'id' => $group->id,
+                'name' => $group->name,
+                'color' => $group->color,
+                'icon' => $group->icon,
+                'websites_count' => $group->websites_count,
             ];
         });
         
         return Inertia::render('Websites/Index', [
             'websites' => $websiteData,
+            'groups' => $groups,
             'pagination' => [
                 'current_page' => $websites->currentPage(),
                 'last_page' => $websites->lastPage(),
@@ -81,14 +107,15 @@ class WebsiteController extends Controller
                 'total' => $websites->total(),
                 'from' => $websites->firstItem(),
                 'to' => $websites->lastItem(),
-                'path' => $request->url(),
+            ],
+            'filters' => [
+                'search' => $request->search,
             ],
             'sortBy' => $sortBy,
             'sortDirection' => $sortDirection,
-            'filters' => $request->only('search'),
-            'layout' => 'AuthenticatedLayout',
         ]);
     }
+    
 
     public function create()
     {
@@ -127,7 +154,14 @@ class WebsiteController extends Controller
 
     public function show(Website $website)
     {
-        $website->load(['client', 'hostingProvider', 'plugins']);
+        $website->load([
+            'client', 
+            'hostingProvider', 
+            'dnsProvider', 
+            'emailProvider', 
+            'domainRegistrar', 
+            'plugins'
+        ]);
         $allPlugins = \App\Models\Plugin::all();
         
         return Inertia::render('Websites/Show', [
@@ -135,7 +169,6 @@ class WebsiteController extends Controller
                 'id' => $website->id,
                 'domain_name' => $website->domain_name,
                 'platform' => $website->platform,
-                'dns_provider' => $website->dns_provider,
                 'status' => $website->status,
                 'notes' => $website->notes,
                 'client' => $website->client ? [
@@ -146,6 +179,18 @@ class WebsiteController extends Controller
                     'id' => $website->hostingProvider->id,
                     'name' => $website->hostingProvider->name,
                 ] : null,
+                'dnsProvider' => $website->dnsProvider ? [
+                    'id' => $website->dnsProvider->id,
+                    'name' => $website->dnsProvider->name,
+                ] : null,
+                'emailProvider' => $website->emailProvider ? [
+                    'id' => $website->emailProvider->id,
+                    'name' => $website->emailProvider->name,
+                ] : null,
+                'domainRegistrar' => $website->domainRegistrar ? [
+                    'id' => $website->domainRegistrar->id,
+                    'name' => $website->domainRegistrar->name,
+                ] : null,
                 'plugins' => $website->plugins->map(fn($plugin) => [
                     'id' => $plugin->id,
                     'name' => $plugin->name,
@@ -153,6 +198,9 @@ class WebsiteController extends Controller
                     'pivot' => [
                         'version' => $plugin->pivot->version,
                         'is_active' => $plugin->pivot->is_active,
+                        'last_updated' => $plugin->pivot->last_updated,
+                        'created_at' => $plugin->pivot->created_at,
+                        'updated_at' => $plugin->pivot->updated_at,
                     ],
                 ]),
             ],
@@ -198,6 +246,9 @@ class WebsiteController extends Controller
                     'pivot' => [
                         'version' => $plugin->pivot->version,
                         'is_active' => $plugin->pivot->is_active,
+                        'last_updated' => $plugin->pivot->last_updated,
+                        'created_at' => $plugin->pivot->created_at,
+                        'updated_at' => $plugin->pivot->updated_at,
                     ],
                 ]),
             ],
@@ -254,6 +305,7 @@ class WebsiteController extends Controller
         $website->plugins()->attach($data['plugin_id'], [
             'version' => $data['version'] ?? null,
             'is_active' => $data['is_active'] ?? true,
+            'last_updated' => now(),
         ]);
 
         return redirect()->back()->with('success', 'Plugin attached successfully.');
@@ -277,6 +329,7 @@ class WebsiteController extends Controller
         $website->plugins()->updateExistingPivot($pluginId, [
             'version' => $data['version'] ?? null,
             'is_active' => $data['is_active'] ?? true,
+            'last_updated' => now(),
         ]);
 
         return redirect()->back()->with('success', 'Plugin updated successfully.');
@@ -295,5 +348,85 @@ class WebsiteController extends Controller
         $website->plugins()->detach($pluginId);
 
         return redirect()->back()->with('success', 'Plugin removed successfully.');
+    }
+
+    /**
+     * Bulk assign websites to a group
+     */
+    public function bulkAssignGroup(Request $request)
+    {
+        $validated = $request->validate([
+            'website_ids' => 'required|array',
+            'website_ids.*' => 'exists:websites,id',
+            'group_id' => 'nullable|exists:website_groups,id',
+        ]);
+
+        $websiteIds = $validated['website_ids'];
+        $groupId = $validated['group_id'];
+
+        Website::whereIn('id', $websiteIds)
+            ->update(['group_id' => $groupId]);
+
+        $count = count($websiteIds);
+        $groupName = $groupId ? \App\Models\WebsiteGroup::find($groupId)->name : 'no group';
+        
+        return back()->with('success', "{$count} website(s) assigned to {$groupName} successfully.");
+    }
+
+    /**
+     * Bulk update website status
+     */
+    public function bulkStatusUpdate(Request $request)
+    {
+        $validated = $request->validate([
+            'website_ids' => 'required|array',
+            'website_ids.*' => 'exists:websites,id',
+            'status' => 'required|in:active,inactive,maintenance',
+        ]);
+
+        $websiteIds = $validated['website_ids'];
+        $status = $validated['status'];
+
+        Website::whereIn('id', $websiteIds)
+            ->update(['status' => $status]);
+
+        $count = count($websiteIds);
+        
+        return back()->with('success', "{$count} website(s) status updated to {$status} successfully.");
+    }
+
+    /**
+     * Collect analytics for a single website
+     */
+    public function collectAnalytics(Website $website)
+    {
+        \App\Jobs\CollectWebsiteAnalytics::dispatch($website, 'full');
+        
+        return back()->with('success', 'Analytics collection started for ' . $website->domain_name);
+    }
+
+    /**
+     * Bulk collect analytics for multiple websites
+     */
+    public function bulkCollectAnalytics(Request $request)
+    {
+        $validated = $request->validate([
+            'website_ids' => 'required|array',
+            'website_ids.*' => 'exists:websites,id',
+            'scan_type' => 'nullable|in:quick,full,security',
+        ]);
+
+        $websiteIds = $validated['website_ids'];
+        $scanType = $validated['scan_type'] ?? 'full';
+
+        $websites = Website::whereIn('id', $websiteIds)->get();
+        
+        foreach ($websites as $website) {
+            \App\Jobs\CollectWebsiteAnalytics::dispatch($website, $scanType);
+        }
+
+        $count = count($websiteIds);
+        
+        return back()->with('success', "Analytics collection started for {$count} website(s).");
     }
 }
