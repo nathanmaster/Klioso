@@ -4,7 +4,7 @@ import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Link } from '@inertiajs/react';
 import { 
-    MagnifyingGlass, 
+    Search, 
     Clock, 
     CheckCircle, 
     XCircle, 
@@ -70,7 +70,7 @@ export default function RecentScansPanel({ data = {}, config = {}, onConfigChang
         <Card className="dark:bg-gray-800 dark:border-gray-700">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="dark:text-gray-200 flex items-center gap-2">
-                    <MagnifyingGlass className="h-5 w-5" />
+                    <Search className="h-5 w-5" />
                     Recent Scans
                 </CardTitle>
                 <Button variant="outline" size="sm" asChild>
@@ -106,7 +106,7 @@ export default function RecentScansPanel({ data = {}, config = {}, onConfigChang
                 <div className="space-y-3">
                     {recentScans.length === 0 ? (
                         <div className="text-center py-8">
-                            <MagnifyingGlass className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+                            <Search className="h-12 w-12 mx-auto mb-4 text-gray-400" />
                             <h3 className="text-lg font-semibold mb-2 dark:text-gray-200">
                                 No Recent Scans
                             </h3>
