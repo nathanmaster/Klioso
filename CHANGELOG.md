@@ -1,4 +1,36 @@
 # Changelog
+## [v0.9.48] - 2025-08-07 - Swift
+
+### Overview
+Enhanced UI/UX with complete dark mode integration, improved code quality, and streamlined project organization
+
+**Type**: Minor Release  
+**Stability**: Development
+
+### Key Changes
+- [List major changes here]
+
+**Full Changelog**: [https://github.com/nathanmaster/Klioso/compare/v0.9.47...v0.9.48](https://github.com/nathanmaster/Klioso/compare/v0.9.47...v0.9.48)  
+**Release Notes**: [docs/releases/v0.9/RELEASE_NOTES_v0.9.48.md](docs/releases/v0.9/RELEASE_NOTES_v0.9.48.md)
+
+---
+
+## [v0.9.47] - 2025-08-06 - Swift
+
+### Overview
+Enhanced release management system with comprehensive documentation
+
+**Type**: Minor Release  
+**Stability**: Development
+
+### Key Changes
+- [List major changes here]
+
+**Full Changelog**: [https://github.com/nathanmaster/Klioso/compare/v0.9.46...v0.9.47](https://github.com/nathanmaster/Klioso/compare/v0.9.46...v0.9.47)  
+**Release Notes**: [docs/releases/v0.9/RELEASE_NOTES_v0.9.47.md](docs/releases/v0.9/RELEASE_NOTES_v0.9.47.md)
+
+---
+
 
 All notable changes to Klioso (formerly WordPress Management System) will be documented in this file.
 

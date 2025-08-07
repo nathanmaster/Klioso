@@ -97,11 +97,12 @@ class SecurityAudit extends Model
     {
         return in_array($this->status, ['fixed', 'false_positive']);
     }
-}space App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-
-class SecurityAudit extends Model
-{
-    //
+    /**
+     * Scope for filtering by date range
+     */
+    public function scopeDateRange($query, $startDate, $endDate)
+    {
+        return $query->whereBetween('detected_at', [$startDate, $endDate]);
+    }
 }

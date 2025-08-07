@@ -32,4 +32,12 @@ class WebsiteScan extends Model
     {
         return is_array($this->themes) ? count($this->themes) : 0;
     }
+
+    /**
+     * Scope for filtering by date range
+     */
+    public function scopeDateRange($query, $startDate, $endDate)
+    {
+        return $query->whereBetween('created_at', [$startDate, $endDate]);
+    }
 }

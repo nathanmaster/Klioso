@@ -10,6 +10,7 @@ use App\Http\Controllers\PluginController;
 use App\Http\Controllers\TemplateController;
 use App\Http\Controllers\WordPressScanController;
 use App\Http\Controllers\AnalyticsController;
+use App\Http\Controllers\DashboardController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -26,6 +27,14 @@ Route::get('/', function () {
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
+
+// Customizable Dashboard Routes
+Route::get('/dashboard/customizable', [DashboardController::class, 'index'])->name('dashboard.customizable');
+Route::post('/dashboard/panels', [DashboardController::class, 'storePanel'])->name('dashboard.panels.store');
+Route::patch('/dashboard/panels/{panel}', [DashboardController::class, 'updatePanel'])->name('dashboard.panels.update');
+Route::delete('/dashboard/panels/{panel}', [DashboardController::class, 'destroyPanel'])->name('dashboard.panels.destroy');
+Route::post('/dashboard/layout', [DashboardController::class, 'updateLayout'])->name('dashboard.layout.update');
+Route::post('/dashboard/reset', [DashboardController::class, 'resetLayout'])->name('dashboard.reset');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -95,6 +104,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/analytics/security', [AnalyticsController::class, 'security'])->name('analytics.security');
     Route::get('/analytics/performance', [AnalyticsController::class, 'performance'])->name('analytics.performance');
     Route::post('/analytics/export', [AnalyticsController::class, 'exportReport'])->name('analytics.export');
+    Route::get('/analytics/realtime', [AnalyticsController::class, 'realtime'])->name('analytics.realtime');
+    Route::post('/analytics/refresh', [AnalyticsController::class, 'refresh'])->name('analytics.refresh');
+    Route::get('/analytics/summary', [AnalyticsController::class, 'summary'])->name('analytics.summary');
     
     // Analytics Collection Routes
     Route::post('/websites/{website}/collect-analytics', [WebsiteController::class, 'collectAnalytics'])->name('websites.collect-analytics');

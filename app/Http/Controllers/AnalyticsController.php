@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Website;
 use App\Models\WebsiteAnalytics;
+use App\Models\WebsiteScan;
 use App\Models\SecurityAudit;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -21,34 +22,24 @@ class AnalyticsController extends Controller
         // Get overview statistics
         $stats = $this->getOverviewStats($dateRange);
         
-        // Get recent analytics data
-        $recentAnalytics = WebsiteAnalytics::with('website')
-            ->dateRange($dateRange['start'], $dateRange['end'])
-            ->latest()
-            ->limit(50)
-            ->get();
+        // Get analytics data with proper structure for frontend
+        $analytics = $this->getAnalyticsData($dateRange);
         
-        // Get security alerts
-        $securityAlerts = SecurityAudit::with('website')
-            ->where('status', 'open')
-            ->where('severity', 'high')
-            ->orWhere('severity', 'critical')
-            ->orderBy('detected_at', 'desc')
-            ->limit(10)
-            ->get();
+        // Get security overview with proper structure
+        $securityOverview = $this->getSecurityOverview($dateRange);
         
-        // Get performance trends
-        $performanceTrends = $this->getPerformanceTrends($dateRange);
+        // Get performance data with proper structure
+        $performanceData = $this->getPerformanceData($dateRange);
         
-        // Get health distribution
-        $healthDistribution = $this->getHealthDistribution();
+        // Get recent alerts
+        $recentAlerts = $this->getRecentAlerts();
         
         return Inertia::render('Analytics/Dashboard', [
+            'analytics' => $analytics,
+            'securityOverview' => $securityOverview,
+            'performanceData' => $performanceData,
+            'recentAlerts' => $recentAlerts,
             'stats' => $stats,
-            'recentAnalytics' => $recentAnalytics,
-            'securityAlerts' => $securityAlerts,
-            'performanceTrends' => $performanceTrends,
-            'healthDistribution' => $healthDistribution,
             'dateRange' => $dateRange,
         ]);
     }
@@ -96,36 +87,62 @@ class AnalyticsController extends Controller
     {
         $dateRange = $this->getDateRange($request);
         
-        // Get security statistics
-        $securityStats = $this->getSecurityStats($dateRange);
+        // Get security overview
+        $securityOverview = $this->getSecurityOverview($dateRange);
         
-        // Get recent security audits
-        $recentAudits = SecurityAudit::with('website')
+        // Get recent security audits with proper relationships
+        $recentAudits = SecurityAudit::with(['website'])
             ->whereBetween('detected_at', [$dateRange['start'], $dateRange['end']])
             ->orderBy('detected_at', 'desc')
-            ->paginate(25);
+            ->get()
+            ->map(function ($audit) {
+                return [
+                    'id' => $audit->id,
+                    'website_id' => $audit->website_id,
+                    'website' => $audit->website ? [
+                        'id' => $audit->website->id,
+                        'name' => $audit->website->name,
+                        'url' => $audit->website->url,
+                    ] : null,
+                    'issue_type' => $audit->audit_type,
+                    'risk_level' => $audit->severity,
+                    'status' => $audit->status,
+                    'details' => $audit->details ?? $audit->recommendations,
+                    'created_at' => $audit->detected_at,
+                ];
+            });
         
-        // Get vulnerability distribution
-        $vulnerabilityDistribution = SecurityAudit::selectRaw('audit_type, severity, count(*) as count')
-            ->whereBetween('detected_at', [$dateRange['start'], $dateRange['end']])
-            ->groupBy('audit_type', 'severity')
-            ->get();
+        // Get critical alerts (critical severity, open status)
+        $criticalAlerts = SecurityAudit::with(['website'])
+            ->where('severity', 'critical')
+            ->where('status', 'open')
+            ->orderBy('detected_at', 'desc')
+            ->limit(10)
+            ->get()
+            ->map(function ($audit) {
+                return [
+                    'id' => $audit->id,
+                    'website_id' => $audit->website_id,
+                    'website' => $audit->website ? [
+                        'id' => $audit->website->id,
+                        'name' => $audit->website->name,
+                        'url' => $audit->website->url,
+                    ] : null,
+                    'issue_type' => $audit->audit_type,
+                    'details' => $audit->details ?? $audit->recommendations,
+                    'created_at' => $audit->detected_at,
+                ];
+            });
         
-        // Get websites with critical issues
-        $criticalWebsites = Website::whereHas('securityAudits', function($query) {
-            $query->where('status', 'open')
-                  ->where('severity', 'critical');
-        })->with(['securityAudits' => function($query) {
-            $query->where('status', 'open')
-                  ->where('severity', 'critical');
-        }])->get();
+        // Get all websites for context
+        $websites = Website::select('id', 'name', 'url')->get();
         
         return Inertia::render('Analytics/Security', [
-            'securityStats' => $securityStats,
+            'securityOverview' => $securityOverview,
             'recentAudits' => $recentAudits,
-            'vulnerabilityDistribution' => $vulnerabilityDistribution,
-            'criticalWebsites' => $criticalWebsites,
-            'dateRange' => $dateRange,
+            'criticalAlerts' => $criticalAlerts,
+            'websites' => $websites,
+            'filters' => $request->only(['search', 'severity', 'status']),
         ]);
     }
 
@@ -358,5 +375,259 @@ class AnalyticsController extends Controller
             'direction' => $change > 5 ? 'up' : ($change < -5 ? 'down' : 'neutral'),
             'percentage' => round(abs($change), 1),
         ];
+    }
+    
+    /**
+     * Get analytics data with proper structure for frontend
+     */
+    private function getAnalyticsData($dateRange)
+    {
+        $totalWebsites = Website::count();
+        
+        // Get website growth (compared to previous period)
+        $previousPeriodStart = Carbon::parse($dateRange['start'])->subDays(
+            Carbon::parse($dateRange['start'])->diffInDays($dateRange['end'])
+        );
+        $previousWebsiteCount = Website::where('created_at', '<', $dateRange['start'])->count();
+        $websitesGrowth = $totalWebsites > 0 && $previousWebsiteCount > 0 
+            ? (($totalWebsites - $previousWebsiteCount) / $previousWebsiteCount) * 100 
+            : 0;
+        
+        // Total scans in current period
+        $totalScans = WebsiteScan::dateRange($dateRange['start'], $dateRange['end'])->count();
+        
+        // Get scan growth
+        $previousScans = WebsiteScan::where('created_at', '>=', $previousPeriodStart)
+            ->where('created_at', '<', $dateRange['start'])
+            ->count();
+        $scansGrowth = $previousScans > 0 
+            ? (($totalScans - $previousScans) / $previousScans) * 100 
+            : 0;
+        
+        // Active monitoring (websites with recent analytics)
+        $activeMonitoring = WebsiteAnalytics::distinct('website_id')
+            ->dateRange($dateRange['start'], $dateRange['end'])
+            ->count();
+        
+        // Get monitoring growth
+        $previousMonitoring = WebsiteAnalytics::distinct('website_id')
+            ->where('created_at', '>=', $previousPeriodStart)
+            ->where('created_at', '<', $dateRange['start'])
+            ->count();
+        $monitoringGrowth = $previousMonitoring > 0 
+            ? (($activeMonitoring - $previousMonitoring) / $previousMonitoring) * 100 
+            : 0;
+        
+        // Alerts this period
+        $totalAlerts = SecurityAudit::dateRange($dateRange['start'], $dateRange['end'])->count();
+        
+        // Get alerts growth
+        $previousAlerts = SecurityAudit::where('detected_at', '>=', $previousPeriodStart)
+            ->where('detected_at', '<', $dateRange['start'])
+            ->count();
+        $alertsGrowth = $previousAlerts > 0 
+            ? (($totalAlerts - $previousAlerts) / $previousAlerts) * 100 
+            : 0;
+        
+        return [
+            'totalWebsites' => $totalWebsites,
+            'websitesGrowth' => round($websitesGrowth, 1),
+            'totalScans' => $totalScans,
+            'scansGrowth' => round($scansGrowth, 1),
+            'activeMonitoring' => $activeMonitoring,
+            'monitoringGrowth' => round($monitoringGrowth, 1),
+            'totalAlerts' => $totalAlerts,
+            'alertsGrowth' => round($alertsGrowth, 1),
+        ];
+    }
+    
+    /**
+     * Get security overview with proper structure for frontend
+     */
+    private function getSecurityOverview($dateRange)
+    {
+        $totalVulnerabilities = SecurityAudit::dateRange($dateRange['start'], $dateRange['end'])->count();
+        
+        $activeAlerts = SecurityAudit::where('status', 'open')
+            ->dateRange($dateRange['start'], $dateRange['end'])
+            ->count();
+        
+        $resolvedIssues = SecurityAudit::where('status', 'resolved')
+            ->dateRange($dateRange['start'], $dateRange['end'])
+            ->count();
+        
+        $riskScore = $this->calculateRiskScore();
+        
+        // Security trend data for chart (last 30 days)
+        $securityTrends = [];
+        for ($i = 29; $i >= 0; $i--) {
+            $date = Carbon::now()->subDays($i);
+            $dailyAlerts = SecurityAudit::whereDate('detected_at', $date)->count();
+            $securityTrends[] = [
+                'date' => $date->format('M j'),
+                'alerts' => $dailyAlerts,
+                'resolved' => SecurityAudit::whereDate('resolved_at', $date)->count(),
+            ];
+        }
+        
+        return [
+            'totalVulnerabilities' => $totalVulnerabilities,
+            'activeAlerts' => $activeAlerts,
+            'resolvedIssues' => $resolvedIssues,
+            'riskScore' => $riskScore,
+            'trends' => $securityTrends,
+        ];
+    }
+    
+    /**
+     * Get performance data with proper structure for frontend
+     */
+    private function getPerformanceData($dateRange)
+    {
+        $analytics = WebsiteAnalytics::dateRange($dateRange['start'], $dateRange['end']);
+        
+        $avgResponseTime = round($analytics->avg('load_time') ?? 0, 2);
+        $uptimePercentage = round($analytics->avg('uptime_percentage') ?? 0, 2);
+        $avgHealthScore = round($analytics->avg('health_score') ?? 0, 1);
+        $totalRequests = $analytics->sum('page_views') ?? 0;
+        
+        // Performance trends for chart (last 30 days)
+        $performanceTrends = [];
+        for ($i = 29; $i >= 0; $i--) {
+            $date = Carbon::now()->subDays($i);
+            $dayAnalytics = WebsiteAnalytics::whereDate('created_at', $date);
+            
+            $performanceTrends[] = [
+                'date' => $date->format('M j'),
+                'responseTime' => round($dayAnalytics->avg('load_time') ?? 0, 2),
+                'uptime' => round($dayAnalytics->avg('uptime_percentage') ?? 0, 2),
+                'healthScore' => round($dayAnalytics->avg('health_score') ?? 0, 1),
+            ];
+        }
+        
+        return [
+            'avgResponseTime' => $avgResponseTime,
+            'uptimePercentage' => $uptimePercentage,
+            'avgHealthScore' => $avgHealthScore,
+            'totalRequests' => $totalRequests,
+            'trends' => $performanceTrends,
+        ];
+    }
+    
+    /**
+     * Get recent alerts for the dashboard
+     */
+    private function getRecentAlerts()
+    {
+        return SecurityAudit::with('website')
+            ->where('status', 'open')
+            ->orderBy('detected_at', 'desc')
+            ->limit(5)
+            ->get()
+            ->map(function ($alert) {
+                return [
+                    'id' => $alert->id,
+                    'title' => $alert->vulnerability_type,
+                    'description' => $alert->description,
+                    'severity' => $alert->severity,
+                    'website' => $alert->website->name,
+                    'time' => $alert->detected_at->diffForHumans(),
+                    'status' => $alert->status,
+                ];
+            });
+    }
+    
+    /**
+     * Calculate overall risk score
+     */
+    private function calculateRiskScore()
+    {
+        $criticalIssues = SecurityAudit::where('severity', 'critical')
+            ->where('status', 'open')
+            ->count();
+        
+        $highIssues = SecurityAudit::where('severity', 'high')
+            ->where('status', 'open')
+            ->count();
+        
+        $mediumIssues = SecurityAudit::where('severity', 'medium')
+            ->where('status', 'open')
+            ->count();
+        
+        // Calculate weighted risk score (0-100)
+        $riskScore = ($criticalIssues * 10) + ($highIssues * 5) + ($mediumIssues * 2);
+        
+        // Cap at 100
+        return min($riskScore, 100);
+    }
+
+    /**
+     * Get real-time analytics data for polling
+     */
+    public function realtime(Request $request)
+    {
+        $dateRange = $this->getDateRange($request);
+        
+        return response()->json([
+            'analytics' => $this->getAnalyticsData($dateRange),
+            'securityOverview' => $this->getSecurityOverview($dateRange),
+            'performanceData' => $this->getPerformanceData($dateRange),
+            'recentAlerts' => $this->getRecentAlerts(),
+            'timestamp' => now()->toISOString(),
+        ]);
+    }
+
+    /**
+     * Refresh analytics data (trigger collection)
+     */
+    public function refresh(Request $request)
+    {
+        $dateRange = $this->getDateRange($request);
+        
+        // Trigger background job to collect fresh analytics
+        // This would typically dispatch a job to collect analytics
+        // For now, just return the current data
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Analytics refresh initiated',
+            'data' => [
+                'analytics' => $this->getAnalyticsData($dateRange),
+                'securityOverview' => $this->getSecurityOverview($dateRange),
+                'performanceData' => $this->getPerformanceData($dateRange),
+                'recentAlerts' => $this->getRecentAlerts(),
+            ],
+            'timestamp' => now()->toISOString(),
+        ]);
+    }
+
+    /**
+     * Get analytics summary for quick overview
+     */
+    public function summary(Request $request)
+    {
+        $dateRange = $this->getDateRange($request);
+        $analytics = $this->getAnalyticsData($dateRange);
+        $security = $this->getSecurityOverview($dateRange);
+        $performance = $this->getPerformanceData($dateRange);
+        
+        return response()->json([
+            'summary' => [
+                'websites' => $analytics['totalWebsites'],
+                'scans' => $analytics['totalScans'],
+                'alerts' => $security['activeAlerts'],
+                'avgHealth' => $performance['avgHealthScore'],
+                'avgResponseTime' => $performance['avgResponseTime'],
+                'uptime' => $performance['uptimePercentage'],
+                'riskScore' => $security['riskScore'],
+            ],
+            'trends' => [
+                'websites' => $analytics['websitesGrowth'],
+                'scans' => $analytics['scansGrowth'],
+                'monitoring' => $analytics['monitoringGrowth'],
+                'alerts' => $analytics['alertsGrowth'],
+            ],
+            'timestamp' => now()->toISOString(),
+        ]);
     }
 }

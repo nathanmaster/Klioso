@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Head, router } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
@@ -6,7 +6,6 @@ import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import AnalyticsEventManager from '@/Services/AnalyticsEventManager';
 import { 
     TrendingUp, 
     TrendingDown, 
@@ -29,81 +28,15 @@ export default function AnalyticsDashboard({
 }) {
     const [timeRange, setTimeRange] = useState('7d');
     const [refreshing, setRefreshing] = useState(false);
-    const [liveData, setLiveData] = useState({
-        analytics,
-        securityOverview,
-        performanceData,
-        recentAlerts
-    });
-    const [eventManager] = useState(() => new AnalyticsEventManager());
-
-    // Initialize real-time updates
-    useEffect(() => {
-        eventManager.subscribeToAnalyticsUpdates((update) => {
-            if (update.type === 'security_alert') {
-                setLiveData(prev => ({
-                    ...prev,
-                    recentAlerts: [update.alert, ...prev.recentAlerts.slice(0, 4)]
-                }));
-            } else if (update.type === 'performance_update') {
-                setLiveData(prev => ({
-                    ...prev,
-                    performanceData: { ...prev.performanceData, ...update.metrics }
-                }));
-            } else if (update.type === 'polling_update') {
-                setLiveData(prev => ({
-                    ...prev,
-                    analytics: update.analytics || prev.analytics,
-                    securityOverview: update.securityOverview || prev.securityOverview,
-                    performanceData: update.performanceData || prev.performanceData,
-                    recentAlerts: update.recentAlerts || prev.recentAlerts
-                }));
-            }
-        }, timeRange);
-
-        return () => {
-            eventManager.unsubscribeFromAnalyticsUpdates(timeRange);
-        };
-    }, [timeRange, eventManager]);
-
-    // Cleanup on unmount
-    useEffect(() => {
-        return () => {
-            eventManager.cleanup();
-        };
-    }, [eventManager]);
 
     const handleRefresh = async () => {
         setRefreshing(true);
-        try {
-            const refreshedData = await eventManager.refreshAnalytics(timeRange);
-            if (refreshedData.data) {
-                setLiveData({
-                    analytics: refreshedData.data.analytics,
-                    securityOverview: refreshedData.data.securityOverview,
-                    performanceData: refreshedData.data.performanceData,
-                    recentAlerts: refreshedData.data.recentAlerts
-                });
-            }
-        } catch (error) {
-            console.error('Failed to refresh analytics:', error);
-        } finally {
-            setRefreshing(false);
-        }
+        // Simulate refresh
+        setTimeout(() => setRefreshing(false), 2000);
     };
 
-    const handleExport = async () => {
-        try {
-            await eventManager.exportAnalytics(timeRange, 'csv');
-        } catch (error) {
-            console.error('Failed to export analytics:', error);
-        }
-    };
-
-    const handleTimeRangeChange = (newTimeRange) => {
-        setTimeRange(newTimeRange);
-        // This will trigger the useEffect to resubscribe with new time range
-        router.visit(`/analytics?period=${newTimeRange}`, { preserveState: true });
+    const handleExport = () => {
+        router.visit(`/analytics/export?period=${timeRange}`, { preserveState: true });
     };
 
     // Health score color mapping
@@ -148,7 +81,7 @@ export default function AnalyticsDashboard({
                         Analytics Dashboard
                     </h2>
                     <div className="flex space-x-2">
-                        <Select value={timeRange} onValueChange={handleTimeRangeChange}>
+                        <Select value={timeRange} onValueChange={setTimeRange}>
                             <SelectTrigger className="w-32">
                                 <SelectValue />
                             </SelectTrigger>
@@ -188,14 +121,14 @@ export default function AnalyticsDashboard({
                                 <Globe className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold dark:text-white">{liveData.analytics.totalWebsites || 0}</div>
+                                <div className="text-2xl font-bold dark:text-white">{analytics.totalWebsites || 0}</div>
                                 <p className="text-xs text-muted-foreground">
-                                    <span className={`flex items-center ${liveData.analytics.websitesGrowth >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                                        {liveData.analytics.websitesGrowth >= 0 ? 
+                                    <span className={`flex items-center ${analytics.websitesGrowth >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                                        {analytics.websitesGrowth >= 0 ? 
                                             <TrendingUp className="h-3 w-3 mr-1" /> : 
                                             <TrendingDown className="h-3 w-3 mr-1" />
                                         }
-                                        {Math.abs(liveData.analytics.websitesGrowth || 0)}%
+                                        {Math.abs(analytics.websitesGrowth || 0)}%
                                     </span>
                                     from last period
                                 </p>
@@ -208,14 +141,14 @@ export default function AnalyticsDashboard({
                                 <Activity className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold dark:text-white">{liveData.analytics.totalScans || 0}</div>
+                                <div className="text-2xl font-bold dark:text-white">{analytics.totalScans || 0}</div>
                                 <p className="text-xs text-muted-foreground">
-                                    <span className={`flex items-center ${liveData.analytics.scansGrowth >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                                        {liveData.analytics.scansGrowth >= 0 ? 
+                                    <span className={`flex items-center ${analytics.scansGrowth >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                                        {analytics.scansGrowth >= 0 ? 
                                             <TrendingUp className="h-3 w-3 mr-1" /> : 
                                             <TrendingDown className="h-3 w-3 mr-1" />
                                         }
-                                        {Math.abs(liveData.analytics.scansGrowth || 0)}%
+                                        {Math.abs(analytics.scansGrowth || 0)}%
                                     </span>
                                     from last period
                                 </p>
@@ -228,9 +161,9 @@ export default function AnalyticsDashboard({
                                 <Shield className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold text-red-600 dark:text-red-400">{liveData.securityOverview.activeAlerts || 0}</div>
+                                <div className="text-2xl font-bold text-red-600 dark:text-red-400">{securityOverview.activeAlerts || 0}</div>
                                 <p className="text-xs text-muted-foreground">
-                                    {liveData.securityOverview.totalVulnerabilities || 0} total, {liveData.securityOverview.resolvedIssues || 0} resolved
+                                    {securityOverview.totalVulnerabilities || 0} total, {securityOverview.resolvedIssues || 0} resolved
                                 </p>
                             </CardContent>
                         </Card>
@@ -241,11 +174,11 @@ export default function AnalyticsDashboard({
                                 <Clock className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold dark:text-white">{liveData.performanceData.avgResponseTime || 0}s</div>
+                                <div className="text-2xl font-bold dark:text-white">{performanceData.avgResponseTime || 0}s</div>
                                 <p className="text-xs text-muted-foreground">
                                     <span className="text-green-600 dark:text-green-400 flex items-center">
                                         <CheckCircle className="h-3 w-3 mr-1" />
-                                        {liveData.performanceData.uptimePercentage || 0}% uptime
+                                        {performanceData.uptimePercentage || 0}% uptime
                                     </span>
                                 </p>
                             </CardContent>
@@ -262,7 +195,7 @@ export default function AnalyticsDashboard({
                             </CardHeader>
                             <CardContent>
                                 <ResponsiveContainer width="100%" height={300}>
-                                    <LineChart data={liveData.performanceData.trends || []}>
+                                    <LineChart data={performanceData.trends || []}>
                                         <CartesianGrid strokeDasharray="3 3" className="dark:stroke-gray-600" />
                                         <XAxis 
                                             dataKey="date" 
@@ -305,7 +238,7 @@ export default function AnalyticsDashboard({
                             </CardHeader>
                             <CardContent>
                                 <ResponsiveContainer width="100%" height={300}>
-                                    <BarChart data={liveData.securityOverview.trends || []}>
+                                    <BarChart data={securityOverview.trends || []}>
                                         <CartesianGrid strokeDasharray="3 3" className="dark:stroke-gray-600" />
                                         <XAxis 
                                             dataKey="date" 
@@ -339,8 +272,8 @@ export default function AnalyticsDashboard({
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-4">
-                                {liveData.recentAlerts.length > 0 ? (
-                                    liveData.recentAlerts.map((alert) => (
+                                {recentAlerts.length > 0 ? (
+                                    recentAlerts.map((alert) => (
                                         <div key={alert.id} className="flex items-start justify-between p-4 border rounded-lg dark:border-gray-600 dark:bg-gray-750">
                                             <div className="flex-1">
                                                 <div className="flex items-center gap-2">

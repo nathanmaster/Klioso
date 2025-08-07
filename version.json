@@ -1,27 +1,9 @@
 {
-  "name": "Klioso",
-  "version": "0.9.46",
-  "description": "Multi-Service Provider Management System for WordPress and Web Development with Enhanced Scanner",
-  "codename": "Enhanced Scanning & Dark Mode",
-  "release_date": "2025-07-31",
-  "stability": "stable",
-  "minimum_requirements": {
-    "php": "8.2.0",
-    "mysql": "8.0.0",
-    "node": "18.0.0",
-    "composer": "2.0.0"
-  },
-  "features": [
-    "multi-service-providers",
-    "responsive-tables",
-    "klioso-scanner",
-    "scheduled-scanning",
-    "real-time-progress",
-    "dark-mode-support",
-    "bulk-operations",
-    "flexible-relationships", 
-    "accessibility-compliant"
-  ],
-  "changelog_url": "https://github.com/nathanmaster/Klioso/blob/main/CHANGELOG.md",
-  "documentation_url": "https://github.com/nathanmaster/Klioso/blob/main/README.md"
+    "version": "0.9.48",
+    "release_date": "2025-08-07",
+    "release_timestamp": 1754580902,
+    "codename": "Prism",
+    "description": "Enhanced UI/UX with complete dark mode integration, improved code quality, and streamlined project organization",
+    "type": "minor",
+    "stability": "development"
 }
