@@ -1,4 +1,20 @@
 # Changelog
+## [v0.9.51] - 2025-08-07 - Swift
+
+### Overview
+Enhanced UI/UX with complete dark mode integration, improved code quality, and streamlined project organization
+
+**Type**: Minor Release  
+**Stability**: Development
+
+### Key Changes
+- [List major changes here]
+
+**Full Changelog**: [https://github.com/nathanmaster/Klioso/compare/v0.9.50...v0.9.51](https://github.com/nathanmaster/Klioso/compare/v0.9.50...v0.9.51)  
+**Release Notes**: [docs/releases/v0.9/RELEASE_NOTES_v0.9.51.md](docs/releases/v0.9/RELEASE_NOTES_v0.9.51.md)
+
+---
+
 ## [v0.9.48] - 2025-08-07 - Swift
 
 ### Overview

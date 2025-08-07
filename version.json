@@ -1,8 +1,8 @@
 {
-    "version": "0.9.48",
+    "version": "0.9.51",
     "release_date": "2025-08-07",
-    "release_timestamp": 1754580902,
-    "codename": "Prism",
+    "release_timestamp": 1754582235,
+    "codename": "Swift",
     "description": "Enhanced UI/UX with complete dark mode integration, improved code quality, and streamlined project organization",
     "type": "minor",
     "stability": "development"
