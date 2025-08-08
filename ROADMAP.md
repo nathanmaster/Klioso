@@ -1,11 +1,12 @@
 # Klioso Development Roadmap
 
-## 🎯 **Current Version**: v0.9.53
+## 🎯 **Current Version**: v0.9.54
 ## 🚀 **Next Target**: v1.0.0
 
 ---
 
-## ✅ **Recently Completed (v0.9.53)**
+## ✅ **Recently Completed (v0.9.54)**
+- [x] **GitHub Release Notes Enhancement** - Fixed dynamic date generation and added commit linking in release notes
 - [x] **Release Management System Overhaul** - Smart release manager with commit-based changelog generation
 - [x] **Package Naming Correction** - Fixed GitHub Actions to use correct "klioso" package naming (not "wordpress-scanner")
 - [x] **Build Error Fix** - Resolved invalid icon import causing GitHub Actions deployment failures  
@@ -21,7 +22,7 @@
 
 ---
 
-## 🔄 **Current Development Focus (v0.9.54+)**
+## 🔄 **Current Development Focus (v0.9.55+)**
 
 ### 🐛 **Priority Bug Fixes**
 - [ ] **Scanner Timeout Handling** - Add configurable timeout settings for large scans
@@ -103,9 +104,9 @@
 
 | Version | Target Date | Key Features | Status |
 |---------|-------------|--------------|--------|
-| **v0.9.53** | Q1 2025 | Release system improvements, package naming fix | ✅ Completed |
-| **v0.9.54** | Q1 2025 | Bug fixes, mobile improvements | 🔄 In Progress |
-| **v0.9.55** | Q2 2025 | Advanced scheduling, notifications | 📋 Planned |
+| **v0.9.54** | Q1 2025 | GitHub release notes improvements, commit linking | ✅ Completed |
+| **v0.9.55** | Q1 2025 | Bug fixes, mobile improvements | 🔄 In Progress |
+| **v0.9.56** | Q2 2025 | Advanced scheduling, notifications | 📋 Planned |
 | **v0.10.0** | Q3 2025 | Technical architecture overhaul | 📋 Planned |
 | **v1.0.0** | Q4 2025 | Production-ready stable release | 🎯 Target |
 | **v1.1.0** | Q1 2026 | Enterprise features | 🎯 Future |
@@ -186,5 +187,5 @@
 ---
 
 *Last Updated: August 8, 2025*  
-*Version: 0.9.53*  
+*Version: 0.9.54*  
 *Next Review: September 1, 2025*
