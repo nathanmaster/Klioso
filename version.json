@@ -1,9 +1,9 @@
 {
-    "version": "0.9.54",
+    "version": "0.9.55",
     "release_date": "2025-08-08",
-    "release_timestamp": 1754680542,
-    "codename": "UI/UX Polish",
-    "description": "Fix GitHub release notes generation and commit linking",
+    "release_timestamp": 1754680767,
+    "codename": "Performance Boost",
+    "description": "Fix GitHub Actions workflow tag comparison logic",
     "type": "patch",
     "stability": "development"
 }

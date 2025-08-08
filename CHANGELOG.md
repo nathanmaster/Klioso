@@ -1,4 +1,16 @@
 # Changelog
+## [v0.9.55] - 2025-08-08 - Stability Focus
+
+### Summary
+Fix GitHub Actions workflow tag comparison logic
+
+**Type**: Patch Release  
+**Commits**: 0 changes since last release
+
+**Full Changelog**: [https://github.com/nathanmaster/Klioso/compare/v0.9.0...v0.9.55](https://github.com/nathanmaster/Klioso/compare/v0.9.0...v0.9.55)
+
+---
+
 ## [v0.9.54] - 2025-08-08 - Quality Improvements
 
 ### Summary

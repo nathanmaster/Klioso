@@ -267,11 +267,24 @@ jobs:
         VERSION="${GITHUB_REF#refs/tags/}"
         RELEASE_DATE=$(date '+%Y-%m-%d')
         
-        # Get previous tag
-        PREVIOUS_TAG=$(git describe --tags --abbrev=0 ${VERSION}^^ 2>/dev/null || echo "v0.9.52")
+        # Get all tags and find the previous one
+        git fetch --tags
+        PREVIOUS_TAG=$(git tag --list --sort=-version:refname | grep -v "^${VERSION}$" | head -1)
+        
+        # Fallback if no previous tag found
+        if [ -z "$PREVIOUS_TAG" ]; then
+          PREVIOUS_TAG="v0.9.53"
+        fi
+        
+        echo "Current version: ${VERSION}"
+        echo "Previous version: ${PREVIOUS_TAG}"
         
         # Get commits since previous release
-        COMMITS=$(git log ${PREVIOUS_TAG}..${VERSION} --pretty=format:"- **%s** (\`%h\`) - %an" --no-merges)
+        if git rev-parse "${PREVIOUS_TAG}" >/dev/null 2>&1; then
+          COMMITS=$(git log ${PREVIOUS_TAG}..HEAD --pretty=format:"- **%s** (\`%h\`) - %an" --no-merges)
+        else
+          COMMITS=$(git log --pretty=format:"- **%s** (\`%h\`) - %an" --no-merges -5)
+        fi
         
         # Generate commit compare URL
         COMPARE_URL="https://github.com/nathanmaster/Klioso/compare/${PREVIOUS_TAG}...${VERSION}"
@@ -353,7 +366,9 @@ jobs:
         *This release has been extensively tested and is ready for production use.*
         EOF
         
-        echo "Generated release notes with ${COMMITS//[[:cntrl:]]/} commits"
+        echo "Generated release notes with commits since ${PREVIOUS_TAG}"
+        echo "Release notes file created successfully"
+        cat release_notes.md | head -20
         
     - name: Create Release
       uses: softprops/action-gh-release@v1
