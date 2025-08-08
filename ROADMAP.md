@@ -1,12 +1,14 @@
 # Klioso Development Roadmap
 
-## 🎯 **Current Version**: v0.9.52
+## 🎯 **Current Version**: v0.9.53
 ## 🚀 **Next Target**: v1.0.0
 
 ---
 
-## ✅ **Recently Completed (v0.9.52)**
-- [x] **Build Error Fix** - Resolved invalid icon import causing GitHub Actions deployment failures
+## ✅ **Recently Completed (v0.9.53)**
+- [x] **Release Management System Overhaul** - Smart release manager with commit-based changelog generation
+- [x] **Package Naming Correction** - Fixed GitHub Actions to use correct "klioso" package naming (not "wordpress-scanner")
+- [x] **Build Error Fix** - Resolved invalid icon import causing GitHub Actions deployment failures  
 - [x] **Complete Dark Mode Integration** - Comprehensive dark theme support across all components with improved visual hierarchy
 - [x] **Enhanced UI/UX** - Scan history, pagination improvements, and view state persistence
 - [x] **Code Quality Improvements** - Resolved all AI review recommendations and enhanced maintainability
@@ -19,7 +21,7 @@
 
 ---
 
-## 🔄 **Current Development Focus (v0.9.53+)**
+## 🔄 **Current Development Focus (v0.9.54+)**
 
 ### 🐛 **Priority Bug Fixes**
 - [ ] **Scanner Timeout Handling** - Add configurable timeout settings for large scans
@@ -101,8 +103,8 @@
 
 | Version | Target Date | Key Features | Status |
 |---------|-------------|--------------|--------|
-| **v0.9.52** | Q1 2025 | Build fix, icon corrections, CI/CD stability | ✅ Completed |
-| **v0.9.53** | Q1 2025 | Bug fixes, mobile improvements | 🔄 In Progress |
+| **v0.9.53** | Q1 2025 | Release system improvements, package naming fix | ✅ Completed |
+| **v0.9.54** | Q1 2025 | Bug fixes, mobile improvements | 🔄 In Progress |
 | **v0.9.55** | Q2 2025 | Advanced scheduling, notifications | 📋 Planned |
 | **v0.10.0** | Q3 2025 | Technical architecture overhaul | 📋 Planned |
 | **v1.0.0** | Q4 2025 | Production-ready stable release | 🎯 Target |
@@ -183,6 +185,6 @@
 
 ---
 
-*Last Updated: August 7, 2025*  
-*Version: 0.9.52*  
+*Last Updated: August 8, 2025*  
+*Version: 0.9.53*  
 *Next Review: September 1, 2025*
