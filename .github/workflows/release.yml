@@ -117,7 +117,7 @@ jobs:
         cd releases
         
         # Production package
-        zip -r "wordpress-scanner-${VERSION}-production.zip" production/
+        zip -r "klioso-${VERSION}-production.zip" production/
         
         # Windows package (copy from production)
         cp -r production windows
@@ -164,7 +164,7 @@ jobs:
         Visit: https://github.com/nathanmaster/Klioso
         EOF
         
-        zip -r "wordpress-scanner-${VERSION}-windows.zip" windows/
+        zip -r "klioso-${VERSION}-windows.zip" windows/
         
         # Shared hosting package
         cp -r production shared-hosting
@@ -218,10 +218,10 @@ jobs:
         Visit: https://github.com/nathanmaster/Klioso
         EOF
         
-        zip -r "wordpress-scanner-${VERSION}-shared-hosting.zip" shared-hosting/
+        zip -r "klioso-${VERSION}-shared-hosting.zip" shared-hosting/
         
         # Generate checksums
-        for file in wordpress-scanner-${VERSION}-*.zip; do
+        for file in klioso-${VERSION}-*.zip; do
           if [ -f "$file" ]; then
             sha256sum "$file" >> checksums.txt
           fi
@@ -229,9 +229,9 @@ jobs:
         
         # Source archive (from git)
         cd ..
-        git archive --format=zip --prefix="wordpress-scanner-${VERSION}/" HEAD > "releases/wordpress-scanner-${VERSION}-source.zip"
+        git archive --format=zip --prefix="klioso-${VERSION}/" HEAD > "releases/klioso-${VERSION}-source.zip"
         cd releases
-        sha256sum "wordpress-scanner-${VERSION}-source.zip" >> checksums.txt
+        sha256sum "klioso-${VERSION}-source.zip" >> checksums.txt
         
     - name: Validate packages
       run: |
@@ -240,16 +240,16 @@ jobs:
         
         echo "=== Release Package Validation ==="
         echo "Packages created:"
-        ls -la wordpress-scanner-${VERSION}-*.zip
+        ls -la klioso-${VERSION}-*.zip
         
         echo -e "\n=== Package Sizes ==="
-        du -h wordpress-scanner-${VERSION}-*.zip
+        du -h klioso-${VERSION}-*.zip
         
         echo -e "\n=== Checksums ==="
         cat checksums.txt
         
         echo -e "\n=== Package Contents Verification ==="
-        for package in wordpress-scanner-${VERSION}-*.zip; do
+        for package in klioso-${VERSION}-*.zip; do
           echo "Checking $package..."
           if unzip -t "$package" > /dev/null; then
             echo "✅ $package: ZIP integrity OK"
@@ -265,54 +265,32 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         files: |
-          releases/wordpress-scanner-${{ github.ref_name }}-production.zip
-          releases/wordpress-scanner-${{ github.ref_name }}-source.zip
-          releases/wordpress-scanner-${{ github.ref_name }}-windows.zip
-          releases/wordpress-scanner-${{ github.ref_name }}-shared-hosting.zip
+          releases/klioso-${{ github.ref_name }}-production.zip
+          releases/klioso-${{ github.ref_name }}-source.zip
+          releases/klioso-${{ github.ref_name }}-windows.zip
+          releases/klioso-${{ github.ref_name }}-shared-hosting.zip
           releases/checksums.txt
         draft: false
         prerelease: false
-        generate_release_notes: false
+        generate_release_notes: true
         body: |
-          # 🚀 Klioso ${{ github.ref_name }} - Bulk Operations & Enhanced UI
+          # 🚀 Klioso ${{ github.ref_name }} - Enhanced Release
           
-          ## 🎉 What's New in This Release
+          **Release Date**: $(date '+%Y-%m-%d')  
+          **Version**: ${{ github.ref_name }}  
+          **Package Names**: klioso-* (corrected from wordpress-scanner-*)
           
-          ### 🔄 Bulk Operations System
-          - **Multi-Select Management**: Select multiple websites for batch operations
-          - **Bulk Scanning**: Scan multiple WordPress sites simultaneously with progress tracking
-          - **Group Assignment**: Assign websites to groups in bulk operations
-          - **Status Updates**: Update multiple website statuses at once
-          - **Scheduled Scans**: Create scheduled scans for multiple websites with template naming
+          This release includes the latest improvements and bug fixes for Klioso.
           
-          ### 🎨 Enhanced User Interface
-          - **Table/Grid Toggle**: Switch between table and grid views for website management
-          - **Mobile Responsive**: Fully responsive design optimized for mobile devices
-          - **BulkActionsModal**: Tabbed interface for different bulk operation types
-          - **Multi-Select UI**: Checkbox selection with keyboard shortcuts support
-          - **Visual Feedback**: Progress indicators and real-time operation status
+          ## 📦 **Release Packages**
           
-          ### 🔍 Klioso Scanner Improvements
-          - **Better Error Handling**: Graceful handling of unreachable or misconfigured sites
-          - **SSL Support**: Automatic detection and handling of HTTPS/HTTP sites  
-          - **Enhanced Detection**: Improved plugin and theme identification algorithms
-          - **Bulk Plugin Management**: Add plugins to multiple sites simultaneously
-          
-          ### 📅 Scheduled Scan System
-          - **Automated Scanning**: Set up recurring scans with customizable frequencies
-          - **Template Naming**: Use dynamic templates for scheduled scan names
-          - **Success Tracking**: Monitor scan success rates and performance metrics
-          - **Bulk Schedule Creation**: Create schedules for multiple websites at once
-          
-          ## 📦 Release Packages
-          
-          - **`wordpress-scanner-${{ github.ref_name }}-production.zip`** - Production-ready deployment package
-          - **`wordpress-scanner-${{ github.ref_name }}-windows.zip`** - Windows/Laragon optimized with install.bat
-          - **`wordpress-scanner-${{ github.ref_name }}-shared-hosting.zip`** - cPanel/shared hosting ready
-          - **`wordpress-scanner-${{ github.ref_name }}-source.zip`** - Complete source code archive
+          - **`klioso-${{ github.ref_name }}-production.zip`** - Production-ready deployment package
+          - **`klioso-${{ github.ref_name }}-windows.zip`** - Windows/Laragon optimized with install.bat  
+          - **`klioso-${{ github.ref_name }}-shared-hosting.zip`** - cPanel/shared hosting ready
+          - **`klioso-${{ github.ref_name }}-source.zip`** - Complete source code archive
           - **`checksums.txt`** - SHA256 checksums for package verification
           
-          ## 🏗️ System Requirements
+          ## 🏗️ **System Requirements**
           - **PHP**: 8.2+ (8.3 recommended)
           - **Database**: MySQL 8+ or SQLite 3+
           - **Web Server**: Apache 2.4+ or Nginx 1.18+
@@ -322,21 +300,21 @@ jobs:
           ## ⚡ Quick Installation
           
           ### Windows/Laragon (Recommended for development)
-          1. Download `wordpress-scanner-${{ github.ref_name }}-windows.zip`
-          2. Extract to `C:\laragon\www\wordpress-scanner`
+          1. Download `klioso-${{ github.ref_name }}-windows.zip`
+          2. Extract to `C:\laragon\www\klioso`
           3. Run `install.bat` as Administrator
           4. Configure database in `.env` file
-          5. Access via `http://wordpress-scanner.test`
+          5. Access via `http://klioso.test`
           
           ### Linux Production
-          1. Download `wordpress-scanner-${{ github.ref_name }}-production.zip`
+          1. Download `klioso-${{ github.ref_name }}-production.zip`
           2. Extract to your server directory
           3. Configure web server to point to `public/` directory
           4. Set up `.env` file with production settings
           5. Run `php artisan migrate`
           
           ### Shared Hosting
-          1. Download `wordpress-scanner-${{ github.ref_name }}-shared-hosting.zip`
+          1. Download `klioso-${{ github.ref_name }}-shared-hosting.zip`
           2. Upload files to your hosting account
           3. Move `public/` contents to document root
           4. Configure database via hosting control panel

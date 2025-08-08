@@ -1,4 +1,32 @@
 # Changelog
+## [v0.9.53] - 2025-08-08 - User Experience
+
+### Summary
+Release Management System Improvements and Package Naming Fix
+
+**Type**: Patch Release  
+**Commits**: 0 changes since last release
+
+**Full Changelog**: [https://github.com/nathanmaster/Klioso/compare/v0.9.0...v0.9.53](https://github.com/nathanmaster/Klioso/compare/v0.9.0...v0.9.53)
+
+---
+
+## [v0.9.52] - 2025-08-07 - Improve
+
+### Overview
+Fix build error - replace invalid MagnifyingGlass icon with Search icon
+
+**Type**: Patch Release  
+**Stability**: Development
+
+### Key Changes
+- [List major changes here]
+
+**Full Changelog**: [https://github.com/nathanmaster/Klioso/compare/v0.9.51...v0.9.52](https://github.com/nathanmaster/Klioso/compare/v0.9.51...v0.9.52)  
+**Release Notes**: [docs/releases/v0.9/RELEASE_NOTES_v0.9.52.md](docs/releases/v0.9/RELEASE_NOTES_v0.9.52.md)
+
+---
+
 ## [v0.9.51] - 2025-08-07 - Swift
 
 ### Overview
