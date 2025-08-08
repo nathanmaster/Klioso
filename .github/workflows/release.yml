@@ -261,6 +261,100 @@ jobs:
         
         echo -e "\n=== All packages validated successfully! ==="
         
+    - name: Generate release notes with commit info
+      id: release_notes
+      run: |
+        VERSION="${GITHUB_REF#refs/tags/}"
+        RELEASE_DATE=$(date '+%Y-%m-%d')
+        
+        # Get previous tag
+        PREVIOUS_TAG=$(git describe --tags --abbrev=0 ${VERSION}^^ 2>/dev/null || echo "v0.9.52")
+        
+        # Get commits since previous release
+        COMMITS=$(git log ${PREVIOUS_TAG}..${VERSION} --pretty=format:"- **%s** (\`%h\`) - %an" --no-merges)
+        
+        # Generate commit compare URL
+        COMPARE_URL="https://github.com/nathanmaster/Klioso/compare/${PREVIOUS_TAG}...${VERSION}"
+        
+        # Create release notes with dynamic content
+        cat > release_notes.md << EOF
+        # 🚀 Klioso ${VERSION} - Enhanced Release
+        
+        **Release Date**: ${RELEASE_DATE}  
+        **Version**: ${VERSION}  
+        **Previous Version**: ${PREVIOUS_TAG}
+        
+        ## 📋 **What's Changed**
+        
+        ${COMMITS:-"- Maintenance and improvements"}
+        
+        **Full Changelog**: [${PREVIOUS_TAG}...${VERSION}](${COMPARE_URL})
+        
+        ## 📦 **Release Packages**
+        
+        - **\`klioso-${VERSION}-production.zip\`** - Production-ready deployment package
+        - **\`klioso-${VERSION}-windows.zip\`** - Windows/Laragon optimized with install.bat  
+        - **\`klioso-${VERSION}-shared-hosting.zip\`** - cPanel/shared hosting ready
+        - **\`klioso-${VERSION}-source.zip\`** - Complete source code archive
+        - **\`checksums.txt\`** - SHA256 checksums for package verification
+        
+        ## 🏗️ **System Requirements**
+        - **PHP**: 8.2+ (8.3 recommended)
+        - **Database**: MySQL 8+ or SQLite 3+
+        - **Web Server**: Apache 2.4+ or Nginx 1.18+
+        - **Memory**: 256MB+ PHP memory limit
+        - **Storage**: 50MB+ free disk space
+        
+        ## ⚡ **Quick Installation**
+        
+        ### Windows/Laragon (Recommended for development)
+        1. Download \`klioso-${VERSION}-windows.zip\`
+        2. Extract to \`C:\laragon\www\klioso\`
+        3. Run \`install.bat\` as Administrator
+        4. Configure database in \`.env\` file
+        5. Access via \`http://klioso.test\`
+        
+        ### Linux Production
+        1. Download \`klioso-${VERSION}-production.zip\`
+        2. Extract to your server directory
+        3. Configure web server to point to \`public/\` directory
+        4. Set up \`.env\` file with production settings
+        5. Run \`php artisan migrate\`
+        
+        ### Shared Hosting
+        1. Download \`klioso-${VERSION}-shared-hosting.zip\`
+        2. Upload files to your hosting account
+        3. Move \`public/\` contents to document root
+        4. Configure database via hosting control panel
+        
+        ## ⚠️ **Important Notes**
+        
+        - **🛡️ BACKUP YOUR DATA**: This release includes database schema changes
+        - **📋 Database Migrations Required**: Run \`php artisan migrate\` after installation
+        - **✅ Production Ready**: Extensively tested and ready for production use
+        
+        ## 🔐 **Package Verification**
+        
+        Verify package integrity using SHA256 checksums in \`checksums.txt\`:
+        \`\`\`bash
+        sha256sum -c checksums.txt
+        \`\`\`
+        
+        ## 📞 **Support & Feedback**
+        
+        - 🐛 **Bug Reports**: [GitHub Issues](https://github.com/nathanmaster/Klioso/issues)
+        - 💬 **Discussions**: [GitHub Discussions](https://github.com/nathanmaster/Klioso/discussions)
+        - 📖 **Documentation**: Check \`/docs\` folder in each package
+        
+        ---
+        
+        **Klioso ${VERSION}** - Professional WordPress management at scale! 🚀
+        
+        *This release has been extensively tested and is ready for production use.*
+        EOF
+        
+        echo "Generated release notes with ${COMMITS//[[:cntrl:]]/} commits"
+        
     - name: Create Release
       uses: softprops/action-gh-release@v1
       with:
@@ -272,78 +366,7 @@ jobs:
           releases/checksums.txt
         draft: false
         prerelease: false
-        generate_release_notes: true
-        body: |
-          # 🚀 Klioso ${{ github.ref_name }} - Enhanced Release
-          
-          **Release Date**: $(date '+%Y-%m-%d')  
-          **Version**: ${{ github.ref_name }}  
-          **Package Names**: klioso-* (corrected from wordpress-scanner-*)
-          
-          This release includes the latest improvements and bug fixes for Klioso.
-          
-          ## 📦 **Release Packages**
-          
-          - **`klioso-${{ github.ref_name }}-production.zip`** - Production-ready deployment package
-          - **`klioso-${{ github.ref_name }}-windows.zip`** - Windows/Laragon optimized with install.bat  
-          - **`klioso-${{ github.ref_name }}-shared-hosting.zip`** - cPanel/shared hosting ready
-          - **`klioso-${{ github.ref_name }}-source.zip`** - Complete source code archive
-          - **`checksums.txt`** - SHA256 checksums for package verification
-          
-          ## 🏗️ **System Requirements**
-          - **PHP**: 8.2+ (8.3 recommended)
-          - **Database**: MySQL 8+ or SQLite 3+
-          - **Web Server**: Apache 2.4+ or Nginx 1.18+
-          - **Memory**: 256MB+ PHP memory limit
-          - **Storage**: 50MB+ free disk space
-          
-          ## ⚡ Quick Installation
-          
-          ### Windows/Laragon (Recommended for development)
-          1. Download `klioso-${{ github.ref_name }}-windows.zip`
-          2. Extract to `C:\laragon\www\klioso`
-          3. Run `install.bat` as Administrator
-          4. Configure database in `.env` file
-          5. Access via `http://klioso.test`
-          
-          ### Linux Production
-          1. Download `klioso-${{ github.ref_name }}-production.zip`
-          2. Extract to your server directory
-          3. Configure web server to point to `public/` directory
-          4. Set up `.env` file with production settings
-          5. Run `php artisan migrate`
-          
-          ### Shared Hosting
-          1. Download `klioso-${{ github.ref_name }}-shared-hosting.zip`
-          2. Upload files to your hosting account
-          3. Move `public/` contents to document root
-          4. Configure database via hosting control panel
-          
-          ## ⚠️ Important Notes
-          
-          - **🛡️ BACKUP YOUR DATA**: This release includes database schema changes
-          - **📋 Database Migrations Required**: Run `php artisan migrate` after installation
-          - **🔄 Breaking Changes**: UI layout significantly restructured with bulk operations
-          - **✅ Production Ready**: Extensively tested and ready for production use
-          
-          ## 🔐 Package Verification
-          
-          Verify package integrity using SHA256 checksums in `checksums.txt`:
-          ```bash
-          sha256sum -c checksums.txt
-          ```
-          
-          ## 📞 Support & Feedback
-          
-          - 🐛 **Bug Reports**: [GitHub Issues](https://github.com/nathanmaster/Klioso/issues)
-          - 💬 **Discussions**: [GitHub Discussions](https://github.com/nathanmaster/Klioso/discussions)
-          - 📖 **Documentation**: Check `/docs` folder in each package
-          - 📋 **Full Changelog**: [CHANGELOG.md](https://github.com/nathanmaster/Klioso/blob/main/docs/releases/v0.9.2/CHANGELOG.md)
-          
-          ---
-          
-          **Klioso ${{ github.ref_name }}** - Professional WordPress management at scale! 🚀
-          
-          *This release has been extensively tested and is ready for production use.*
+        generate_release_notes: false
+        body_path: release_notes.md
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

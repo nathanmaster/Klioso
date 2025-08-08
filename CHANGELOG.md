@@ -1,4 +1,16 @@
 # Changelog
+## [v0.9.54] - 2025-08-08 - Quality Improvements
+
+### Summary
+Fix GitHub release notes generation and commit linking
+
+**Type**: Patch Release  
+**Commits**: 0 changes since last release
+
+**Full Changelog**: [https://github.com/nathanmaster/Klioso/compare/v0.9.0...v0.9.54](https://github.com/nathanmaster/Klioso/compare/v0.9.0...v0.9.54)
+
+---
+
 ## [v0.9.53] - 2025-08-08 - User Experience
 
 ### Summary

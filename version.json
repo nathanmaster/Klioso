@@ -1,9 +1,9 @@
 {
-    "version": "0.9.53",
+    "version": "0.9.54",
     "release_date": "2025-08-08",
-    "release_timestamp": 1754677708,
-    "codename": "Stability Focus",
-    "description": "Release Management System Improvements and Package Naming Fix",
+    "release_timestamp": 1754680542,
+    "codename": "UI/UX Polish",
+    "description": "Fix GitHub release notes generation and commit linking",
     "type": "patch",
     "stability": "development"
 }
