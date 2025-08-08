@@ -1,9 +1,9 @@
 {
-    "version": "0.9.55",
+    "version": "0.9.56",
     "release_date": "2025-08-08",
-    "release_timestamp": 1754680767,
-    "codename": "Performance Boost",
-    "description": "Fix GitHub Actions workflow tag comparison logic",
-    "type": "patch",
+    "release_timestamp": 1754683542,
+    "codename": "Stability Focus",
+    "description": "GitHub Actions workflow tag handling improvements",
+    "type": "minor",
     "stability": "development"
 }

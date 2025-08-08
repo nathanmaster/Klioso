@@ -1,4 +1,16 @@
 # Changelog
+## [v0.9.56] - 2025-08-08 - UI/UX Polish
+
+### Summary
+GitHub Actions workflow tag handling improvements
+
+**Type**: Minor Release  
+**Commits**: 0 changes since last release
+
+**Full Changelog**: [https://github.com/nathanmaster/Klioso/compare/v0.9.0...v0.9.56](https://github.com/nathanmaster/Klioso/compare/v0.9.0...v0.9.56)
+
+---
+
 ## [v0.9.55] - 2025-08-08 - Stability Focus
 
 ### Summary
