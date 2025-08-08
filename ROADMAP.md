@@ -1,11 +1,12 @@
 # Klioso Development Roadmap
 
-## 🎯 **Current Version**: v0.9.55
+## 🎯 **Current Version**: v0.9.56
 ## 🚀 **Next Target**: v1.0.0
 
 ---
 
-## ✅ **Recently Completed (v0.9.55)**
+## ✅ **Recently Completed (v0.9.56)**
+- [x] **Enhanced GitHub Actions Workflow** - Improved tag handling and conflict resolution with conditional fetching
 - [x] **GitHub Actions Workflow Fix** - Fixed tag comparison logic causing workflow failures
 - [x] **GitHub Release Notes Enhancement** - Fixed dynamic date generation and added commit linking in release notes
 - [x] **Release Management System Overhaul** - Smart release manager with commit-based changelog generation
@@ -23,7 +24,7 @@
 
 ---
 
-## 🔄 **Current Development Focus (v0.9.56+)**
+## 🔄 **Current Development Focus (v0.9.57+)**
 
 ### 🐛 **Priority Bug Fixes**
 - [ ] **Scanner Timeout Handling** - Add configurable timeout settings for large scans
@@ -105,9 +106,9 @@
 
 | Version | Target Date | Key Features | Status |
 |---------|-------------|--------------|--------|
-| **v0.9.55** | Q1 2025 | GitHub Actions workflow fixes | ✅ Completed |
-| **v0.9.56** | Q1 2025 | Bug fixes, mobile improvements | 🔄 In Progress |
-| **v0.9.57** | Q2 2025 | Advanced scheduling, notifications | 📋 Planned |
+| **v0.9.56** | Q1 2025 | GitHub Actions workflow improvements | ✅ Completed |
+| **v0.9.57** | Q1 2025 | Bug fixes, mobile improvements | 🔄 In Progress |
+| **v0.9.58** | Q2 2025 | Advanced scheduling, notifications | 📋 Planned |
 | **v0.10.0** | Q3 2025 | Technical architecture overhaul | 📋 Planned |
 | **v1.0.0** | Q4 2025 | Production-ready stable release | 🎯 Target |
 | **v1.1.0** | Q1 2026 | Enterprise features | 🎯 Future |
@@ -188,5 +189,5 @@
 ---
 
 *Last Updated: August 8, 2025*  
-*Version: 0.9.55*  
+*Version: 0.9.56*  
 *Next Review: September 1, 2025*
