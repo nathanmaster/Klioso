@@ -17,6 +17,9 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Fetch full history for tags and commits
+        fetch-tags: true  # Ensure tags are fetched
       
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
@@ -267,17 +270,30 @@ jobs:
         VERSION="${GITHUB_REF#refs/tags/}"
         RELEASE_DATE=$(date '+%Y-%m-%d')
         
-        # Get all tags and find the previous one
-        git fetch --tags
+        # Get all tags and find the previous one (fetch only if needed)
+        # Check if we have enough tags locally first
+        TAG_COUNT=$(git tag --list | wc -l)
+        if [ "$TAG_COUNT" -lt 5 ]; then
+          echo "Fetching tags from remote (only $TAG_COUNT tags found locally)..."
+          git fetch --tags --force
+        else
+          echo "Using local tags ($TAG_COUNT tags available)"
+        fi
+        
         PREVIOUS_TAG=$(git tag --list --sort=-version:refname | grep -v "^${VERSION}$" | head -1)
         
-        # Fallback if no previous tag found
+        # Enhanced fallback logic
         if [ -z "$PREVIOUS_TAG" ]; then
-          PREVIOUS_TAG="v0.9.53"
+          # Try to find any v0.9.x tag as fallback
+          PREVIOUS_TAG=$(git tag --list --sort=-version:refname | grep "^v0\.9\." | head -1)
+          if [ -z "$PREVIOUS_TAG" ]; then
+            PREVIOUS_TAG="v0.9.53"
+          fi
         fi
         
         echo "Current version: ${VERSION}"
         echo "Previous version: ${PREVIOUS_TAG}"
+        echo "Available tags: $(git tag --list --sort=-version:refname | head -5 | tr '\n' ' ')"
         
         # Get commits since previous release
         if git rev-parse "${PREVIOUS_TAG}" >/dev/null 2>&1; then
