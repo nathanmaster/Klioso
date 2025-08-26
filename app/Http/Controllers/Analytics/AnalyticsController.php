@@ -1,6 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Analytics;
+
+use App\Http\Controllers\Controller;
 
 use App\Models\Website;
 use App\Models\WebsiteAnalytics;

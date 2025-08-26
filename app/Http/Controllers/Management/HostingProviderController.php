@@ -1,6 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Management;
+
+use App\Http\Controllers\Controller;
 
 use App\Models\HostingProvider;
 use Illuminate\Http\Request;
@@ -55,6 +57,9 @@ class HostingProviderController extends Controller
         });
         
         return Inertia::render('HostingProviders/Index', [
+            'auth' => [
+                'user' => auth()->user()
+            ],
             'hostingProviders' => $providerData,
             'pagination' => [
                 'current_page' => $hostingProviders->currentPage(),
@@ -68,7 +73,6 @@ class HostingProviderController extends Controller
             'sortBy' => $sortBy,
             'sortDirection' => $sortDirection,
             'filters' => $request->only('search'),
-            'layout' => 'AuthenticatedLayout',
         ]);
     }
 
@@ -162,5 +166,18 @@ class HostingProviderController extends Controller
     {
         $hostingProvider->delete();
         return redirect()->route('hosting-providers.index');
+    }
+
+    public function bulkDelete(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'exists:hosting_providers,id'
+        ]);
+
+        HostingProvider::whereIn('id', $request->ids)->delete();
+        
+        return redirect()->route('hosting-providers.index')
+            ->with('success', 'Hosting providers deleted successfully.');
     }
 }

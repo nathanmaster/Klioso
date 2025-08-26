@@ -1,16 +1,17 @@
 <?php
 
-use App\Http\Controllers\ClientController;
-use App\Http\Controllers\HostingProviderController;
+use App\Http\Controllers\Management\ClientController;
+use App\Http\Controllers\Management\HostingProviderController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\WebsiteController;
-use App\Http\Controllers\WebsiteGroupController;
-use App\Http\Controllers\ScheduledScanController;
-use App\Http\Controllers\PluginController;
-use App\Http\Controllers\TemplateController;
-use App\Http\Controllers\WordPressScanController;
-use App\Http\Controllers\AnalyticsController;
-use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Management\WebsiteController;
+use App\Http\Controllers\Management\WebsiteGroupController;
+use App\Http\Controllers\Scanner\ScheduledScanController;
+use App\Http\Controllers\Management\PluginController;
+use App\Http\Controllers\Management\TemplateController;
+use App\Http\Controllers\Scanner\WordPressScanController;
+use App\Http\Controllers\Analytics\AnalyticsController;
+use App\Http\Controllers\Analytics\DashboardController;
+use App\Http\Controllers\Admin\EmailTestController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -27,6 +28,26 @@ Route::get('/', function () {
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
+
+// Test route
+Route::get('/test', function () {
+    return Inertia::render('Test');
+})->name('test');
+
+// Debug route
+Route::get('/debug-routes', function () {
+    return response()->json([
+        'email-test.send' => route('email-test.send'),
+        'email-test.index' => route('email-test.index'),
+        'all_routes' => collect(Route::getRoutes())->map(function($route) {
+            return [
+                'name' => $route->getName(),
+                'uri' => $route->uri(),
+                'methods' => $route->methods()
+            ];
+        })->values()
+    ]);
+});
 
 // Customizable Dashboard Routes
 Route::get('/dashboard/customizable', [DashboardController::class, 'index'])->name('dashboard.customizable');
@@ -111,6 +132,26 @@ Route::middleware('auth')->group(function () {
     // Analytics Collection Routes
     Route::post('/websites/{website}/collect-analytics', [WebsiteController::class, 'collectAnalytics'])->name('websites.collect-analytics');
     Route::post('/websites/bulk-collect-analytics', [WebsiteController::class, 'bulkCollectAnalytics'])->name('websites.bulk-collect-analytics');
+
+    // Email Testing Routes (Development)
+    Route::get('/email-test', [EmailTestController::class, 'index'])->name('email-test.index');
+    Route::post('/email-test/send', [EmailTestController::class, 'send'])->name('email-test.send');
+    Route::post('/email-test/bulk', [EmailTestController::class, 'sendBulkTest'])->name('email-test.bulk');
+    Route::get('/email-test/config', [EmailTestController::class, 'testConfig'])->name('email-test.config');
 });
+
+// API Routes for Error Logging and Analytics (no CSRF required)
+Route::prefix('api')->middleware(['web'])->group(function () {
+    Route::post('/analytics/error', [App\Http\Controllers\Api\AnalyticsController::class, 'logError']);
+    Route::post('/analytics/page-view', [App\Http\Controllers\Api\AnalyticsController::class, 'logPageView']);
+    Route::get('/analytics/errors', [App\Http\Controllers\Api\AnalyticsController::class, 'getErrorAnalytics'])->middleware('auth');
+});
+
+// Debug route for testing error logging
+Route::get('/debug/test-error-logging', function () {
+    return response()->json([
+        'message' => 'Test error logging by opening browser console and checking network tab'
+    ]);
+})->middleware('auth');
 
 require __DIR__.'/auth.php';

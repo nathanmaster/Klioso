@@ -1,6 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Management;
+
+use App\Http\Controllers\Controller;
 
 use App\Models\Website;
 use App\Models\Client;
@@ -15,12 +17,45 @@ class WebsiteController extends Controller
         $query = Website::with(['client', 'hostingProvider', 'dnsProvider', 'emailProvider', 'domainRegistrar', 'group']);
         
         // Search functionality
-        if ($request->search) {
-            $query->where('domain_name', 'like', '%' . $request->search . '%')
-                  ->orWhere('platform', 'like', '%' . $request->search . '%')
-                  ->orWhereHas('client', function($q) use ($request) {
-                      $q->where('name', 'like', '%' . $request->search . '%');
+        $search = $request->get('search');
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('domain_name', 'like', "%{$search}%")
+                  ->orWhere('display_name', 'like', "%{$search}%")
+                  ->orWhere('platform', 'like', "%{$search}%")
+                  ->orWhere('notes', 'like', "%{$search}%")
+                  ->orWhereHas('client', function($clientQuery) use ($search) {
+                      $clientQuery->where('name', 'like', "%{$search}%");
                   });
+            });
+        }
+
+        // Status filter
+        $statusFilter = $request->get('status');
+        if ($statusFilter && $statusFilter !== 'all') {
+            $query->where('status', $statusFilter);
+        }
+
+        // Platform filter
+        $platformFilter = $request->get('platform');
+        if ($platformFilter && $platformFilter !== 'all') {
+            $query->where('platform', $platformFilter);
+        }
+
+        // Group filter
+        $groupFilter = $request->get('group_id');
+        if ($groupFilter && $groupFilter !== 'all') {
+            if ($groupFilter === 'ungrouped') {
+                $query->whereNull('group_id');
+            } else {
+                $query->where('group_id', $groupFilter);
+            }
+        }
+
+        // Client filter
+        $clientFilter = $request->get('client_id');
+        if ($clientFilter && $clientFilter !== 'all') {
+            $query->where('client_id', $clientFilter);
         }
         
         // Sorting functionality
@@ -28,7 +63,7 @@ class WebsiteController extends Controller
         $sortDirection = $request->get('sort_direction', 'asc');
         
         // Validate sort parameters
-        $allowedSortFields = ['domain_name', 'platform', 'status', 'created_at'];
+        $allowedSortFields = ['domain_name', 'display_name', 'platform', 'status', 'created_at', 'updated_at'];
         if (!in_array($sortBy, $allowedSortFields)) {
             $sortBy = 'domain_name';
         }
@@ -41,7 +76,10 @@ class WebsiteController extends Controller
         // Pagination
         $websites = $query->paginate($request->get('per_page', 15))
             ->withQueryString();
-        
+
+        // Get groups for filter dropdown
+        $groups = \App\Models\WebsiteGroup::select('id', 'name')->get();
+
         $websiteData = $websites->getCollection()->map(function ($website) {
             return [
                 'id' => $website->id,
@@ -97,7 +135,7 @@ class WebsiteController extends Controller
             ];
         });
         
-        return Inertia::render('Websites/Index', [
+        return Inertia::render('Websites/IndexNew', [
             'websites' => $websiteData,
             'groups' => $groups,
             'pagination' => [
@@ -109,7 +147,11 @@ class WebsiteController extends Controller
                 'to' => $websites->lastItem(),
             ],
             'filters' => [
-                'search' => $request->search,
+                'search' => $search,
+                'status' => $statusFilter,
+                'platform' => $platformFilter,
+                'group_id' => $groupFilter,
+                'client_id' => $clientFilter,
             ],
             'sortBy' => $sortBy,
             'sortDirection' => $sortDirection,

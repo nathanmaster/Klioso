@@ -1,6 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Management;
+
+use App\Http\Controllers\Controller;
 
 use App\Models\Plugin;
 use Illuminate\Http\Request;
@@ -36,9 +38,28 @@ class PluginController extends Controller
         // Pagination
         $plugins = $query->paginate($request->get('per_page', 15))
             ->withQueryString();
-        
+
+        $pluginData = $plugins->getCollection()->map(function ($plugin) {
+            return [
+                'id' => $plugin->id,
+                'name' => $plugin->name,
+                'description' => $plugin->description,
+                'is_paid' => $plugin->is_paid,
+                'purchase_url' => $plugin->purchase_url,
+                'install_source' => $plugin->install_source,
+                'created_at' => $plugin->created_at,
+                'updated_at' => $plugin->updated_at,
+                // For now, we'll consider all plugins as active since this is managed at website level
+                'is_active' => true,
+                'version' => null, // This would come from website-plugin pivot
+            ];
+        });
+
         return Inertia::render('Plugins/Index', [
-            'plugins' => $plugins->items(),
+            'auth' => [
+                'user' => auth()->user()
+            ],
+            'plugins' => $pluginData,
             'pagination' => [
                 'current_page' => $plugins->currentPage(),
                 'last_page' => $plugins->lastPage(),
@@ -51,7 +72,6 @@ class PluginController extends Controller
             'sortBy' => $sortBy,
             'sortDirection' => $sortDirection,
             'filters' => $request->only('search'),
-            'layout' => 'AuthenticatedLayout',
         ]);
     }
 
@@ -130,5 +150,18 @@ class PluginController extends Controller
     {
         $plugin->delete();
         return redirect()->route('plugins.index');
+    }
+
+    public function bulkDelete(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'exists:plugins,id'
+        ]);
+
+        Plugin::whereIn('id', $request->ids)->delete();
+        
+        return redirect()->route('plugins.index')
+            ->with('success', 'Plugins deleted successfully.');
     }
 }

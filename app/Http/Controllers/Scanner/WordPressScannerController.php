@@ -1,6 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Scanner;
+
+use App\Http\Controllers\Controller;
 
 use App\Models\WebsiteScan;
 use Illuminate\Http\Request;

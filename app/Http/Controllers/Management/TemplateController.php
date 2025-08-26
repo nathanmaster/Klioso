@@ -1,6 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Management;
+
+use App\Http\Controllers\Controller;
 
 use App\Models\Template;
 use Illuminate\Http\Request;
@@ -48,6 +50,9 @@ class TemplateController extends Controller
         });
         
         return Inertia::render('Templates/Index', [
+            'auth' => [
+                'user' => auth()->user()
+            ],
             'templates' => $templateData,
             'pagination' => [
                 'current_page' => $templates->currentPage(),
@@ -61,7 +66,6 @@ class TemplateController extends Controller
             'sortBy' => $sortBy,
             'sortDirection' => $sortDirection,
             'filters' => $request->only('search'),
-            'layout' => 'AuthenticatedLayout',
         ]);
     }
 
@@ -126,5 +130,18 @@ class TemplateController extends Controller
     {
         $template->delete();
         return redirect()->route('templates.index');
+    }
+
+    public function bulkDelete(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'exists:templates,id'
+        ]);
+
+        Template::whereIn('id', $request->ids)->delete();
+        
+        return redirect()->route('templates.index')
+                        ->with('success', 'Selected templates have been deleted.');
     }
 }

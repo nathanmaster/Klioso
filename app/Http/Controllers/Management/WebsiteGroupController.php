@@ -1,6 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Management;
+
+use App\Http\Controllers\Controller;
 
 use App\Models\WebsiteGroup;
 use App\Models\Website;
@@ -13,31 +15,76 @@ class WebsiteGroupController extends Controller
     /**
      * Display a listing of website groups.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $groups = WebsiteGroup::with('websites')
-            ->withCount('websites')
-            ->ordered()
-            ->get()
-            ->map(function ($group) {
-                return [
-                    'id' => $group->id,
-                    'name' => $group->name,
-                    'description' => $group->description,
-                    'color' => $group->color,
-                    'icon' => $group->icon,
-                    'sort_order' => $group->sort_order,
-                    'is_active' => $group->is_active,
-                    'websites_count' => $group->websites_count,
-                    'created_at' => $group->created_at,
-                    'updated_at' => $group->updated_at,
-                ];
+        // Get query parameters
+        $search = $request->get('search');
+        $sortBy = $request->get('sort_by', 'name');
+        $sortDirection = $request->get('sort_direction', 'asc');
+        $statusFilter = $request->get('status', 'all');
+        
+        // Build query
+        $query = WebsiteGroup::with('websites')->withCount('websites');
+        
+        // Apply search filter
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%");
             });
+        }
+        
+        // Apply status filter
+        if ($statusFilter !== 'all') {
+            $query->where('is_active', $statusFilter === 'active');
+        }
+        
+        // Validate sort parameters
+        $allowedSortFields = ['name', 'created_at', 'websites_count', 'sort_order'];
+        if (!in_array($sortBy, $allowedSortFields)) {
+            $sortBy = 'name';
+        }
+        if (!in_array($sortDirection, ['asc', 'desc'])) {
+            $sortDirection = 'asc';
+        }
+        
+        // Apply sorting
+        if ($sortBy === 'websites_count') {
+            $query->orderBy('websites_count', $sortDirection);
+        } else {
+            $query->orderBy($sortBy, $sortDirection);
+        }
+        
+        // If no custom sorting, apply default ordering
+        if ($sortBy !== 'sort_order') {
+            $query->orderBy('sort_order', 'asc');
+        }
+        
+        $groups = $query->get()->map(function ($group) {
+            return [
+                'id' => $group->id,
+                'name' => $group->name,
+                'description' => $group->description,
+                'color' => $group->color,
+                'icon' => $group->icon,
+                'sort_order' => $group->sort_order,
+                'is_active' => $group->is_active,
+                'websites_count' => $group->websites_count,
+                'created_at' => $group->created_at,
+                'updated_at' => $group->updated_at,
+            ];
+        });
 
         return Inertia::render('Groups/Index', [
             'groups' => $groups,
             'availableColors' => WebsiteGroup::getAvailableColors(),
             'availableIcons' => WebsiteGroup::getAvailableIcons(),
+            'filters' => [
+                'search' => $search,
+                'status' => $statusFilter,
+            ],
+            'sortBy' => $sortBy,
+            'sortDirection' => $sortDirection,
         ]);
     }
 

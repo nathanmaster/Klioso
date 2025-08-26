@@ -1,6 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Management;
+
+use App\Http\Controllers\Controller;
 
 use App\Models\Client;
 use Illuminate\Http\Request;
@@ -36,9 +38,21 @@ class ClientController extends Controller
         // Pagination
         $clients = $query->paginate($request->get('per_page', 15))
             ->withQueryString();
+
+        // Format data for UniversalPageLayout
+        $clientData = $clients->getCollection()->map(function ($client) {
+            return [
+                'id' => $client->id,
+                'name' => $client->name,
+                'contact_email' => $client->contact_email,
+                'contact_phone' => $client->contact_phone,
+                'created_at' => $client->created_at,
+                'updated_at' => $client->updated_at,
+            ];
+        });
         
         return Inertia::render('Clients/Index', [
-            'clients' => $clients->items(),
+            'clients' => $clientData,
             'pagination' => [
                 'current_page' => $clients->currentPage(),
                 'last_page' => $clients->lastPage(),
@@ -50,8 +64,9 @@ class ClientController extends Controller
             ],
             'sortBy' => $sortBy,
             'sortDirection' => $sortDirection,
-            'filters' => $request->only('search'),
-            'layout' => 'AuthenticatedLayout',
+            'filters' => [
+                'search' => $request->get('search'),
+            ],
         ]);
     }
 
