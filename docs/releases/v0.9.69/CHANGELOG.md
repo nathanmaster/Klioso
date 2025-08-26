@@ -1,6 +1,6 @@
-# Changelog - v0.9.57-beta.11
+# Changelog - v0.9.69-beta
 
-## [0.9.57-beta.11] - 2025-08-26
+## [0.9.69-beta] - 2025-08-26
 
 ### 🏗️ **Added**
 - **Universal Layout System Foundation**
