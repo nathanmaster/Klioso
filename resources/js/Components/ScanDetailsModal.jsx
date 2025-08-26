@@ -1,5 +1,5 @@
 import React from 'react';
-import { XMarkIcon, ClockIcon, CalendarIcon, GlobeAltIcon, ShieldExclamationIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, ClockIcon, CalendarIcon, GlobeAltIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 
 const isDevelopment = () => {
     return import.meta.env.DEV || import.meta.env.MODE === 'development';
@@ -415,7 +415,7 @@ export default function ScanDetailsModal({ scan, isOpen, onClose }) {
                         {/* Vulnerabilities */}
                         <div className="mb-8">
                             <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                                <ShieldExclamationIcon className="h-5 w-5 text-red-500" />
+                                <ExclamationTriangleIcon className="h-5 w-5 text-red-500" />
                                 Vulnerabilities Found ({(scanResults.vulnerabilities && Array.isArray(scanResults.vulnerabilities)) ? scanResults.vulnerabilities.length : (scan.vulnerabilities_found || 0)})
                             </h3>
                             {scanResults.vulnerabilities && scanResults.vulnerabilities.length > 0 ? (

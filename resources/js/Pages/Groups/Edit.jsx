@@ -49,11 +49,11 @@ export default function Edit({ auth, group, availableColors, availableIcons }) {
                 <div className="flex items-center gap-4">
                     <Link
                         href={route('groups.show', group.id)}
-                        className="text-gray-500 hover:text-gray-700"
+                        className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                     >
                         <ArrowLeftIcon className="h-5 w-5" />
                     </Link>
-                    <h2 className="font-semibold text-xl text-gray-800 leading-tight">
+                    <h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                         Edit Group: {group.name}
                     </h2>
                 </div>
@@ -63,56 +63,56 @@ export default function Edit({ auth, group, availableColors, availableIcons }) {
 
             <div className="py-12">
                 <div className="max-w-2xl mx-auto sm:px-6 lg:px-8">
-                    <div className="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                    <div className="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                         <div className="p-6">
                             <form onSubmit={handleSubmit} className="space-y-6">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                         Name *
                                     </label>
                                     <input
                                         type="text"
                                         value={formData.name}
                                         onChange={(e) => setFormData({...formData, name: e.target.value})}
-                                        className={`block w-full rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 ${
-                                            errors.name ? 'border-red-300' : 'border-gray-300'
+                                        className={`block w-full rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100 ${
+                                            errors.name ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
                                         }`}
                                         required
                                     />
                                     {errors.name && (
-                                        <p className="mt-1 text-sm text-red-600">{errors.name}</p>
+                                        <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.name}</p>
                                     )}
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                         Description
                                     </label>
                                     <textarea
                                         value={formData.description}
                                         onChange={(e) => setFormData({...formData, description: e.target.value})}
-                                        className={`block w-full rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 ${
-                                            errors.description ? 'border-red-300' : 'border-gray-300'
+                                        className={`block w-full rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100 ${
+                                            errors.description ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
                                         }`}
                                         rows="3"
                                         placeholder="Optional description for this group"
                                     />
                                     {errors.description && (
-                                        <p className="mt-1 text-sm text-red-600">{errors.description}</p>
+                                        <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.description}</p>
                                     )}
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                             Color *
                                         </label>
                                         <div className="space-y-2">
                                             <select
                                                 value={formData.color}
                                                 onChange={(e) => setFormData({...formData, color: e.target.value})}
-                                                className={`block w-full rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 ${
-                                                    errors.color ? 'border-red-300' : 'border-gray-300'
+                                                className={`block w-full rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100 ${
+                                                    errors.color ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
                                                 }`}
                                             >
                                                 {Object.entries(availableColors).map(([value, label]) => (
@@ -120,28 +120,28 @@ export default function Edit({ auth, group, availableColors, availableIcons }) {
                                                 ))}
                                             </select>
                                             <div className="flex items-center gap-2">
-                                                <span className="text-sm text-gray-600">Preview:</span>
+                                                <span className="text-sm text-gray-600 dark:text-gray-400">Preview:</span>
                                                 <div
-                                                    className="w-6 h-6 rounded border"
+                                                    className="w-6 h-6 rounded border dark:border-gray-600"
                                                     style={{ backgroundColor: formData.color }}
                                                 />
                                             </div>
                                         </div>
                                         {errors.color && (
-                                            <p className="mt-1 text-sm text-red-600">{errors.color}</p>
+                                            <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.color}</p>
                                         )}
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                                             Icon *
                                         </label>
                                         <div className="space-y-2">
                                             <select
                                                 value={formData.icon}
                                                 onChange={(e) => setFormData({...formData, icon: e.target.value})}
-                                                className={`block w-full rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 ${
-                                                    errors.icon ? 'border-red-300' : 'border-gray-300'
+                                                className={`block w-full rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100 ${
+                                                    errors.icon ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-gray-600'
                                                 }`}
                                             >
                                                 {Object.entries(availableIcons).map(([value, label]) => (
@@ -149,14 +149,14 @@ export default function Edit({ auth, group, availableColors, availableIcons }) {
                                                 ))}
                                             </select>
                                             <div className="flex items-center gap-2">
-                                                <span className="text-sm text-gray-600">Preview:</span>
+                                                <span className="text-sm text-gray-600 dark:text-gray-400">Preview:</span>
                                                 <div className="w-6 h-6 flex items-center justify-center">
                                                     {getIconComponent(formData.icon)}
                                                 </div>
                                             </div>
                                         </div>
                                         {errors.icon && (
-                                            <p className="mt-1 text-sm text-red-600">{errors.icon}</p>
+                                            <p className="mt-1 text-sm text-red-600 dark:text-red-400">{errors.icon}</p>
                                         )}
                                     </div>
                                 </div>
@@ -167,25 +167,25 @@ export default function Edit({ auth, group, availableColors, availableIcons }) {
                                             type="checkbox"
                                             checked={formData.is_active}
                                             onChange={(e) => setFormData({...formData, is_active: e.target.checked})}
-                                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded"
                                         />
-                                        <span className="ml-2 text-sm text-gray-900">Active</span>
+                                        <span className="ml-2 text-sm text-gray-900 dark:text-gray-100">Active</span>
                                     </label>
-                                    <p className="mt-1 text-sm text-gray-500">
+                                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                                         Inactive groups are hidden from most views but websites remain accessible.
                                     </p>
                                 </div>
 
-                                <div className="flex justify-end gap-3 pt-4 border-t">
+                                <div className="flex justify-end gap-3 pt-4 border-t dark:border-gray-700">
                                     <Link
                                         href={route('groups.show', group.id)}
-                                        className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                                        className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-600 rounded-md hover:bg-gray-200 dark:hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
                                     >
                                         Cancel
                                     </Link>
                                     <button
                                         type="submit"
-                                        className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                                        className="px-4 py-2 text-sm font-medium text-white bg-blue-600 dark:bg-blue-700 rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                                     >
                                         Update Group
                                     </button>

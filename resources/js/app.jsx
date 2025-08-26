@@ -1,5 +1,9 @@
 import '../css/app.css';
 import './bootstrap';
+import { setupGlobalErrorHandling, Logger } from './Utils/errorHandler.jsx';
+
+// Setup global error handling
+setupGlobalErrorHandling();
 
 // Initialize theme immediately
 (() => {
@@ -16,9 +20,50 @@ import './bootstrap';
     }
 })();
 
+// Log application startup
+Logger.info('Application initializing', {
+    appName: import.meta.env.VITE_APP_NAME,
+    environment: import.meta.env.MODE,
+    timestamp: new Date().toISOString()
+});
+
 import { createInertiaApp } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
+import { Ziggy } from './ziggy';
+
+// Simple, efficient route function
+function route(name, params = {}) {
+    if (!name) {
+        return {
+            current: (pattern) => {
+                if (!pattern) return false;
+                const path = window.location.pathname;
+                return pattern.endsWith('.*') 
+                    ? path.includes('/' + pattern.replace('.*', ''))
+                    : path === '/' + pattern.replace(/\./g, '/');
+            }
+        };
+    }
+    
+    const routes = window.Ziggy?.routes || {};
+    const route = routes[name];
+    
+    if (!route) {
+        console.warn(`Route [${name}] not found`);
+        return '#';
+    }
+    
+    let url = route.uri;
+    Object.entries(params).forEach(([key, value]) => {
+        url = url.replace(`{${key}}`, value);
+    });
+    
+    return '/' + url;
+}
+
+// Make route function available globally
+window.route = route;
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
@@ -31,6 +76,15 @@ createInertiaApp({
         ),
     setup({ el, App, props }) {
         const root = createRoot(el);
+
+        // Make Ziggy routes available to route() helper - use fresh Ziggy first, fallback to props
+        window.Ziggy = Ziggy;
+        if (props.initialPage.props.ziggy) {
+            Object.assign(window.Ziggy.routes, props.initialPage.props.ziggy.routes || {});
+        }
+        
+        // Store current route name globally for route().current()
+        window.currentRouteName = props.initialPage.url;
 
         root.render(<App {...props} />);
     },

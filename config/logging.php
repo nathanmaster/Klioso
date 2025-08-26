@@ -123,6 +123,14 @@ return [
             'handler' => NullHandler::class,
         ],
 
+        'analytics' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/analytics.log'),
+            'level' => env('LOG_LEVEL', 'debug'),
+            'days' => env('LOG_ANALYTICS_DAYS', 30),
+            'replace_placeholders' => true,
+        ],
+
         'emergency' => [
             'path' => storage_path('logs/laravel.log'),
         ],
