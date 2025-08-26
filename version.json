@@ -1,9 +1,9 @@
 {
-    "version": "0.9.56",
-    "release_date": "2025-08-08",
-    "release_timestamp": 1754683542,
-    "codename": "Stability Focus",
-    "description": "GitHub Actions workflow tag handling improvements",
-    "type": "minor",
-    "stability": "development"
+    "version": "0.9.57",
+    "release_date": "2025-08-26",
+    "release_timestamp": 1756156800,
+    "codename": "Controller Reorganization",
+    "description": "Major controller architectural reorganization and React error fixes",
+    "type": "patch",
+    "stability": "beta"
 }
