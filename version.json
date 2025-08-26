@@ -1,9 +1,9 @@
 {
-    "version": "0.9.57",
+    "version": "0.9.57-beta.11",
     "release_date": "2025-08-26",
     "release_timestamp": 1756156800,
-    "codename": "Controller Reorganization",
-    "description": "Major controller architectural reorganization and React error fixes",
-    "type": "patch",
+    "codename": "Universal Layout Foundation",
+    "description": "Controller reorganization, Universal Layout system, email functionality, and React error fixes",
+    "type": "minor",
     "stability": "beta"
 }
