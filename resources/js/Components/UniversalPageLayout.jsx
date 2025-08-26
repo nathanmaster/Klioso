@@ -225,7 +225,7 @@ export default function UniversalPageLayout({
             if (action === 'delete') {
                 if (confirm(`Are you sure you want to delete ${selectedItems.length} item(s)?`)) {
                     // Implementation depends on the specific resource
-                    console.log('Bulk delete:', selectedItems);
+                    // TODO: Implement bulk delete functionality
                 }
             }
         }

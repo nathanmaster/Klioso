@@ -3,6 +3,7 @@ import { Head, Link, router } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import Button from '@/Components/Button';
 import Form from '@/Components/Form';
+import toast from 'react-hot-toast';
 
 export default function Scanner({ websites = [] }) {
     const [activeTab, setActiveTab] = useState('url');
@@ -286,7 +287,7 @@ export default function Scanner({ websites = [] }) {
             const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
             
             if (!csrfToken) {
-                alert('CSRF token not found. Please refresh the page.');
+                toast.error('Session expired. Please refresh the page.');
                 return;
             }
 
@@ -317,11 +318,11 @@ export default function Scanner({ websites = [] }) {
                     )
                 }));
             } else {
-                alert('Failed to add plugin to database');
+                toast.error('Failed to add plugin to database');
             }
 
         } catch (err) {
-            alert('Failed to add plugin: ' + err.message);
+            toast.error(`Failed to add plugin: ${err.message}`);
         }
     };
 

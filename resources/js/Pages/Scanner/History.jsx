@@ -3,6 +3,7 @@ import { Head, Link, router } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import Button from '@/Components/Button';
 import ScanDetailsModal from '@/Components/ScanDetailsModal';
+import toast from 'react-hot-toast';
 
 export default function ScanHistory({ scanHistory, filters }) {
     const [localFilters, setLocalFilters] = useState(filters);
@@ -33,7 +34,7 @@ export default function ScanHistory({ scanHistory, filters }) {
                         });
                     },
                     onError: (errors) => {
-                        alert('Failed to start re-scan: ' + Object.values(errors)[0]);
+                        toast.error(`Failed to start re-scan: ${Object.values(errors)[0]}`);
                     }
                 });
             } else {
@@ -52,7 +53,7 @@ export default function ScanHistory({ scanHistory, filters }) {
                         });
                     },
                     onError: (errors) => {
-                        alert('Failed to start re-scan: ' + Object.values(errors)[0]);
+                        toast.error(`Failed to start re-scan: ${Object.values(errors)[0]}`);
                     }
                 });
             }

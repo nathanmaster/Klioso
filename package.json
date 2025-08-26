@@ -1,7 +1,7 @@
 {
     "$schema": "https://json.schemastore.org/package.json",
     "name": "@nathanmaster/klioso",
-    "version": "0.9.69-beta",
+    "version": "0.9.70-beta",
     "description": "Multi-Service Provider Management System for WordPress and Web Development with Enhanced Scanner",
     "private": false,
     "type": "module",
@@ -96,6 +96,7 @@
         "clsx": "^2.1.1",
         "date-fns": "^4.1.0",
         "lucide-react": "^0.534.0",
+        "react-hot-toast": "^2.6.0",
         "react-is": "^19.1.1",
         "recharts": "^3.1.0",
         "tailwind-merge": "^3.3.1"

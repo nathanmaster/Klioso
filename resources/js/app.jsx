@@ -1,6 +1,7 @@
 import '../css/app.css';
 import './bootstrap';
 import { setupGlobalErrorHandling, Logger } from './Utils/errorHandler.jsx';
+import { Toaster } from 'react-hot-toast';
 
 // Setup global error handling
 setupGlobalErrorHandling();
@@ -86,7 +87,36 @@ createInertiaApp({
         // Store current route name globally for route().current()
         window.currentRouteName = props.initialPage.url;
 
-        root.render(<App {...props} />);
+        root.render(
+            <>
+                <App {...props} />
+                <Toaster 
+                    position="top-right"
+                    toastOptions={{
+                        duration: 4000,
+                        style: {
+                            background: 'var(--toast-bg)',
+                            color: 'var(--toast-color)',
+                            border: '1px solid var(--toast-border)',
+                        },
+                        success: {
+                            duration: 3000,
+                            iconTheme: {
+                                primary: '#10b981',
+                                secondary: '#ffffff',
+                            },
+                        },
+                        error: {
+                            duration: 5000,
+                            iconTheme: {
+                                primary: '#ef4444',
+                                secondary: '#ffffff',
+                            },
+                        },
+                    }}
+                />
+            </>
+        );
     },
     progress: {
         color: '#4B5563',

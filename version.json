@@ -1,9 +1,9 @@
 {
-    "version": "0.9.69-beta",
+    "version": "0.9.70-beta",
     "release_date": "2025-08-26",
     "release_timestamp": 1756156800,
-    "codename": "Universal Layout Foundation",
-    "description": "Controller reorganization, Universal Layout system, email functionality, and React error fixes",
-    "type": "minor",
+    "codename": "Production Quality",
+    "description": "Debug code cleanup, toast notification system implementation, and production-ready improvements",
+    "type": "patch",
     "stability": "beta"
 }

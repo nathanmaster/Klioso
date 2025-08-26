@@ -34,21 +34,6 @@ Route::get('/test', function () {
     return Inertia::render('Test');
 })->name('test');
 
-// Debug route
-Route::get('/debug-routes', function () {
-    return response()->json([
-        'email-test.send' => route('email-test.send'),
-        'email-test.index' => route('email-test.index'),
-        'all_routes' => collect(Route::getRoutes())->map(function($route) {
-            return [
-                'name' => $route->getName(),
-                'uri' => $route->uri(),
-                'methods' => $route->methods()
-            ];
-        })->values()
-    ]);
-});
-
 // Customizable Dashboard Routes
 Route::get('/dashboard/customizable', [DashboardController::class, 'index'])->name('dashboard.customizable');
 Route::post('/dashboard/panels', [DashboardController::class, 'storePanel'])->name('dashboard.panels.store');
@@ -146,12 +131,5 @@ Route::prefix('api')->middleware(['web'])->group(function () {
     Route::post('/analytics/page-view', [App\Http\Controllers\Api\AnalyticsController::class, 'logPageView']);
     Route::get('/analytics/errors', [App\Http\Controllers\Api\AnalyticsController::class, 'getErrorAnalytics'])->middleware('auth');
 });
-
-// Debug route for testing error logging
-Route::get('/debug/test-error-logging', function () {
-    return response()->json([
-        'message' => 'Test error logging by opening browser console and checking network tab'
-    ]);
-})->middleware('auth');
 
 require __DIR__.'/auth.php';
