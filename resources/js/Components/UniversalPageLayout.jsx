@@ -422,22 +422,29 @@ export default function UniversalPageLayout({
                                     ...(allowBulkActions ? [{
                                         key: 'select',
                                         label: (
-                                            <input
-                                                type="checkbox"
-                                                checked={selectedItems.length === filteredData.length && filteredData.length > 0}
-                                                onChange={handleSelectAll}
-                                                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded"
-                                            />
+                                            <div className="flex items-center justify-center">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={selectedItems.length === filteredData.length && filteredData.length > 0}
+                                                    onChange={handleSelectAll}
+                                                    className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded touch-manipulation"
+                                                    aria-label="Select all items"
+                                                />
+                                            </div>
                                         ),
                                         render: (item) => (
-                                            <input
-                                                type="checkbox"
-                                                checked={selectedItems.includes(item.id.toString())}
-                                                onChange={() => handleSelectItem(item.id)}
-                                                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded"
-                                            />
+                                            <div className="flex items-center justify-center py-2">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={selectedItems.includes(item.id.toString())}
+                                                    onChange={() => handleSelectItem(item.id)}
+                                                    className="h-5 w-5 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded touch-manipulation"
+                                                    aria-label={`Select ${item.name || item.title || item.domain_name || 'item'}`}
+                                                />
+                                            </div>
                                         ),
-                                        sortable: false
+                                        sortable: false,
+                                        className: "w-12 text-center"
                                     }] : []),
                                     ...tableColumns
                                 ]}

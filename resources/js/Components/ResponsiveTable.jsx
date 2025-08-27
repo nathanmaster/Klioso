@@ -133,9 +133,21 @@ export default function ResponsiveTable({
                                 onClick={onRowClick ? () => onRowClick(row) : undefined}
                             >
                                 <div className="space-y-2">
+                                    {/* Handle select checkbox specially for mobile */}
+                                    {columns.find(col => col.key === 'select') && (
+                                        <div className="flex items-center justify-between pb-2 border-b border-gray-100 dark:border-gray-600">
+                                            <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                                                Select Item:
+                                            </span>
+                                            <div className="mobile-touch-target">
+                                                {columns.find(col => col.key === 'select').render(row)}
+                                            </div>
+                                        </div>
+                                    )}
+                                    
                                     {columns.map((col, colIdx) => {
-                                        // Skip actions column or columns marked as hidden on mobile
-                                        if (col.key === 'actions' || col.hideOnMobile) {
+                                        // Skip actions column, select column (handled above), or columns marked as hidden on mobile
+                                        if (col.key === 'actions' || col.key === 'select' || col.hideOnMobile) {
                                             return null;
                                         }
                                         
@@ -156,8 +168,10 @@ export default function ResponsiveTable({
                                     
                                     {/* Always show actions at the bottom of mobile cards */}
                                     {columns.find(col => col.key === 'actions') && (
-                                        <div className="pt-2 border-t border-gray-100 mt-3">
-                                            {columns.find(col => col.key === 'actions').render(row)}
+                                        <div className="pt-2 border-t border-gray-100 dark:border-gray-600 mt-3">
+                                            <div className="bulk-action-mobile">
+                                                {columns.find(col => col.key === 'actions').render(row)}
+                                            </div>
                                         </div>
                                     )}
                                 </div>

@@ -49,6 +49,36 @@ body {
   @apply text-gray-600 dark:text-gray-400;
 }
 
+/* Mobile responsiveness improvements */
+.touch-manipulation {
+  touch-action: manipulation;
+}
+
+/* Better mobile touch targets */
+@media (max-width: 768px) {
+  /* Larger touch targets for mobile */
+  input[type="checkbox"] {
+    @apply h-6 w-6;
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Improve mobile table interactions */
+  .mobile-touch-target {
+    @apply min-h-[44px] min-w-[44px] flex items-center justify-center;
+  }
+  
+  /* Better mobile bulk action buttons */
+  .bulk-action-mobile {
+    @apply px-4 py-3 text-sm font-medium min-h-[44px];
+  }
+  
+  /* Improved mobile modal spacing */
+  .mobile-modal-spacing {
+    @apply p-4 space-y-4;
+  }
+}
+
 .bg-card {
   @apply bg-white dark:bg-gray-800;
 }

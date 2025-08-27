@@ -1,9 +1,9 @@
 {
-    "version": "0.9.71-beta",
+    "version": "0.9.72-beta",
     "release_date": "2025-08-27",
     "release_timestamp": 1756243200,
-    "codename": "Production Polish",
-    "description": "TODO cleanup, error handling improvements, and enhanced plugin counting",
-    "type": "patch",
+    "codename": "Performance & Mobile Enhancement",
+    "description": "Mobile responsiveness fixes, database performance optimization, enhanced error boundaries, and advanced search capabilities",
+    "type": "minor",
     "stability": "beta"
 }
