@@ -1,9 +1,9 @@
 {
-    "version": "0.9.70-beta",
-    "release_date": "2025-08-26",
-    "release_timestamp": 1756156800,
-    "codename": "Production Quality",
-    "description": "Debug code cleanup, toast notification system implementation, and production-ready improvements",
+    "version": "0.9.71-beta",
+    "release_date": "2025-08-27",
+    "release_timestamp": 1756243200,
+    "codename": "Production Polish",
+    "description": "TODO cleanup, error handling improvements, and enhanced plugin counting",
     "type": "patch",
     "stability": "beta"
 }

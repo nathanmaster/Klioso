@@ -437,7 +437,7 @@ class ScheduledScanController extends Controller
                 'themes_found' => count($result['themes'] ?? []),
                 'vulnerabilities_found' => count($result['vulnerabilities'] ?? []),
                 'auto_sync_enabled' => true,
-                'plugins_added_to_db' => 0, // TODO: Implement auto-sync
+                'plugins_added_to_db' => $this->countAddedPlugins($result),
                 'status' => $status,
                 'error_message' => $errorMessage,
                 'scan_duration_ms' => $scanDurationMs,
@@ -604,5 +604,26 @@ class ScheduledScanController extends Controller
         }
 
         return back()->with('success', $message);
+    }
+
+    /**
+     * Count plugins that were successfully added to database from scan results
+     */
+    private function countAddedPlugins($scanResults)
+    {
+        if (!isset($scanResults['plugins']) || !is_array($scanResults['plugins'])) {
+            return 0;
+        }
+
+        // Count plugins that have database entries (indicating successful sync)
+        $addedCount = 0;
+        foreach ($scanResults['plugins'] as $plugin) {
+            // If plugin has ID or was marked as synced, count it
+            if (isset($plugin['id']) || isset($plugin['synced']) || isset($plugin['database_id'])) {
+                $addedCount++;
+            }
+        }
+
+        return $addedCount;
     }
 }

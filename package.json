@@ -1,7 +1,7 @@
 {
     "$schema": "https://json.schemastore.org/package.json",
     "name": "@nathanmaster/klioso",
-    "version": "0.9.70-beta",
+    "version": "0.9.71-beta",
     "description": "Multi-Service Provider Management System for WordPress and Web Development with Enhanced Scanner",
     "private": false,
     "type": "module",

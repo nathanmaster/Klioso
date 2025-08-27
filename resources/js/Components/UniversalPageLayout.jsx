@@ -3,6 +3,7 @@ import { Head, router, usePage } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import ResponsiveTable from '@/Components/ResponsiveTable';
 import { Logger, safeGet, ErrorBoundary } from '@/Utils/errorHandler.jsx';
+import toast from 'react-hot-toast';
 import { 
     MagnifyingGlassIcon, 
     Squares2X2Icon,
@@ -224,8 +225,11 @@ export default function UniversalPageLayout({
             // Default bulk action logic
             if (action === 'delete') {
                 if (confirm(`Are you sure you want to delete ${selectedItems.length} item(s)?`)) {
-                    // Implementation depends on the specific resource
-                    // TODO: Implement bulk delete functionality
+                    // Generic bulk delete implementation
+                    toast.error('Bulk delete functionality must be implemented by the parent component.', {
+                        duration: 4000,
+                    });
+                    console.warn('UniversalPageLayout: Bulk delete action received but no onBulkAction handler provided');
                 }
             }
         }
