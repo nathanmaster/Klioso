@@ -4,19 +4,21 @@
 
 ### Main Branches
 
-**`main`** - Production Ready Code
-- ✅ **Always deployable** to production
-- ✅ **Stable, tested features** only
+**`main`** - Stable Release Branch
+- ✅ **Stable minor/major releases** only (v0.12.0, v1.0.0, etc.)
+- ✅ **Production ready** - extensively tested
 - ✅ **Protected branch** - requires pull request reviews
-- ✅ **Tagged releases** (v0.10.3, v0.11.0, etc.)
+- ✅ **Tagged stable releases** with comprehensive documentation
+- ❌ **No patch releases** - only significant stable releases
 - ❌ **No direct commits** - only via approved PRs from `dev`
 
-**`dev`** - Development Integration Branch
-- 🔄 **Active development** happens here
-- 🔄 **Feature integration** and testing
-- 🔄 **All features enabled** for testing
-- 🔄 **Regular merges** from feature branches
-- ➡️ **Source for production releases** (PRs to `main`)
+**`dev`** - Development & Patch Release Branch
+- 🔄 **Active development** and patch releases (v0.11.1, v0.11.2, etc.)
+- 🔄 **All features enabled** for testing and development
+- 🔄 **Unstable releases** marked with `-dev` or `-beta` suffixes
+- 🔄 **Regular development** and bug fixes
+- 🔄 **Patch version releases** deployed from here
+- ➡️ **Source for stable releases** (PRs to `main` for major/minor versions)
 
 ### Feature Branches
 
