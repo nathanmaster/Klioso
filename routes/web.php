@@ -9,6 +9,7 @@ use App\Http\Controllers\Scanner\ScheduledScanController;
 use App\Http\Controllers\Management\PluginController;
 use App\Http\Controllers\Management\TemplateController;
 use App\Http\Controllers\Scanner\WordPressScanController;
+use App\Http\Controllers\SecurityScanController;
 use App\Http\Controllers\Analytics\AnalyticsController;
 use App\Http\Controllers\Analytics\DashboardController;
 use App\Http\Controllers\Admin\EmailTestController;
@@ -82,6 +83,13 @@ Route::middleware('auth')->group(function () {
     Route::post('/scanner/add-plugin', [WordPressScanController::class, 'addPlugin'])->name('scanner.add-plugin');
     Route::post('/scanner/bulk-add-plugins', [WordPressScanController::class, 'bulkAddPlugins'])->name('scanner.bulk-add-plugins');
     Route::post('/scanner/bulk-scan', [WordPressScanController::class, 'bulkScan'])->name('scanner.bulk-scan');
+
+    // Security Scanner routes
+    Route::get('/security', [SecurityScanController::class, 'index'])->name('security.index');
+    Route::post('/security/scan/{website}', [SecurityScanController::class, 'scanWebsite'])->name('security.scan-website');
+    Route::post('/security/bulk-scan', [SecurityScanController::class, 'bulkScan'])->name('security.bulk-scan');
+    Route::get('/security/report/{website}', [SecurityScanController::class, 'getVulnerabilityReport'])->name('security.report');
+    Route::get('/security/api-status', [SecurityScanController::class, 'getApiStatus'])->name('security.api-status');
 
     // Bulk Website Operations
     Route::post('/websites/bulk-assign-group', [WebsiteController::class, 'bulkAssignGroup'])->name('websites.bulk-assign-group');

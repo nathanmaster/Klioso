@@ -1,9 +1,9 @@
 {
-    "version": "0.9.72-beta",
-    "release_date": "2025-08-27",
-    "release_timestamp": 1756243200,
-    "codename": "Performance & Mobile Enhancement",
-    "description": "Mobile responsiveness fixes, database performance optimization, enhanced error boundaries, and advanced search capabilities",
-    "type": "minor",
-    "stability": "beta"
+    "version":  "0.10.3",
+    "release_date":  "2025-10-21",
+    "release_timestamp":  1761076308,
+    "codename":  "Phase 1 Complete: WordPress Integration Suite",
+    "description":  "Stable production release: Routing fixes, feature flags system, and production safety improvements",
+    "type":  "patch",
+    "stability":  "stable"
 }

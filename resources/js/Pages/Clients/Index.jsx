@@ -1,6 +1,7 @@
 import React from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import UniversalPageLayout from '@/Components/UniversalPageLayout';
+import { safeRoute } from '@/Utils/safeRoute';
 import { 
     PlusIcon,
     EyeIcon,
@@ -82,14 +83,14 @@ export default function Index({ auth, clients, pagination, sortBy, sortDirection
             render: (client) => (
                 <div className="flex items-center justify-end space-x-2">
                     <Link
-                        href={route('clients.show', client.id)}
+                        href={safeRoute('clients.show', client.id)}
                         className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 p-1"
                         title="View Client"
                     >
                         <EyeIcon className="h-4 w-4" />
                     </Link>
                     <Link
-                        href={route('clients.edit', client.id)}
+                        href={safeRoute('clients.edit', client.id)}
                         className="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 p-1"
                         title="Edit Client"
                     >
@@ -117,14 +118,14 @@ export default function Index({ auth, clients, pagination, sortBy, sortDirection
                 </div>
                 <div className="flex gap-1">
                     <Link
-                        href={route('clients.show', client.id)}
+                        href={safeRoute('clients.show', client.id)}
                         className="p-1 text-gray-400 dark:text-gray-500 hover:text-blue-600 dark:hover:text-blue-400"
                         title="View Client"
                     >
                         <EyeIcon className="h-4 w-4" />
                     </Link>
                     <Link
-                        href={route('clients.edit', client.id)}
+                        href={safeRoute('clients.edit', client.id)}
                         className="p-1 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
                         title="Edit Client"
                     >
@@ -293,7 +294,7 @@ export default function Index({ auth, clients, pagination, sortBy, sortDirection
 
     const handleDelete = (client) => {
         if (confirm(`Are you sure you want to delete "${client.name}"?`)) {
-            router.delete(route('clients.destroy', client.id));
+            router.delete(safeRoute('clients.destroy', client.id));
         }
     };
 

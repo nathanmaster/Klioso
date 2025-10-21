@@ -81,6 +81,16 @@ class Website extends Model
         return $this->hasMany(ScanHistory::class);
     }
 
+    public function scans(): HasMany
+    {
+        return $this->hasMany(ScanHistory::class);
+    }
+
+    public function lastScan()
+    {
+        return $this->hasOne(ScanHistory::class)->latest();
+    }
+
     public function scheduledScans(): HasMany
     {
         return $this->hasMany(ScheduledScan::class);

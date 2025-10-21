@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { router } from '@inertiajs/react';
 import UniversalPageLayout from '@/Components/UniversalPageLayout';
+import { safeRoute } from '@/Utils/safeRoute';
 import { 
     PlusIcon, 
     PencilIcon, 
@@ -143,7 +144,7 @@ export default function Index({ auth, groups, availableColors, availableIcons, f
             render: (group) => (
                 <div className="flex items-center justify-end space-x-2">
                     <Link
-                        href={route('groups.show', group.id)}
+                        href={safeRoute('groups.show', group.id)}
                         className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300"
                     >
                         <EyeIcon className="h-4 w-4" />

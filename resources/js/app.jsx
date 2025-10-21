@@ -2,6 +2,7 @@ import '../css/app.css';
 import './bootstrap';
 import { setupGlobalErrorHandling, Logger } from './Utils/errorHandler.jsx';
 import { Toaster } from 'react-hot-toast';
+import { route as ziggyRoute } from 'ziggy-js';
 
 // Setup global error handling
 setupGlobalErrorHandling();
@@ -33,38 +34,13 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
 import { Ziggy } from './ziggy';
 
-// Simple, efficient route function
-function route(name, params = {}) {
-    if (!name) {
-        return {
-            current: (pattern) => {
-                if (!pattern) return false;
-                const path = window.location.pathname;
-                return pattern.endsWith('.*') 
-                    ? path.includes('/' + pattern.replace('.*', ''))
-                    : path === '/' + pattern.replace(/\./g, '/');
-            }
-        };
-    }
-    
-    const routes = window.Ziggy?.routes || {};
-    const route = routes[name];
-    
-    if (!route) {
-        console.warn(`Route [${name}] not found`);
-        return '#';
-    }
-    
-    let url = route.uri;
-    Object.entries(params).forEach(([key, value]) => {
-        url = url.replace(`{${key}}`, value);
-    });
-    
-    return '/' + url;
-}
+// Setup Ziggy route function globally  
+window.route = (name, params, absolute) => {
+    return ziggyRoute(name, params, absolute, Ziggy);
+};
 
 // Make route function available globally
-window.route = route;
+window.route = window.route;
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 

@@ -3,6 +3,7 @@ import { Head, Link, router, usePage } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import BulkActionsModal from '@/Components/BulkActionsModal';
 import Pagination from '@/Components/Pagination';
+import { safeRoute } from '@/Utils/safeRoute';
 import { 
     PlusIcon, 
     CheckIcon,
@@ -66,7 +67,7 @@ export default function Index({ auth, websites, groups, pagination, filters, sor
 
     const handleDelete = (website) => {
         if (confirm(`Are you sure you want to delete "${website.domain_name}"?`)) {
-            router.delete(route('websites.destroy', website.id));
+            router.delete(safeRoute('websites.destroy', website.id));
         }
     };
 
@@ -226,13 +227,13 @@ export default function Index({ auth, websites, groups, pagination, filters, sor
                                                 <td className="px-6 py-4 text-right text-sm font-medium">
                                                     <div className="flex justify-end gap-2">
                                                         <Link
-                                                            href={route('websites.show', website.id)}
+                                                            href={safeRoute('websites.show', website.id)}
                                                             className="text-blue-600 hover:text-blue-900"
                                                         >
                                                             <EyeIcon className="h-4 w-4" />
                                                         </Link>
                                                         <Link
-                                                            href={route('websites.edit', website.id)}
+                                                            href={safeRoute('websites.edit', website.id)}
                                                             className="text-gray-600 hover:text-gray-900"
                                                         >
                                                             <PencilIcon className="h-4 w-4" />
@@ -265,13 +266,13 @@ export default function Index({ auth, websites, groups, pagination, filters, sor
                                             />
                                             <div className="flex gap-1">
                                                 <Link
-                                                    href={route('websites.show', website.id)}
+                                                    href={safeRoute('websites.show', website.id)}
                                                     className="p-1 text-gray-400 dark:text-gray-500 hover:text-blue-600 dark:hover:text-blue-400"
                                                 >
                                                     <EyeIcon className="h-4 w-4" />
                                                 </Link>
                                                 <Link
-                                                    href={route('websites.edit', website.id)}
+                                                    href={safeRoute('websites.edit', website.id)}
                                                     className="p-1 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
                                                 >
                                                     <PencilIcon className="h-4 w-4" />

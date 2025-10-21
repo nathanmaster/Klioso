@@ -451,10 +451,12 @@ POST   /scanner/add-plugin         # Add discovered plugin to database
 ### Planned Features
 
 #### Phase 1: Enhanced WordPress Integration
-- [ ] **WPScan API Integration**: Connect with WPScan vulnerability database
-- [ ] **WordPress CLI Integration**: Direct WordPress management via WP-CLI
-- [ ] **Automated Updates**: Schedule and manage WordPress core and plugin updates
-- [ ] **Backup Integration**: Connect with backup services (UpdraftPlus, BackupBuddy)
+- [x] **WPScan API Integration**: ✅ Connect with WPScan vulnerability database (v0.9.73+)
+- [x] **WordPress CLI Integration**: ✅ Direct WordPress management via WP-CLI (v0.9.73+)
+- [x] **Automated Updates**: ✅ Schedule and manage WordPress core and plugin updates (v0.9.73+)
+- [x] **Backup Integration**: ✅ Connect with backup services (UpdraftPlus, BackupBuddy) (v0.9.73+)
+- [x] **Bulk Scanning Operations**: ✅ Mass website scanning with queue management (v0.9.60+)
+- [x] **Scheduled Bulk Scans**: ✅ Automated bulk scanning with customizable schedules (v0.9.60+)
 - [x] **Enhanced Scanner Features**: ✅ Advanced plugin detection and vulnerability scanning (v0.9.70+)
 - [x] **Real-time Scanning**: ✅ Live scanning with progress indicators (v0.9.65+)
 - [x] **Plugin Database Integration**: ✅ Automated plugin matching and database sync (v0.9.69+)
