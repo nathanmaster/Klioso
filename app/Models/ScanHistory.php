@@ -17,6 +17,8 @@ class ScanHistory extends Model
         'scheduled_scan_id',
         'scan_results',
         'scan_summary',
+        'security_data',
+        'type',
         'plugins_found',
         'themes_found',
         'vulnerabilities_found',
@@ -32,6 +34,7 @@ class ScanHistory extends Model
     protected $casts = [
         'scan_results' => 'array',
         'scan_summary' => 'array',
+        'security_data' => 'array',
         'auto_sync_enabled' => 'boolean',
         'plugins_found' => 'integer',
         'themes_found' => 'integer',

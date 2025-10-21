@@ -1,4 +1,116 @@
 # Changelog
+## [v0.9.56] - 2025-08-08 - UI/UX Polish
+
+### Summary
+GitHub Actions workflow tag handling improvements
+
+**Type**: Minor Release  
+**Commits**: 0 changes since last release
+
+**Full Changelog**: [https://github.com/nathanmaster/Klioso/compare/v0.9.0...v0.9.56](https://github.com/nathanmaster/Klioso/compare/v0.9.0...v0.9.56)
+
+---
+
+## [v0.9.55] - 2025-08-08 - Stability Focus
+
+### Summary
+Fix GitHub Actions workflow tag comparison logic
+
+**Type**: Patch Release  
+**Commits**: 0 changes since last release
+
+**Full Changelog**: [https://github.com/nathanmaster/Klioso/compare/v0.9.0...v0.9.55](https://github.com/nathanmaster/Klioso/compare/v0.9.0...v0.9.55)
+
+---
+
+## [v0.9.54] - 2025-08-08 - Quality Improvements
+
+### Summary
+Fix GitHub release notes generation and commit linking
+
+**Type**: Patch Release  
+**Commits**: 0 changes since last release
+
+**Full Changelog**: [https://github.com/nathanmaster/Klioso/compare/v0.9.0...v0.9.54](https://github.com/nathanmaster/Klioso/compare/v0.9.0...v0.9.54)
+
+---
+
+## [v0.9.53] - 2025-08-08 - User Experience
+
+### Summary
+Release Management System Improvements and Package Naming Fix
+
+**Type**: Patch Release  
+**Commits**: 0 changes since last release
+
+**Full Changelog**: [https://github.com/nathanmaster/Klioso/compare/v0.9.0...v0.9.53](https://github.com/nathanmaster/Klioso/compare/v0.9.0...v0.9.53)
+
+---
+
+## [v0.9.52] - 2025-08-07 - Improve
+
+### Overview
+Fix build error - replace invalid MagnifyingGlass icon with Search icon
+
+**Type**: Patch Release  
+**Stability**: Development
+
+### Key Changes
+- [List major changes here]
+
+**Full Changelog**: [https://github.com/nathanmaster/Klioso/compare/v0.9.51...v0.9.52](https://github.com/nathanmaster/Klioso/compare/v0.9.51...v0.9.52)  
+**Release Notes**: [docs/releases/v0.9/RELEASE_NOTES_v0.9.52.md](docs/releases/v0.9/RELEASE_NOTES_v0.9.52.md)
+
+---
+
+## [v0.9.51] - 2025-08-07 - Swift
+
+### Overview
+Enhanced UI/UX with complete dark mode integration, improved code quality, and streamlined project organization
+
+**Type**: Minor Release  
+**Stability**: Development
+
+### Key Changes
+- [List major changes here]
+
+**Full Changelog**: [https://github.com/nathanmaster/Klioso/compare/v0.9.50...v0.9.51](https://github.com/nathanmaster/Klioso/compare/v0.9.50...v0.9.51)  
+**Release Notes**: [docs/releases/v0.9/RELEASE_NOTES_v0.9.51.md](docs/releases/v0.9/RELEASE_NOTES_v0.9.51.md)
+
+---
+
+## [v0.9.48] - 2025-08-07 - Swift
+
+### Overview
+Enhanced UI/UX with complete dark mode integration, improved code quality, and streamlined project organization
+
+**Type**: Minor Release  
+**Stability**: Development
+
+### Key Changes
+- [List major changes here]
+
+**Full Changelog**: [https://github.com/nathanmaster/Klioso/compare/v0.9.47...v0.9.48](https://github.com/nathanmaster/Klioso/compare/v0.9.47...v0.9.48)  
+**Release Notes**: [docs/releases/v0.9/RELEASE_NOTES_v0.9.48.md](docs/releases/v0.9/RELEASE_NOTES_v0.9.48.md)
+
+---
+
+## [v0.9.47] - 2025-08-06 - Swift
+
+### Overview
+Enhanced release management system with comprehensive documentation
+
+**Type**: Minor Release  
+**Stability**: Development
+
+### Key Changes
+- [List major changes here]
+
+**Full Changelog**: [https://github.com/nathanmaster/Klioso/compare/v0.9.46...v0.9.47](https://github.com/nathanmaster/Klioso/compare/v0.9.46...v0.9.47)  
+**Release Notes**: [docs/releases/v0.9/RELEASE_NOTES_v0.9.47.md](docs/releases/v0.9/RELEASE_NOTES_v0.9.47.md)
+
+---
+
 
 All notable changes to Klioso (formerly WordPress Management System) will be documented in this file.
 

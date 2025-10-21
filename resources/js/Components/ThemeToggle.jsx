@@ -9,13 +9,14 @@ import {
 } from '@/Components/ui/dropdown-menu';
 
 export default function ThemeToggle() {
-    const [theme, setTheme] = useState('system');
+    // Initialize theme from localStorage to avoid state update in useEffect
+    const [theme, setTheme] = useState(() => {
+        return localStorage.getItem('theme') || 'system';
+    });
 
     useEffect(() => {
-        // Get theme from localStorage or default to system
-        const savedTheme = localStorage.getItem('theme') || 'system';
-        setTheme(savedTheme);
-        applyTheme(savedTheme);
+        // Apply theme on mount without updating state
+        applyTheme(theme);
         
         // Listen for system theme changes
         const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
@@ -28,7 +29,7 @@ export default function ThemeToggle() {
         
         mediaQuery.addEventListener('change', handleChange);
         return () => mediaQuery.removeEventListener('change', handleChange);
-    }, []); // Remove theme from dependencies to avoid infinite loops
+    }, []); // Empty dependency array
 
     const applyTheme = (newTheme) => {
         const root = document.documentElement;

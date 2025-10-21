@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'wpscan' => [
+        'api_token' => env('WPSCAN_API_TOKEN'),
+        'base_url' => env('WPSCAN_BASE_URL', 'https://wpscan.com/api/v3'),
+    ],
+
 ];

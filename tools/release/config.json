@@ -1,0 +1,57 @@
+{
+  "project_name": "Klioso",
+  "description": "Multi-Service Provider Management System for WordPress and Web Development",
+  "repository": "nathanmaster/Klioso",
+  "homepage": "https://github.com/nathanmaster/Klioso",
+  "main_branch": "main",
+  "dev_branch": "dev",
+  "release_settings": {
+    "auto_tag": true,
+    "auto_changelog": true,
+    "auto_docs": true,
+    "create_github_release": true,
+    "build_artifacts": true
+  },
+  "version_scheme": "semantic",
+  "supported_formats": [
+    "production",
+    "development", 
+    "windows",
+    "shared-hosting"
+  ],
+  "documentation": {
+    "changelog_sections": [
+      "Added",
+      "Changed", 
+      "Deprecated",
+      "Removed",
+      "Fixed",
+      "Security"
+    ],
+    "required_docs": [
+      "RELEASE_NOTES.md",
+      "CHANGELOG.md",
+      "MIGRATION_GUIDE.md"
+    ]
+  },
+  "build_targets": {
+    "production": {
+      "exclude": [".env*", "tests/", "storage/logs/", ".git/", "node_modules/", "*.log"],
+      "optimize": ["composer", "npm", "laravel"]
+    },
+    "development": {
+      "include_all": true,
+      "preserve_git": true
+    }
+  },
+  "archive_rules": {
+    "move_after_days": 90,
+    "patterns_to_archive": [
+      "RELEASE_NOTES_v*.md",
+      "DEPLOYMENT_SUMMARY_v*.md", 
+      "*-IMPLEMENTATION-SUMMARY.md",
+      "temp_*.yml",
+      "test_*.php"
+    ]
+  }
+}

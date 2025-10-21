@@ -186,13 +186,6 @@ export default function BulkActionsModal({
         setLoading(true);
         const websiteIds = currentItems.map(id => parseInt(id));
         
-        console.log('handleBulkSchedule Debug:', {
-            currentItems,
-            websiteIds,
-            scheduleData,
-            routeName: 'scheduled-scans.bulk-create'
-        });
-        
         router.post(route('scheduled-scans.bulk-create'), {
             website_ids: websiteIds,
             ...scheduleData
@@ -283,20 +276,9 @@ export default function BulkActionsModal({
 
     if (!isOpen) return null;
 
-    // Debug logging
-    console.log('BulkActionsModal Debug:', {
-        resourceType,
-        currentItems,
-        allItems: resourceType === 'websites' ? websites : items,
-        selectedWebsites,
-        selectedItems
-    });
-
     const selectedItemDetails = resourceType === 'websites' 
         ? (websites || []).filter(w => currentItems.includes(w.id.toString()))
         : (allItems || []).filter(item => currentItems.includes(item.id.toString()));
-
-    console.log('selectedItemDetails:', selectedItemDetails);
 
     const tabs = getAvailableTabs(resourceType);
     const resourceLabel = getResourceLabel(resourceType);

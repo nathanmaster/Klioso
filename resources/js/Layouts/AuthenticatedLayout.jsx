@@ -83,6 +83,15 @@ export default function AuthenticatedLayout({ header, children }) {
                                         </Dropdown.Content>
                                     </Dropdown>
                                 </div>
+
+                                {/* Email Testing Link (Development) */}
+                                <NavLink
+                                    href={route('email-test.index')}
+                                    active={route().current('email-test.*')}
+                                    className="text-orange-600 dark:text-orange-400"
+                                >
+                                    Email Test
+                                </NavLink>
                             </div>
                         </div>
 
@@ -227,6 +236,15 @@ export default function AuthenticatedLayout({ header, children }) {
                                 </ResponsiveNavLink>
                             </div>
                         </div>
+
+                        {/* Email Testing Link (Development) */}
+                        <ResponsiveNavLink
+                            href={route('email-test.index')}
+                            active={route().current('email-test.*')}
+                            className="text-orange-600 dark:text-orange-400"
+                        >
+                            Email Test
+                        </ResponsiveNavLink>
                     </div>
 
                     <div className="border-t border-gray-200 pb-1 pt-4 dark:border-gray-600">

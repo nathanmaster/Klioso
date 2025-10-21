@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { Head, Link, router } from '@inertiajs/react';
+import React, { useState, useEffect } from 'react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import BulkActionsModal from '@/Components/BulkActionsModal';
 import Pagination from '@/Components/Pagination';
+import { safeRoute } from '@/Utils/safeRoute';
 import { 
     PlusIcon, 
     CheckIcon,
@@ -15,9 +16,34 @@ import {
 } from '@heroicons/react/24/outline';
 
 export default function Index({ auth, websites, groups, pagination, filters, sortBy, sortDirection }) {
+    const { url } = usePage();
+    const urlParams = new URLSearchParams(url.split('?')[1] || '');
+    const currentView = urlParams.get('view') || 'table';
+    
     const [selectedWebsites, setSelectedWebsites] = useState([]);
     const [showBulkModal, setShowBulkModal] = useState(false);
-    const [viewMode, setViewMode] = useState('table'); // 'table' or 'grid'
+    const [viewMode, setViewMode] = useState(currentView);
+
+    // Update view mode when URL changes
+    useEffect(() => {
+        const newView = urlParams.get('view') || 'table';
+        setViewMode(newView);
+    }, [url]);
+
+    // Update URL when view mode changes
+    const handleViewModeChange = (newViewMode) => {
+        const params = new URLSearchParams(window.location.search);
+        params.set('view', newViewMode);
+        
+        // Remove page parameter when changing view to start from page 1
+        params.delete('page');
+        
+        router.visit(`${window.location.pathname}?${params.toString()}`, {
+            preserveState: true,
+            preserveScroll: true,
+            replace: true
+        });
+    };
 
     const handleSelectWebsite = (websiteId) => {
         setSelectedWebsites(prev => 
@@ -41,7 +67,7 @@ export default function Index({ auth, websites, groups, pagination, filters, sor
 
     const handleDelete = (website) => {
         if (confirm(`Are you sure you want to delete "${website.domain_name}"?`)) {
-            router.delete(route('websites.destroy', website.id));
+            router.delete(safeRoute('websites.destroy', website.id));
         }
     };
 
@@ -85,13 +111,13 @@ export default function Index({ auth, websites, groups, pagination, filters, sor
                         )}
                         <div className="flex items-center border border-gray-300 dark:border-gray-600 rounded-lg">
                             <button
-                                onClick={() => setViewMode('table')}
+                                onClick={() => handleViewModeChange('table')}
                                 className={`p-2 ${viewMode === 'table' ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100' : 'text-gray-500 dark:text-gray-400'}`}
                             >
                                 <QueueListIcon className="h-4 w-4" />
                             </button>
                             <button
-                                onClick={() => setViewMode('grid')}
+                                onClick={() => handleViewModeChange('grid')}
                                 className={`p-2 ${viewMode === 'grid' ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100' : 'text-gray-500 dark:text-gray-400'}`}
                             >
                                 <Squares2X2Icon className="h-4 w-4" />
@@ -201,13 +227,13 @@ export default function Index({ auth, websites, groups, pagination, filters, sor
                                                 <td className="px-6 py-4 text-right text-sm font-medium">
                                                     <div className="flex justify-end gap-2">
                                                         <Link
-                                                            href={route('websites.show', website.id)}
+                                                            href={safeRoute('websites.show', website.id)}
                                                             className="text-blue-600 hover:text-blue-900"
                                                         >
                                                             <EyeIcon className="h-4 w-4" />
                                                         </Link>
                                                         <Link
-                                                            href={route('websites.edit', website.id)}
+                                                            href={safeRoute('websites.edit', website.id)}
                                                             className="text-gray-600 hover:text-gray-900"
                                                         >
                                                             <PencilIcon className="h-4 w-4" />
@@ -240,13 +266,13 @@ export default function Index({ auth, websites, groups, pagination, filters, sor
                                             />
                                             <div className="flex gap-1">
                                                 <Link
-                                                    href={route('websites.show', website.id)}
+                                                    href={safeRoute('websites.show', website.id)}
                                                     className="p-1 text-gray-400 dark:text-gray-500 hover:text-blue-600 dark:hover:text-blue-400"
                                                 >
                                                     <EyeIcon className="h-4 w-4" />
                                                 </Link>
                                                 <Link
-                                                    href={route('websites.edit', website.id)}
+                                                    href={safeRoute('websites.edit', website.id)}
                                                     className="p-1 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
                                                 >
                                                     <PencilIcon className="h-4 w-4" />
@@ -341,7 +367,13 @@ export default function Index({ auth, websites, groups, pagination, filters, sor
             {/* Pagination */}
             {pagination && pagination.last_page > 1 && (
                 <div className="mt-6">
-                    <Pagination {...pagination} />
+                    <Pagination 
+                        {...pagination} 
+                        queryParams={{
+                            view: viewMode,
+                            ...Object.fromEntries(urlParams.entries())
+                        }}
+                    />
                 </div>
             )}
 

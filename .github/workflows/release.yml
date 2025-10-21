@@ -17,6 +17,9 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Fetch full history for tags and commits
+        fetch-tags: true  # Ensure tags are fetched
       
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
@@ -117,7 +120,7 @@ jobs:
         cd releases
         
         # Production package
-        zip -r "wordpress-scanner-${VERSION}-production.zip" production/
+        zip -r "klioso-${VERSION}-production.zip" production/
         
         # Windows package (copy from production)
         cp -r production windows
@@ -164,7 +167,7 @@ jobs:
         Visit: https://github.com/nathanmaster/Klioso
         EOF
         
-        zip -r "wordpress-scanner-${VERSION}-windows.zip" windows/
+        zip -r "klioso-${VERSION}-windows.zip" windows/
         
         # Shared hosting package
         cp -r production shared-hosting
@@ -218,10 +221,10 @@ jobs:
         Visit: https://github.com/nathanmaster/Klioso
         EOF
         
-        zip -r "wordpress-scanner-${VERSION}-shared-hosting.zip" shared-hosting/
+        zip -r "klioso-${VERSION}-shared-hosting.zip" shared-hosting/
         
         # Generate checksums
-        for file in wordpress-scanner-${VERSION}-*.zip; do
+        for file in klioso-${VERSION}-*.zip; do
           if [ -f "$file" ]; then
             sha256sum "$file" >> checksums.txt
           fi
@@ -229,9 +232,9 @@ jobs:
         
         # Source archive (from git)
         cd ..
-        git archive --format=zip --prefix="wordpress-scanner-${VERSION}/" HEAD > "releases/wordpress-scanner-${VERSION}-source.zip"
+        git archive --format=zip --prefix="klioso-${VERSION}/" HEAD > "releases/klioso-${VERSION}-source.zip"
         cd releases
-        sha256sum "wordpress-scanner-${VERSION}-source.zip" >> checksums.txt
+        sha256sum "klioso-${VERSION}-source.zip" >> checksums.txt
         
     - name: Validate packages
       run: |
@@ -240,16 +243,16 @@ jobs:
         
         echo "=== Release Package Validation ==="
         echo "Packages created:"
-        ls -la wordpress-scanner-${VERSION}-*.zip
+        ls -la klioso-${VERSION}-*.zip
         
         echo -e "\n=== Package Sizes ==="
-        du -h wordpress-scanner-${VERSION}-*.zip
+        du -h klioso-${VERSION}-*.zip
         
         echo -e "\n=== Checksums ==="
         cat checksums.txt
         
         echo -e "\n=== Package Contents Verification ==="
-        for package in wordpress-scanner-${VERSION}-*.zip; do
+        for package in klioso-${VERSION}-*.zip; do
           echo "Checking $package..."
           if unzip -t "$package" > /dev/null; then
             echo "✅ $package: ZIP integrity OK"
@@ -261,111 +264,140 @@ jobs:
         
         echo -e "\n=== All packages validated successfully! ==="
         
+    - name: Generate release notes with commit info
+      id: release_notes
+      run: |
+        VERSION="${GITHUB_REF#refs/tags/}"
+        RELEASE_DATE=$(date '+%Y-%m-%d')
+        
+        # Get all tags and find the previous one (fetch only if needed)
+        # Check if we have enough tags locally first
+        TAG_COUNT=$(git tag --list | wc -l)
+        if [ "$TAG_COUNT" -lt 5 ]; then
+          echo "Fetching tags from remote (only $TAG_COUNT tags found locally)..."
+          git fetch --tags --force
+        else
+          echo "Using local tags ($TAG_COUNT tags available)"
+        fi
+        
+        PREVIOUS_TAG=$(git tag --list --sort=-version:refname | grep -v "^${VERSION}$" | head -1)
+        
+        # Enhanced fallback logic
+        if [ -z "$PREVIOUS_TAG" ]; then
+          # Try to find any v0.9.x tag as fallback
+          PREVIOUS_TAG=$(git tag --list --sort=-version:refname | grep "^v0\.9\." | head -1)
+          if [ -z "$PREVIOUS_TAG" ]; then
+            PREVIOUS_TAG="v0.9.53"
+          fi
+        fi
+        
+        echo "Current version: ${VERSION}"
+        echo "Previous version: ${PREVIOUS_TAG}"
+        echo "Available tags: $(git tag --list --sort=-version:refname | head -5 | tr '\n' ' ')"
+        
+        # Get commits since previous release
+        if git rev-parse "${PREVIOUS_TAG}" >/dev/null 2>&1; then
+          COMMITS=$(git log ${PREVIOUS_TAG}..HEAD --pretty=format:"- **%s** (\`%h\`) - %an" --no-merges)
+        else
+          COMMITS=$(git log --pretty=format:"- **%s** (\`%h\`) - %an" --no-merges -5)
+        fi
+        
+        # Generate commit compare URL
+        COMPARE_URL="https://github.com/nathanmaster/Klioso/compare/${PREVIOUS_TAG}...${VERSION}"
+        
+        # Create release notes with dynamic content
+        cat > release_notes.md << EOF
+        # 🚀 Klioso ${VERSION} - Enhanced Release
+        
+        **Release Date**: ${RELEASE_DATE}  
+        **Version**: ${VERSION}  
+        **Previous Version**: ${PREVIOUS_TAG}
+        
+        ## 📋 **What's Changed**
+        
+        ${COMMITS:-"- Maintenance and improvements"}
+        
+        **Full Changelog**: [${PREVIOUS_TAG}...${VERSION}](${COMPARE_URL})
+        
+        ## 📦 **Release Packages**
+        
+        - **\`klioso-${VERSION}-production.zip\`** - Production-ready deployment package
+        - **\`klioso-${VERSION}-windows.zip\`** - Windows/Laragon optimized with install.bat  
+        - **\`klioso-${VERSION}-shared-hosting.zip\`** - cPanel/shared hosting ready
+        - **\`klioso-${VERSION}-source.zip\`** - Complete source code archive
+        - **\`checksums.txt\`** - SHA256 checksums for package verification
+        
+        ## 🏗️ **System Requirements**
+        - **PHP**: 8.2+ (8.3 recommended)
+        - **Database**: MySQL 8+ or SQLite 3+
+        - **Web Server**: Apache 2.4+ or Nginx 1.18+
+        - **Memory**: 256MB+ PHP memory limit
+        - **Storage**: 50MB+ free disk space
+        
+        ## ⚡ **Quick Installation**
+        
+        ### Windows/Laragon (Recommended for development)
+        1. Download \`klioso-${VERSION}-windows.zip\`
+        2. Extract to \`C:\laragon\www\klioso\`
+        3. Run \`install.bat\` as Administrator
+        4. Configure database in \`.env\` file
+        5. Access via \`http://klioso.test\`
+        
+        ### Linux Production
+        1. Download \`klioso-${VERSION}-production.zip\`
+        2. Extract to your server directory
+        3. Configure web server to point to \`public/\` directory
+        4. Set up \`.env\` file with production settings
+        5. Run \`php artisan migrate\`
+        
+        ### Shared Hosting
+        1. Download \`klioso-${VERSION}-shared-hosting.zip\`
+        2. Upload files to your hosting account
+        3. Move \`public/\` contents to document root
+        4. Configure database via hosting control panel
+        
+        ## ⚠️ **Important Notes**
+        
+        - **🛡️ BACKUP YOUR DATA**: This release includes database schema changes
+        - **📋 Database Migrations Required**: Run \`php artisan migrate\` after installation
+        - **✅ Production Ready**: Extensively tested and ready for production use
+        
+        ## 🔐 **Package Verification**
+        
+        Verify package integrity using SHA256 checksums in \`checksums.txt\`:
+        \`\`\`bash
+        sha256sum -c checksums.txt
+        \`\`\`
+        
+        ## 📞 **Support & Feedback**
+        
+        - 🐛 **Bug Reports**: [GitHub Issues](https://github.com/nathanmaster/Klioso/issues)
+        - 💬 **Discussions**: [GitHub Discussions](https://github.com/nathanmaster/Klioso/discussions)
+        - 📖 **Documentation**: Check \`/docs\` folder in each package
+        
+        ---
+        
+        **Klioso ${VERSION}** - Professional WordPress management at scale! 🚀
+        
+        *This release has been extensively tested and is ready for production use.*
+        EOF
+        
+        echo "Generated release notes with commits since ${PREVIOUS_TAG}"
+        echo "Release notes file created successfully"
+        cat release_notes.md | head -20
+        
     - name: Create Release
       uses: softprops/action-gh-release@v1
       with:
         files: |
-          releases/wordpress-scanner-${{ github.ref_name }}-production.zip
-          releases/wordpress-scanner-${{ github.ref_name }}-source.zip
-          releases/wordpress-scanner-${{ github.ref_name }}-windows.zip
-          releases/wordpress-scanner-${{ github.ref_name }}-shared-hosting.zip
+          releases/klioso-${{ github.ref_name }}-production.zip
+          releases/klioso-${{ github.ref_name }}-source.zip
+          releases/klioso-${{ github.ref_name }}-windows.zip
+          releases/klioso-${{ github.ref_name }}-shared-hosting.zip
           releases/checksums.txt
         draft: false
         prerelease: false
         generate_release_notes: false
-        body: |
-          # 🚀 Klioso ${{ github.ref_name }} - Bulk Operations & Enhanced UI
-          
-          ## 🎉 What's New in This Release
-          
-          ### 🔄 Bulk Operations System
-          - **Multi-Select Management**: Select multiple websites for batch operations
-          - **Bulk Scanning**: Scan multiple WordPress sites simultaneously with progress tracking
-          - **Group Assignment**: Assign websites to groups in bulk operations
-          - **Status Updates**: Update multiple website statuses at once
-          - **Scheduled Scans**: Create scheduled scans for multiple websites with template naming
-          
-          ### 🎨 Enhanced User Interface
-          - **Table/Grid Toggle**: Switch between table and grid views for website management
-          - **Mobile Responsive**: Fully responsive design optimized for mobile devices
-          - **BulkActionsModal**: Tabbed interface for different bulk operation types
-          - **Multi-Select UI**: Checkbox selection with keyboard shortcuts support
-          - **Visual Feedback**: Progress indicators and real-time operation status
-          
-          ### 🔍 Klioso Scanner Improvements
-          - **Better Error Handling**: Graceful handling of unreachable or misconfigured sites
-          - **SSL Support**: Automatic detection and handling of HTTPS/HTTP sites  
-          - **Enhanced Detection**: Improved plugin and theme identification algorithms
-          - **Bulk Plugin Management**: Add plugins to multiple sites simultaneously
-          
-          ### 📅 Scheduled Scan System
-          - **Automated Scanning**: Set up recurring scans with customizable frequencies
-          - **Template Naming**: Use dynamic templates for scheduled scan names
-          - **Success Tracking**: Monitor scan success rates and performance metrics
-          - **Bulk Schedule Creation**: Create schedules for multiple websites at once
-          
-          ## 📦 Release Packages
-          
-          - **`wordpress-scanner-${{ github.ref_name }}-production.zip`** - Production-ready deployment package
-          - **`wordpress-scanner-${{ github.ref_name }}-windows.zip`** - Windows/Laragon optimized with install.bat
-          - **`wordpress-scanner-${{ github.ref_name }}-shared-hosting.zip`** - cPanel/shared hosting ready
-          - **`wordpress-scanner-${{ github.ref_name }}-source.zip`** - Complete source code archive
-          - **`checksums.txt`** - SHA256 checksums for package verification
-          
-          ## 🏗️ System Requirements
-          - **PHP**: 8.2+ (8.3 recommended)
-          - **Database**: MySQL 8+ or SQLite 3+
-          - **Web Server**: Apache 2.4+ or Nginx 1.18+
-          - **Memory**: 256MB+ PHP memory limit
-          - **Storage**: 50MB+ free disk space
-          
-          ## ⚡ Quick Installation
-          
-          ### Windows/Laragon (Recommended for development)
-          1. Download `wordpress-scanner-${{ github.ref_name }}-windows.zip`
-          2. Extract to `C:\laragon\www\wordpress-scanner`
-          3. Run `install.bat` as Administrator
-          4. Configure database in `.env` file
-          5. Access via `http://wordpress-scanner.test`
-          
-          ### Linux Production
-          1. Download `wordpress-scanner-${{ github.ref_name }}-production.zip`
-          2. Extract to your server directory
-          3. Configure web server to point to `public/` directory
-          4. Set up `.env` file with production settings
-          5. Run `php artisan migrate`
-          
-          ### Shared Hosting
-          1. Download `wordpress-scanner-${{ github.ref_name }}-shared-hosting.zip`
-          2. Upload files to your hosting account
-          3. Move `public/` contents to document root
-          4. Configure database via hosting control panel
-          
-          ## ⚠️ Important Notes
-          
-          - **🛡️ BACKUP YOUR DATA**: This release includes database schema changes
-          - **📋 Database Migrations Required**: Run `php artisan migrate` after installation
-          - **🔄 Breaking Changes**: UI layout significantly restructured with bulk operations
-          - **✅ Production Ready**: Extensively tested and ready for production use
-          
-          ## 🔐 Package Verification
-          
-          Verify package integrity using SHA256 checksums in `checksums.txt`:
-          ```bash
-          sha256sum -c checksums.txt
-          ```
-          
-          ## 📞 Support & Feedback
-          
-          - 🐛 **Bug Reports**: [GitHub Issues](https://github.com/nathanmaster/Klioso/issues)
-          - 💬 **Discussions**: [GitHub Discussions](https://github.com/nathanmaster/Klioso/discussions)
-          - 📖 **Documentation**: Check `/docs` folder in each package
-          - 📋 **Full Changelog**: [CHANGELOG.md](https://github.com/nathanmaster/Klioso/blob/main/docs/releases/v0.9.2/CHANGELOG.md)
-          
-          ---
-          
-          **Klioso ${{ github.ref_name }}** - Professional WordPress management at scale! 🚀
-          
-          *This release has been extensively tested and is ready for production use.*
+        body_path: release_notes.md
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

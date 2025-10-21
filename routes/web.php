@@ -1,15 +1,18 @@
 <?php
 
-use App\Http\Controllers\ClientController;
-use App\Http\Controllers\HostingProviderController;
+use App\Http\Controllers\Management\ClientController;
+use App\Http\Controllers\Management\HostingProviderController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\WebsiteController;
-use App\Http\Controllers\WebsiteGroupController;
-use App\Http\Controllers\ScheduledScanController;
-use App\Http\Controllers\PluginController;
-use App\Http\Controllers\TemplateController;
-use App\Http\Controllers\WordPressScanController;
-use App\Http\Controllers\AnalyticsController;
+use App\Http\Controllers\Management\WebsiteController;
+use App\Http\Controllers\Management\WebsiteGroupController;
+use App\Http\Controllers\Scanner\ScheduledScanController;
+use App\Http\Controllers\Management\PluginController;
+use App\Http\Controllers\Management\TemplateController;
+use App\Http\Controllers\Scanner\WordPressScanController;
+use App\Http\Controllers\SecurityScanController;
+use App\Http\Controllers\Analytics\AnalyticsController;
+use App\Http\Controllers\Analytics\DashboardController;
+use App\Http\Controllers\Admin\EmailTestController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -26,6 +29,19 @@ Route::get('/', function () {
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
+
+// Test route
+Route::get('/test', function () {
+    return Inertia::render('Test');
+})->name('test');
+
+// Customizable Dashboard Routes
+Route::get('/dashboard/customizable', [DashboardController::class, 'index'])->name('dashboard.customizable');
+Route::post('/dashboard/panels', [DashboardController::class, 'storePanel'])->name('dashboard.panels.store');
+Route::patch('/dashboard/panels/{panel}', [DashboardController::class, 'updatePanel'])->name('dashboard.panels.update');
+Route::delete('/dashboard/panels/{panel}', [DashboardController::class, 'destroyPanel'])->name('dashboard.panels.destroy');
+Route::post('/dashboard/layout', [DashboardController::class, 'updateLayout'])->name('dashboard.layout.update');
+Route::post('/dashboard/reset', [DashboardController::class, 'resetLayout'])->name('dashboard.reset');
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -68,6 +84,13 @@ Route::middleware('auth')->group(function () {
     Route::post('/scanner/bulk-add-plugins', [WordPressScanController::class, 'bulkAddPlugins'])->name('scanner.bulk-add-plugins');
     Route::post('/scanner/bulk-scan', [WordPressScanController::class, 'bulkScan'])->name('scanner.bulk-scan');
 
+    // Security Scanner routes
+    Route::get('/security', [SecurityScanController::class, 'index'])->name('security.index');
+    Route::post('/security/scan/{website}', [SecurityScanController::class, 'scanWebsite'])->name('security.scan-website');
+    Route::post('/security/bulk-scan', [SecurityScanController::class, 'bulkScan'])->name('security.bulk-scan');
+    Route::get('/security/report/{website}', [SecurityScanController::class, 'getVulnerabilityReport'])->name('security.report');
+    Route::get('/security/api-status', [SecurityScanController::class, 'getApiStatus'])->name('security.api-status');
+
     // Bulk Website Operations
     Route::post('/websites/bulk-assign-group', [WebsiteController::class, 'bulkAssignGroup'])->name('websites.bulk-assign-group');
     Route::post('/websites/bulk-status-update', [WebsiteController::class, 'bulkStatusUpdate'])->name('websites.bulk-status-update');
@@ -95,10 +118,26 @@ Route::middleware('auth')->group(function () {
     Route::get('/analytics/security', [AnalyticsController::class, 'security'])->name('analytics.security');
     Route::get('/analytics/performance', [AnalyticsController::class, 'performance'])->name('analytics.performance');
     Route::post('/analytics/export', [AnalyticsController::class, 'exportReport'])->name('analytics.export');
+    Route::get('/analytics/realtime', [AnalyticsController::class, 'realtime'])->name('analytics.realtime');
+    Route::post('/analytics/refresh', [AnalyticsController::class, 'refresh'])->name('analytics.refresh');
+    Route::get('/analytics/summary', [AnalyticsController::class, 'summary'])->name('analytics.summary');
     
     // Analytics Collection Routes
     Route::post('/websites/{website}/collect-analytics', [WebsiteController::class, 'collectAnalytics'])->name('websites.collect-analytics');
     Route::post('/websites/bulk-collect-analytics', [WebsiteController::class, 'bulkCollectAnalytics'])->name('websites.bulk-collect-analytics');
+
+    // Email Testing Routes (Development)
+    Route::get('/email-test', [EmailTestController::class, 'index'])->name('email-test.index');
+    Route::post('/email-test/send', [EmailTestController::class, 'send'])->name('email-test.send');
+    Route::post('/email-test/bulk', [EmailTestController::class, 'sendBulkTest'])->name('email-test.bulk');
+    Route::get('/email-test/config', [EmailTestController::class, 'testConfig'])->name('email-test.config');
+});
+
+// API Routes for Error Logging and Analytics (no CSRF required)
+Route::prefix('api')->middleware(['web'])->group(function () {
+    Route::post('/analytics/error', [App\Http\Controllers\Api\AnalyticsController::class, 'logError']);
+    Route::post('/analytics/page-view', [App\Http\Controllers\Api\AnalyticsController::class, 'logPageView']);
+    Route::get('/analytics/errors', [App\Http\Controllers\Api\AnalyticsController::class, 'getErrorAnalytics'])->middleware('auth');
 });
 
 require __DIR__.'/auth.php';

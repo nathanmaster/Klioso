@@ -1,103 +1,105 @@
 {
-    "$schema": "https://json.schemastore.org/package.json",
-    "name": "@nathanmaster/klioso",
-    "version": "0.9.46",
-    "description": "Multi-Service Provider Management System for WordPress and Web Development with Enhanced Scanner",
-    "private": false,
-    "type": "module",
-    "main": "public/index.php",
-    "bin": {
-        "klioso": "./bin/klioso"
-    },
-    "scripts": {
-        "build": "vite build",
-        "dev": "vite"
-    },
-    "publishConfig": {
-        "@nathanmaster:registry": "https://npm.pkg.github.com"
-    },
-    "keywords": [
-        "wordpress",
-        "management",
-        "laravel",
-        "inertia",
-        "react",
-        "hosting",
-        "website-management",
-        "plugin-scanner",
-        "multi-service",
-        "cms"
-    ],
-    "author": {
-        "name": "Nathan Master",
-        "email": "your-email@example.com",
-        "url": "https://github.com/nathanmaster"
-    },
-    "license": "MIT",
-    "homepage": "https://github.com/nathanmaster/Klioso#readme",
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/nathanmaster/Klioso.git"
-    },
-    "bugs": {
-        "url": "https://github.com/nathanmaster/Klioso/issues"
-    },
-    "engines": {
-        "node": ">=18.0.0",
-        "php": ">=8.2.0"
-    },
-    "files": [
-        "app/",
-        "bootstrap/",
-        "config/",
-        "database/",
-        "resources/",
-        "routes/",
-        "public/",
-        "storage/app/.gitkeep",
-        "storage/framework/.gitkeep",
-        "storage/logs/.gitkeep",
-        "composer.json",
-        "composer.lock",
-        "artisan",
-        "vite.config.js",
-        "tailwind.config.js",
-        "postcss.config.js",
-        ".env.example",
-        "README.md",
-        "CHANGELOG.md",
-        "GITHUB-PACKAGES.md",
-        ".npmrc",
-        "bin/"
-    ],
-    "devDependencies": {
-        "@headlessui/react": "^2.0.0",
-        "@heroicons/react": "^2.0.18",
-        "@inertiajs/react": "^2.0.0",
-        "@tailwindcss/forms": "^0.5.3",
-        "@tailwindcss/vite": "^4.0.0",
-        "@vitejs/plugin-react": "^4.2.0",
-        "autoprefixer": "^10.4.12",
-        "axios": "^1.8.2",
-        "concurrently": "^9.0.1",
-        "laravel-vite-plugin": "^1.2.0",
-        "postcss": "^8.4.31",
-        "react": "^18.2.0",
-        "react-dom": "^18.2.0",
-        "tailwindcss": "^3.2.1",
-        "vite": "^6.2.4"
-    },
-    "dependencies": {
-        "@radix-ui/react-dropdown-menu": "^2.1.15",
-        "@radix-ui/react-select": "^2.2.5",
-        "@radix-ui/react-slot": "^1.2.3",
-        "@radix-ui/react-tabs": "^1.1.12",
-        "class-variance-authority": "^0.7.1",
-        "clsx": "^2.1.1",
-        "date-fns": "^4.1.0",
-        "lucide-react": "^0.534.0",
-        "react-is": "^19.1.1",
-        "recharts": "^3.1.0",
-        "tailwind-merge": "^3.3.1"
-    }
+    "$schema":  "https://json.schemastore.org/package.json",
+    "name":  "@nathanmaster/klioso",
+    "version":  "0.10.3",
+    "description":  "Multi-Service Provider Management System for WordPress and Web Development with Complete WordPress Integration Suite",
+    "private":  false,
+    "type":  "module",
+    "main":  "public/index.php",
+    "bin":  {
+                "klioso":  "./bin/klioso"
+            },
+    "scripts":  {
+                    "build":  "vite build",
+                    "dev":  "vite"
+                },
+    "publishConfig":  {
+                          "@nathanmaster:registry":  "https://npm.pkg.github.com"
+                      },
+    "keywords":  [
+                     "wordpress",
+                     "management",
+                     "laravel",
+                     "inertia",
+                     "react",
+                     "hosting",
+                     "website-management",
+                     "plugin-scanner",
+                     "multi-service",
+                     "cms"
+                 ],
+    "author":  {
+                   "name":  "Nathan Master",
+                   "email":  "your-email@example.com",
+                   "url":  "https://github.com/nathanmaster"
+               },
+    "license":  "MIT",
+    "homepage":  "https://github.com/nathanmaster/Klioso#readme",
+    "repository":  {
+                       "type":  "git",
+                       "url":  "git+https://github.com/nathanmaster/Klioso.git"
+                   },
+    "bugs":  {
+                 "url":  "https://github.com/nathanmaster/Klioso/issues"
+             },
+    "engines":  {
+                    "node":  "\u003e=18.0.0",
+                    "php":  "\u003e=8.2.0"
+                },
+    "files":  [
+                  "app/",
+                  "bootstrap/",
+                  "config/",
+                  "database/",
+                  "resources/",
+                  "routes/",
+                  "public/",
+                  "storage/app/.gitkeep",
+                  "storage/framework/.gitkeep",
+                  "storage/logs/.gitkeep",
+                  "composer.json",
+                  "composer.lock",
+                  "artisan",
+                  "vite.config.js",
+                  "tailwind.config.js",
+                  "postcss.config.js",
+                  ".env.example",
+                  "README.md",
+                  "CHANGELOG.md",
+                  "GITHUB-PACKAGES.md",
+                  ".npmrc",
+                  "bin/"
+              ],
+    "devDependencies":  {
+                            "@headlessui/react":  "^2.0.0",
+                            "@heroicons/react":  "^2.0.18",
+                            "@inertiajs/react":  "^2.0.0",
+                            "@tailwindcss/forms":  "^0.5.3",
+                            "@tailwindcss/vite":  "^4.0.0",
+                            "@vitejs/plugin-react":  "^4.2.0",
+                            "autoprefixer":  "^10.4.12",
+                            "axios":  "^1.8.2",
+                            "concurrently":  "^9.0.1",
+                            "laravel-vite-plugin":  "^1.2.0",
+                            "postcss":  "^8.4.31",
+                            "react":  "^18.2.0",
+                            "react-dom":  "^18.2.0",
+                            "tailwindcss":  "^3.2.1",
+                            "vite":  "^6.2.4"
+                        },
+    "dependencies":  {
+                         "@radix-ui/react-dropdown-menu":  "^2.1.15",
+                         "@radix-ui/react-select":  "^2.2.5",
+                         "@radix-ui/react-slot":  "^1.2.3",
+                         "@radix-ui/react-tabs":  "^1.1.12",
+                         "class-variance-authority":  "^0.7.1",
+                         "clsx":  "^2.1.1",
+                         "date-fns":  "^4.1.0",
+                         "lucide-react":  "^0.534.0",
+                         "react-hot-toast":  "^2.6.0",
+                         "react-is":  "^19.1.1",
+                         "recharts":  "^3.1.0",
+                         "tailwind-merge":  "^3.3.1",
+                         "ziggy-js":  "^2.5.3"
+                     }
 }

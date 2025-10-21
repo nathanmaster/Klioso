@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Route Testing</title>
+</head>
+<body>
+    <h1>Route Testing</h1>
+    <div id="routes-test"></div>
+    
+    <script>
+        // Check if Ziggy routes are available
+        console.log('Ziggy available:', window.Ziggy);
+        console.log('Routes available:', window.Ziggy?.routes);
+        
+        // Test the route function
+        if (typeof window.route === 'function') {
+            console.log('Route function available');
+            console.log('websites.show route:', window.route('websites.show', {website: 1}));
+            console.log('websites.edit route:', window.route('websites.edit', {website: 1}));
+        } else {
+            console.log('Route function not available');
+        }
+        
+        // Display results on page
+        const testDiv = document.getElementById('routes-test');
+        testDiv.innerHTML = `
+            <p>Ziggy available: ${!!window.Ziggy}</p>
+            <p>Routes count: ${Object.keys(window.Ziggy?.routes || {}).length}</p>
+            <p>Route function available: ${typeof window.route === 'function'}</p>
+            <p>Test route: ${typeof window.route === 'function' ? window.route('websites.show', {website: 1}) : 'N/A'}</p>
+        `;
+    </script>
+</body>
+</html>

@@ -1,11 +1,12 @@
-import { useState } from 'react';
-import { Head } from '@inertiajs/react';
+import { useState, useEffect } from 'react';
+import { Head, router } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
-import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import AnalyticsEventManager from '@/Services/AnalyticsEventManager';
 import { 
     TrendingUp, 
     TrendingDown, 
@@ -19,31 +20,120 @@ import {
     RefreshCw
 } from 'lucide-react';
 
-export default function AnalyticsDashboard({ auth, analytics, securityOverview, performanceData, recentAlerts }) {
+export default function AnalyticsDashboard({ 
+    auth, 
+    analytics = {}, 
+    securityOverview = {}, 
+    performanceData = {}, 
+    recentAlerts = [] 
+}) {
     const [timeRange, setTimeRange] = useState('7d');
     const [refreshing, setRefreshing] = useState(false);
+    const [liveData, setLiveData] = useState({
+        analytics,
+        securityOverview,
+        performanceData,
+        recentAlerts
+    });
+    const [eventManager] = useState(() => new AnalyticsEventManager());
+
+    // Initialize real-time updates
+    useEffect(() => {
+        eventManager.subscribeToAnalyticsUpdates((update) => {
+            if (update.type === 'security_alert') {
+                setLiveData(prev => ({
+                    ...prev,
+                    recentAlerts: [update.alert, ...prev.recentAlerts.slice(0, 4)]
+                }));
+            } else if (update.type === 'performance_update') {
+                setLiveData(prev => ({
+                    ...prev,
+                    performanceData: { ...prev.performanceData, ...update.metrics }
+                }));
+            } else if (update.type === 'polling_update') {
+                setLiveData(prev => ({
+                    ...prev,
+                    analytics: update.analytics || prev.analytics,
+                    securityOverview: update.securityOverview || prev.securityOverview,
+                    performanceData: update.performanceData || prev.performanceData,
+                    recentAlerts: update.recentAlerts || prev.recentAlerts
+                }));
+            }
+        }, timeRange);
+
+        return () => {
+            eventManager.unsubscribeFromAnalyticsUpdates(timeRange);
+        };
+    }, [timeRange, eventManager]);
+
+    // Cleanup on unmount
+    useEffect(() => {
+        return () => {
+            eventManager.cleanup();
+        };
+    }, [eventManager]);
 
     const handleRefresh = async () => {
         setRefreshing(true);
-        // Simulate refresh
-        setTimeout(() => setRefreshing(false), 2000);
+        try {
+            const refreshedData = await eventManager.refreshAnalytics(timeRange);
+            if (refreshedData.data) {
+                setLiveData({
+                    analytics: refreshedData.data.analytics,
+                    securityOverview: refreshedData.data.securityOverview,
+                    performanceData: refreshedData.data.performanceData,
+                    recentAlerts: refreshedData.data.recentAlerts
+                });
+            }
+        } catch (error) {
+            console.error('Failed to refresh analytics:', error);
+        } finally {
+            setRefreshing(false);
+        }
     };
 
-    const handleExport = () => {
-        router.visit(`/analytics/export?period=${timeRange}`, { preserveState: true });
+    const handleExport = async () => {
+        try {
+            await eventManager.exportAnalytics(timeRange, 'csv');
+        } catch (error) {
+            console.error('Failed to export analytics:', error);
+        }
+    };
+
+    const handleTimeRangeChange = (newTimeRange) => {
+        setTimeRange(newTimeRange);
+        // This will trigger the useEffect to resubscribe with new time range
+        router.visit(`/analytics?period=${newTimeRange}`, { preserveState: true });
     };
 
     // Health score color mapping
     const getHealthColor = (score) => {
-        if (score >= 90) return 'text-green-600';
-        if (score >= 70) return 'text-yellow-600';
-        return 'text-red-600';
+        if (score >= 90) return 'text-green-600 dark:text-green-400';
+        if (score >= 70) return 'text-yellow-600 dark:text-yellow-400';
+        return 'text-red-600 dark:text-red-400';
     };
 
     const getHealthBadgeVariant = (score) => {
         if (score >= 90) return 'default';
         if (score >= 70) return 'secondary';
         return 'destructive';
+    };
+
+    // Severity badge styling for alerts
+    const getSeverityBadge = (severity) => {
+        const baseClasses = "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium";
+        switch (severity) {
+            case 'critical':
+                return `${baseClasses} bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400`;
+            case 'high':
+                return `${baseClasses} bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400`;
+            case 'medium':
+                return `${baseClasses} bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400`;
+            case 'low':
+                return `${baseClasses} bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400`;
+            default:
+                return `${baseClasses} bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400`;
+        }
     };
 
     // Chart colors
@@ -54,11 +144,11 @@ export default function AnalyticsDashboard({ auth, analytics, securityOverview, 
             user={auth.user}
             header={
                 <div className="flex justify-between items-center">
-                    <h2 className="font-semibold text-xl text-gray-800 leading-tight">
+                    <h2 className="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
                         Analytics Dashboard
                     </h2>
                     <div className="flex space-x-2">
-                        <Select value={timeRange} onValueChange={setTimeRange}>
+                        <Select value={timeRange} onValueChange={handleTimeRangeChange}>
                             <SelectTrigger className="w-32">
                                 <SelectValue />
                             </SelectTrigger>
@@ -92,74 +182,71 @@ export default function AnalyticsDashboard({ auth, analytics, securityOverview, 
                     
                     {/* Overview Cards */}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        <Card>
+                        <Card className="dark:bg-gray-800 dark:border-gray-700">
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">Total Websites</CardTitle>
+                                <CardTitle className="text-sm font-medium dark:text-gray-200">Total Websites</CardTitle>
                                 <Globe className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold">{analytics.totalWebsites}</div>
+                                <div className="text-2xl font-bold dark:text-white">{liveData.analytics.totalWebsites || 0}</div>
                                 <p className="text-xs text-muted-foreground">
-                                    <span className="text-green-600 flex items-center">
-                                        <TrendingUp className="h-3 w-3 mr-1" />
-                                        +{analytics.websitesGrowth}%
+                                    <span className={`flex items-center ${liveData.analytics.websitesGrowth >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                                        {liveData.analytics.websitesGrowth >= 0 ? 
+                                            <TrendingUp className="h-3 w-3 mr-1" /> : 
+                                            <TrendingDown className="h-3 w-3 mr-1" />
+                                        }
+                                        {Math.abs(liveData.analytics.websitesGrowth || 0)}%
                                     </span>
                                     from last period
                                 </p>
                             </CardContent>
                         </Card>
 
-                        <Card>
+                        <Card className="dark:bg-gray-800 dark:border-gray-700">
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">Average Health Score</CardTitle>
+                                <CardTitle className="text-sm font-medium dark:text-gray-200">Total Scans</CardTitle>
                                 <Activity className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
-                                <div className={`text-2xl font-bold ${getHealthColor(analytics.avgHealthScore)}`}>
-                                    {analytics.avgHealthScore}%
-                                </div>
+                                <div className="text-2xl font-bold dark:text-white">{liveData.analytics.totalScans || 0}</div>
                                 <p className="text-xs text-muted-foreground">
-                                    <span className={analytics.healthTrend > 0 ? "text-green-600" : "text-red-600"}>
-                                        {analytics.healthTrend > 0 ? 
-                                            <TrendingUp className="h-3 w-3 mr-1 inline" /> : 
-                                            <TrendingDown className="h-3 w-3 mr-1 inline" />
+                                    <span className={`flex items-center ${liveData.analytics.scansGrowth >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                                        {liveData.analytics.scansGrowth >= 0 ? 
+                                            <TrendingUp className="h-3 w-3 mr-1" /> : 
+                                            <TrendingDown className="h-3 w-3 mr-1" />
                                         }
-                                        {Math.abs(analytics.healthTrend)}%
+                                        {Math.abs(liveData.analytics.scansGrowth || 0)}%
                                     </span>
                                     from last period
                                 </p>
                             </CardContent>
                         </Card>
 
-                        <Card>
+                        <Card className="dark:bg-gray-800 dark:border-gray-700">
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">Security Alerts</CardTitle>
+                                <CardTitle className="text-sm font-medium dark:text-gray-200">Security Alerts</CardTitle>
                                 <Shield className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold text-red-600">{securityOverview.activeAlerts}</div>
+                                <div className="text-2xl font-bold text-red-600 dark:text-red-400">{liveData.securityOverview.activeAlerts || 0}</div>
                                 <p className="text-xs text-muted-foreground">
-                                    {securityOverview.criticalAlerts} critical, {securityOverview.warningAlerts} warnings
+                                    {liveData.securityOverview.totalVulnerabilities || 0} total, {liveData.securityOverview.resolvedIssues || 0} resolved
                                 </p>
                             </CardContent>
                         </Card>
 
-                        <Card>
+                        <Card className="dark:bg-gray-800 dark:border-gray-700">
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">Avg Response Time</CardTitle>
+                                <CardTitle className="text-sm font-medium dark:text-gray-200">Avg Response Time</CardTitle>
                                 <Clock className="h-4 w-4 text-muted-foreground" />
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold">{performanceData.avgResponseTime}ms</div>
+                                <div className="text-2xl font-bold dark:text-white">{liveData.performanceData.avgResponseTime || 0}s</div>
                                 <p className="text-xs text-muted-foreground">
-                                    <span className={performanceData.responseTimeTrend < 0 ? "text-green-600" : "text-red-600"}>
-                                        {performanceData.responseTimeTrend < 0 ? 
-                                            <TrendingDown className="h-3 w-3 mr-1 inline" /> : 
-                                            <TrendingUp className="h-3 w-3 mr-1 inline" />
-                                        }
-                                        {Math.abs(performanceData.responseTimeTrend)}%
+                                    <span className="text-green-600 dark:text-green-400 flex items-center">
+                                        <CheckCircle className="h-3 w-3 mr-1" />
+                                        {liveData.performanceData.uptimePercentage || 0}% uptime
                                     </span>
-                                    from last period
                                 </p>
                             </CardContent>
                         </Card>
@@ -167,111 +254,126 @@ export default function AnalyticsDashboard({ auth, analytics, securityOverview, 
 
                     {/* Charts Row */}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        {/* Health Score Trend */}
-                        <Card>
+                        {/* Performance Trends */}
+                        <Card className="dark:bg-gray-800 dark:border-gray-700">
                             <CardHeader>
-                                <CardTitle>Health Score Trend</CardTitle>
-                                <CardDescription>Website health scores over time</CardDescription>
+                                <CardTitle className="dark:text-gray-200">Performance Trends</CardTitle>
+                                <CardDescription className="dark:text-gray-400">Response time and health metrics over time</CardDescription>
                             </CardHeader>
                             <CardContent>
                                 <ResponsiveContainer width="100%" height={300}>
-                                    <LineChart data={analytics.healthTrendData}>
-                                        <CartesianGrid strokeDasharray="3 3" />
-                                        <XAxis dataKey="date" />
-                                        <YAxis domain={[0, 100]} />
-                                        <Tooltip />
+                                    <LineChart data={liveData.performanceData.trends || []}>
+                                        <CartesianGrid strokeDasharray="3 3" className="dark:stroke-gray-600" />
+                                        <XAxis 
+                                            dataKey="date" 
+                                            className="dark:fill-gray-400"
+                                        />
+                                        <YAxis className="dark:fill-gray-400" />
+                                        <Tooltip 
+                                            contentStyle={{
+                                                backgroundColor: 'rgb(31 41 55)',
+                                                border: '1px solid rgb(75 85 99)',
+                                                borderRadius: '6px',
+                                                color: 'rgb(229 231 235)'
+                                            }}
+                                        />
                                         <Legend />
-                                        <Line type="monotone" dataKey="avgHealth" stroke="#10b981" strokeWidth={2} />
-                                        <Line type="monotone" dataKey="avgSecurity" stroke="#3b82f6" strokeWidth={2} />
-                                        <Line type="monotone" dataKey="avgPerformance" stroke="#f59e0b" strokeWidth={2} />
+                                        <Line 
+                                            type="monotone" 
+                                            dataKey="responseTime" 
+                                            stroke="#10b981" 
+                                            strokeWidth={2}
+                                            name="Response Time (s)"
+                                        />
+                                        <Line 
+                                            type="monotone" 
+                                            dataKey="healthScore" 
+                                            stroke="#3b82f6" 
+                                            strokeWidth={2}
+                                            name="Health Score"
+                                        />
                                     </LineChart>
                                 </ResponsiveContainer>
                             </CardContent>
                         </Card>
 
-                        {/* Security Distribution */}
-                        <Card>
+                        {/* Security Trends */}
+                        <Card className="dark:bg-gray-800 dark:border-gray-700">
                             <CardHeader>
-                                <CardTitle>Security Status Distribution</CardTitle>
-                                <CardDescription>Current security status across all websites</CardDescription>
+                                <CardTitle className="dark:text-gray-200">Security Trends</CardTitle>
+                                <CardDescription className="dark:text-gray-400">Security alerts and resolutions over time</CardDescription>
                             </CardHeader>
                             <CardContent>
                                 <ResponsiveContainer width="100%" height={300}>
-                                    <PieChart>
-                                        <Pie
-                                            data={securityOverview.statusDistribution}
-                                            cx="50%"
-                                            cy="50%"
-                                            labelLine={false}
-                                            label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                                            outerRadius={80}
-                                            fill="#8884d8"
-                                            dataKey="value"
-                                        >
-                                            {securityOverview.statusDistribution.map((entry, index) => (
-                                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                                            ))}
-                                        </Pie>
-                                        <Tooltip />
-                                    </PieChart>
+                                    <BarChart data={liveData.securityOverview.trends || []}>
+                                        <CartesianGrid strokeDasharray="3 3" className="dark:stroke-gray-600" />
+                                        <XAxis 
+                                            dataKey="date" 
+                                            className="dark:fill-gray-400"
+                                        />
+                                        <YAxis className="dark:fill-gray-400" />
+                                        <Tooltip 
+                                            contentStyle={{
+                                                backgroundColor: 'rgb(31 41 55)',
+                                                border: '1px solid rgb(75 85 99)',
+                                                borderRadius: '6px',
+                                                color: 'rgb(229 231 235)'
+                                            }}
+                                        />
+                                        <Legend />
+                                        <Bar dataKey="alerts" fill="#ef4444" name="New Alerts" />
+                                        <Bar dataKey="resolved" fill="#10b981" name="Resolved" />
+                                    </BarChart>
                                 </ResponsiveContainer>
                             </CardContent>
                         </Card>
                     </div>
 
-                    {/* Performance Chart */}
-                    <Card>
+                    {/* Recent Security Alerts */}
+                    <Card className="dark:bg-gray-800 dark:border-gray-700">
                         <CardHeader>
-                            <CardTitle>Performance Metrics</CardTitle>
-                            <CardDescription>Response time and uptime trends</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <ResponsiveContainer width="100%" height={400}>
-                                <BarChart data={performanceData.chartData}>
-                                    <CartesianGrid strokeDasharray="3 3" />
-                                    <XAxis dataKey="date" />
-                                    <YAxis yAxisId="left" />
-                                    <YAxis yAxisId="right" orientation="right" />
-                                    <Tooltip />
-                                    <Legend />
-                                    <Bar yAxisId="left" dataKey="responseTime" fill="#3b82f6" name="Response Time (ms)" />
-                                    <Bar yAxisId="right" dataKey="uptime" fill="#10b981" name="Uptime %" />
-                                </BarChart>
-                            </ResponsiveContainer>
-                        </CardContent>
-                    </Card>
-
-                    {/* Recent Alerts */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Recent Security Alerts</CardTitle>
-                            <CardDescription>Latest security issues requiring attention</CardDescription>
+                            <CardTitle className="dark:text-gray-200">Recent Security Alerts</CardTitle>
+                            <CardDescription className="dark:text-gray-400">
+                                Latest security issues requiring attention
+                            </CardDescription>
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-4">
-                                {recentAlerts.map((alert, index) => (
-                                    <div key={index} className="flex items-center justify-between p-4 border rounded-lg">
-                                        <div className="flex items-center space-x-3">
-                                            {alert.severity === 'critical' ? (
-                                                <AlertTriangle className="h-5 w-5 text-red-500" />
-                                            ) : alert.severity === 'warning' ? (
-                                                <AlertTriangle className="h-5 w-5 text-yellow-500" />
-                                            ) : (
-                                                <CheckCircle className="h-5 w-5 text-green-500" />
-                                            )}
-                                            <div>
-                                                <h4 className="font-medium">{alert.title}</h4>
-                                                <p className="text-sm text-gray-600">{alert.website} • {alert.timeAgo}</p>
+                                {liveData.recentAlerts.length > 0 ? (
+                                    liveData.recentAlerts.map((alert) => (
+                                        <div key={alert.id} className="flex items-start justify-between p-4 border rounded-lg dark:border-gray-600 dark:bg-gray-750">
+                                            <div className="flex-1">
+                                                <div className="flex items-center gap-2">
+                                                    <h4 className="font-medium dark:text-gray-200">{alert.title}</h4>
+                                                    <span className={getSeverityBadge(alert.severity)}>
+                                                        {alert.severity}
+                                                    </span>
+                                                </div>
+                                                <p className="text-sm text-muted-foreground mt-1">
+                                                    {alert.description}
+                                                </p>
+                                                <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
+                                                    <span>Website: {alert.website}</span>
+                                                    <span>{alert.time}</span>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <Badge 
+                                                    variant={alert.status === 'open' ? 'destructive' : 'secondary'}
+                                                    className="dark:text-gray-200"
+                                                >
+                                                    {alert.status}
+                                                </Badge>
+                                                <AlertTriangle className="h-4 w-4 text-red-500" />
                                             </div>
                                         </div>
-                                        <Badge variant={
-                                            alert.severity === 'critical' ? 'destructive' : 
-                                            alert.severity === 'warning' ? 'secondary' : 'default'
-                                        }>
-                                            {alert.severity}
-                                        </Badge>
+                                    ))
+                                ) : (
+                                    <div className="text-center py-8 text-muted-foreground">
+                                        <CheckCircle className="h-8 w-8 mx-auto mb-2 text-green-500" />
+                                        <p>No active security alerts</p>
                                     </div>
-                                ))}
+                                )}
                             </div>
                         </CardContent>
                     </Card>
