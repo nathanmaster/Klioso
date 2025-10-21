@@ -1,9 +1,9 @@
 {
-    "version":  "0.10.3",
-    "release_date":  "2025-10-21",
-    "release_timestamp":  1761076308,
-    "codename":  "Phase 1 Complete: WordPress Integration Suite",
-    "description":  "Stable production release: Routing fixes, feature flags system, and production safety improvements",
-    "type":  "patch",
-    "stability":  "stable"
+    "version": "0.11.0",
+    "release_date": "2025-01-21",
+    "release_timestamp": 1737508800,
+    "codename": "Feature Flag Infrastructure",
+    "description": "Production-ready release: Complete feature flag system, routing fixes, deployment automation, and enterprise-grade infrastructure",
+    "type": "minor",
+    "stability": "stable"
 }
