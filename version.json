@@ -1,8 +1,8 @@
 {
-    "version": "1.10.054",
+    "version": "1.10.055",
     "release_date": "2025-10-22",
     "release_timestamp": 1761134400,
-    "codename": "GitHub Actions Tag Fixes",
+    "codename": "GitHub Actions Build Component Fix",
     "description": "Revolutionary migration management system with optimized installation paths. Fresh installations now use single comprehensive schema instead of 35+ individual migrations. Includes automated installation commands and cross-platform setup scripts.",
     "type": "major",
     "stability": "stable",
