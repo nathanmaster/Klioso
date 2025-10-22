@@ -206,6 +206,14 @@ Route::prefix('api')->middleware(['web'])->group(function () {
     Route::post('/analytics/error', [App\Http\Controllers\Api\AnalyticsController::class, 'logError']);
     Route::post('/analytics/page-view', [App\Http\Controllers\Api\AnalyticsController::class, 'logPageView']);
     Route::get('/analytics/errors', [App\Http\Controllers\Api\AnalyticsController::class, 'getErrorAnalytics'])->middleware('auth');
+    
+    // Health Score API routes
+    Route::middleware('auth')->group(function () {
+        Route::get('/health-score/dashboard', [App\Http\Controllers\Api\HealthScoreController::class, 'dashboard'])->name('api.health-score.dashboard');
+        Route::get('/health-score/all', [App\Http\Controllers\Api\HealthScoreController::class, 'all'])->name('api.health-score.all');
+        Route::get('/health-score/website/{website}', [App\Http\Controllers\Api\HealthScoreController::class, 'website'])->name('api.health-score.website');
+        Route::get('/health-score/trends/{website}', [App\Http\Controllers\Api\HealthScoreController::class, 'trends'])->name('api.health-score.trends');
+    });
 });
 
 require __DIR__.'/auth.php';
