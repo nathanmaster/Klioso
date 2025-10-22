@@ -1,12 +1,14 @@
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { useForm } from '@inertiajs/react';
+import React from 'react';
+import { Head, useForm } from '@inertiajs/react';
+import UniversalPageLayout from '@/Components/UniversalPageLayout';
+import { safeRoute } from '@/Utils/safeRoute';
 import Form from '@/Components/Form';
 import Button from '@/Components/Button';
-import { Link } from '@inertiajs/react';
 import BackButton from '@/Components/BackButton';
+import { UserIcon, ArrowLeftIcon } from '@heroicons/react/24/outline';
 
-export default function Edit({ client }) {
-    const { data, setData, put, errors } = useForm({
+export default function Edit({ auth, client }) {
+    const { data, setData, put, errors, processing } = useForm({
         name: client.name || '',
         contact_email: client.contact_email || '',
         contact_phone: client.contact_phone || '',
@@ -15,69 +17,93 @@ export default function Edit({ client }) {
         notes: client.notes || '',
     });
 
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        put(safeRoute('clients.update', { client: client.id }));
+    };
+
+    const pageActions = [
+        {
+            label: 'Back to Client',
+            href: safeRoute('clients.show', { client: client.id }),
+            variant: 'secondary',
+            icon: ArrowLeftIcon
+        }
+    ];
+
     return (
-        <AuthenticatedLayout header={<h1 className="text-2xl font-bold text-gray-800">Edit Client</h1>}>
-            <div className="flex gap-8 py-8">
-                {/* Sidebar Navigation */}
-                <nav className="w-64 bg-white rounded-lg shadow p-6 flex flex-col gap-4">
-                    <Link href="/clients" className="text-blue-600 hover:underline font-medium">Clients</Link>
-                    <Link href="/websites" className="text-blue-600 hover:underline font-medium">Websites</Link>
-                    <Link href="/plugins" className="text-blue-600 hover:underline font-medium">Plugins</Link>
-                    <Link href="/templates" className="text-blue-600 hover:underline font-medium">Templates</Link>
-                    <Link href="/hosting-providers" className="text-blue-600 hover:underline font-medium">Hosting Providers</Link>
-                </nav>
-                {/* Main Content */}
-                <div className="flex-1">
-                    <div className="bg-white rounded-lg shadow p-6 max-w-xl mx-auto">
-                        <div className="flex justify-between items-center mb-6">
-                            <BackButton fallbackRoute={`/clients/${client.id}`} />
-                            <h2 className="text-lg font-semibold">Edit {client.name}</h2>
-                        </div>
-                        <Form onSubmit={e => { e.preventDefault(); put(`/clients/${client.id}`); }}>
-                            <Form.Input
-                                label="Name"
-                                value={data.name}
-                                onChange={e => setData('name', e.target.value)}
-                                required
-                                error={errors?.name}
-                            />
-                            <Form.Input
-                                label="Contact Email"
-                                type="email"
-                                value={data.contact_email}
-                                onChange={e => setData('contact_email', e.target.value)}
-                                error={errors?.contact_email}
-                            />
-                            <Form.Input
-                                label="Contact Phone"
-                                value={data.contact_phone}
-                                onChange={e => setData('contact_phone', e.target.value)}
-                                error={errors?.contact_phone}
-                            />
-                            <Form.Input
-                                label="Address"
-                                value={data.address}
-                                onChange={e => setData('address', e.target.value)}
-                                error={errors?.address}
-                            />
-                            <Form.Input
-                                label="Company"
-                                value={data.company}
-                                onChange={e => setData('company', e.target.value)}
-                                error={errors?.company}
-                            />
-                            <Form.Textarea
-                                label="Notes"
-                                value={data.notes}
-                                onChange={e => setData('notes', e.target.value)}
-                                error={errors?.notes}
-                            />
-                            <Button type="submit">Update</Button>
-                        </Form>
-                        {errors && <div className="mt-4 text-red-500 text-sm">{Object.values(errors).join(', ')}</div>}
+        <UniversalPageLayout
+            auth={auth}
+            title={`Edit Client: ${client.name}`}
+            subtitle="Update client information and details"
+            breadcrumbs={[
+                { label: 'Clients', href: '/clients' },
+                { label: client.name, href: safeRoute('clients.show', { client: client.id }) },
+                { label: 'Edit', current: true }
+            ]}
+            actions={pageActions}
+        >
+            <Head title={`Edit Client: ${client.name}`} />
+            
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 max-w-4xl mx-auto">
+                <Form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <Form.Input
+                            label="Name"
+                            value={data.name}
+                            onChange={e => setData('name', e.target.value)}
+                            error={errors?.name}
+                            required
+                        />
+                        <Form.Input
+                            label="Contact Email"
+                            type="email"
+                            value={data.contact_email}
+                            onChange={e => setData('contact_email', e.target.value)}
+                            error={errors?.contact_email}
+                        />
+                        <Form.Input
+                            label="Contact Phone"
+                            value={data.contact_phone}
+                            onChange={e => setData('contact_phone', e.target.value)}
+                            error={errors?.contact_phone}
+                        />
+                        <Form.Input
+                            label="Company"
+                            value={data.company}
+                            onChange={e => setData('company', e.target.value)}
+                            error={errors?.company}
+                        />
                     </div>
-                </div>
+                    
+                    <Form.Input
+                        label="Address"
+                        value={data.address}
+                        onChange={e => setData('address', e.target.value)}
+                        error={errors?.address}
+                    />
+                    
+                    <Form.Textarea
+                        label="Notes"
+                        value={data.notes}
+                        onChange={e => setData('notes', e.target.value)}
+                        error={errors?.notes}
+                    />
+                    
+                    <div className="flex justify-end space-x-4">
+                        <Button 
+                            type="button" 
+                            variant="secondary"
+                            onClick={() => window.history.back()}
+                        >
+                            Cancel
+                        </Button>
+                        <Button type="submit" disabled={processing}>
+                            {processing ? 'Updating...' : 'Update Client'}
+                        </Button>
+                    </div>
+                </Form>
             </div>
-        </AuthenticatedLayout>
+        </UniversalPageLayout>
     );
 }

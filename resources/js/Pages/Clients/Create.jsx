@@ -1,11 +1,13 @@
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { useForm } from '@inertiajs/react';
+import React from 'react';
+import { Head, useForm } from '@inertiajs/react';
+import UniversalPageLayout from '@/Components/UniversalPageLayout';
+import { safeRoute } from '@/Utils/safeRoute';
 import Form from '@/Components/Form';
 import Button from '@/Components/Button';
-import BackButton from '@/Components/BackButton';
+import { ArrowLeftIcon } from '@heroicons/react/24/outline';
 
-export default function Create() {
-    const { data, setData, post, errors } = useForm({
+export default function Create({ auth }) {
+    const { data, setData, post, errors, processing } = useForm({
         name: '',
         contact_email: '',
         contact_phone: '',
@@ -14,9 +16,34 @@ export default function Create() {
         notes: '',
     });
 
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        post('/clients');
+    };
+
+    const pageActions = [
+        {
+            label: 'Back to Clients',
+            href: '/clients',
+            variant: 'secondary',
+            icon: ArrowLeftIcon
+        }
+    ];
+
     return (
-        <AuthenticatedLayout header={<h1 className="text-2xl font-bold text-gray-800">Add Client</h1>}>
-            <div className="max-w-xl mx-auto bg-white rounded-lg shadow p-6 mt-8">
+        <UniversalPageLayout
+            auth={auth}
+            title="Create New Client"
+            subtitle="Add a new client to your management system"
+            breadcrumbs={[
+                { label: 'Clients', href: '/clients' },
+                { label: 'Create', current: true }
+            ]}
+            actions={pageActions}
+        >
+            <Head title="Create New Client" />
+            
+            <div className="max-w-4xl mx-auto bg-white dark:bg-gray-800 rounded-lg shadow p-6">
                 <div className="flex justify-between items-center mb-6">
                     <BackButton fallbackRoute="/clients" />
                     <h2 className="text-lg font-semibold">New Client</h2>
@@ -60,10 +87,20 @@ export default function Create() {
                         onChange={e => setData('notes', e.target.value)}
                         error={errors?.notes}
                     />
-                    <Button type="submit">Save</Button>
+                    <div className="flex justify-end space-x-4">
+                        <Button 
+                            type="button" 
+                            variant="secondary"
+                            onClick={() => window.history.back()}
+                        >
+                            Cancel
+                        </Button>
+                        <Button type="submit" disabled={processing}>
+                            {processing ? 'Creating...' : 'Create Client'}
+                        </Button>
+                    </div>
                 </Form>
-                {errors && <div className="mt-4 text-red-500 text-sm">{Object.values(errors).join(', ')}</div>}
             </div>
-        </AuthenticatedLayout>
+        </UniversalPageLayout>
     );
 }
