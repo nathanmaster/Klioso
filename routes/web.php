@@ -43,14 +43,20 @@ Route::get('/dashboard', function () {
     $criticalWebsites = 0;
     
     foreach ($websites as $website) {
-        $healthData = $healthScoreService->calculateHealthScore($website);
-        $healthScores[] = $healthData;
-        $totalHealthScore += $healthData['overall_score'];
-        
-        if ($healthData['overall_score'] >= 80) {
-            $healthyWebsites++;
-        } elseif ($healthData['overall_score'] < 50) {
-            $criticalWebsites++;
+        try {
+            $healthData = $healthScoreService->calculateHealthScore($website);
+            $healthScores[] = $healthData;
+            $totalHealthScore += $healthData['overall_score'];
+            
+            if ($healthData['overall_score'] >= 80) {
+                $healthyWebsites++;
+            } elseif ($healthData['overall_score'] < 50) {
+                $criticalWebsites++;
+            }
+        } catch (\Exception $e) {
+            // Log error but continue with other websites
+            \Log::warning("Failed to calculate health score for website {$website->id}: " . $e->getMessage());
+            $healthScores[] = ['overall_score' => 0];
         }
     }
     
@@ -61,15 +67,30 @@ Route::get('/dashboard', function () {
         ->where('status', 'open')->count();
     $totalSecurityIssues = \App\Models\SecurityAudit::where('status', 'open')->count();
     
-    // Performance metrics
+    // Performance metrics (with fallback for null values)
     $avgLoadTime = \App\Models\WebsiteAnalytics::whereNotNull('load_time')
-        ->avg('load_time');
+        ->avg('load_time') ?: 0;
     
-    // Maintenance alerts
+    // Maintenance alerts (with fallback for null tables)
     $outdatedWebsites = \App\Models\WebsiteAnalytics::where('wp_updates_available', true)
         ->distinct('website_id')->count();
     $pluginUpdatesNeeded = \App\Models\WebsiteAnalytics::whereNotNull('outdated_plugins')
-        ->where('outdated_plugins', '>', 0)->sum('outdated_plugins');
+        ->where('outdated_plugins', '>', 0)->sum('outdated_plugins') ?: 0;
+    
+    // Calculate health distribution safely
+    $distribution = ['excellent' => 0, 'good' => 0, 'fair' => 0, 'poor' => 0];
+    foreach ($healthScores as $healthData) {
+        $score = $healthData['overall_score'] ?? 0;
+        if ($score >= 90) {
+            $distribution['excellent']++;
+        } elseif ($score >= 80) {
+            $distribution['good']++;
+        } elseif ($score >= 60) {
+            $distribution['fair']++;
+        } else {
+            $distribution['poor']++;
+        }
+    }
     
     return Inertia::render('Dashboard', [
         'stats' => [
@@ -88,12 +109,7 @@ Route::get('/dashboard', function () {
         'recentScans' => $recentScans,
         'healthOverview' => [
             'averageScore' => $averageHealthScore,
-            'distribution' => [
-                'excellent' => $websites->filter(fn($w) => ($healthScores[array_search($w->id, $websites->pluck('id')->toArray())] ?? ['overall_score' => 0])['overall_score'] >= 90)->count(),
-                'good' => $websites->filter(fn($w) => ($healthScores[array_search($w->id, $websites->pluck('id')->toArray())] ?? ['overall_score' => 0])['overall_score'] >= 80 && ($healthScores[array_search($w->id, $websites->pluck('id')->toArray())] ?? ['overall_score' => 0])['overall_score'] < 90)->count(),
-                'fair' => $websites->filter(fn($w) => ($healthScores[array_search($w->id, $websites->pluck('id')->toArray())] ?? ['overall_score' => 0])['overall_score'] >= 60 && ($healthScores[array_search($w->id, $websites->pluck('id')->toArray())] ?? ['overall_score' => 0])['overall_score'] < 80)->count(),
-                'poor' => $websites->filter(fn($w) => ($healthScores[array_search($w->id, $websites->pluck('id')->toArray())] ?? ['overall_score' => 0])['overall_score'] < 60)->count(),
-            ]
+            'distribution' => $distribution,
         ],
     ]);
 })->middleware(['auth', 'verified'])->name('dashboard');

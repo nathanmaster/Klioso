@@ -45,7 +45,7 @@ class HealthScoreService
         $issues = [];
 
         if (!$analytics) {
-            return ['score' => 0, 'issues' => ['No analytics data available']];
+            return ['score' => 50, 'issues' => ['No analytics data available - website not yet scanned']];
         }
 
         // Check if site is online
@@ -65,7 +65,7 @@ class HealthScoreService
             }
 
             // Check SSL status
-            if (!$analytics->ssl_valid) {
+            if (isset($analytics->ssl_valid) && !$analytics->ssl_valid) {
                 $score -= 20;
                 $issues[] = 'Invalid or expired SSL certificate';
             }
@@ -84,7 +84,7 @@ class HealthScoreService
         $issues = [];
 
         if (!$analytics || !$analytics->load_time) {
-            return ['score' => 50, 'issues' => ['No performance data available']];
+            return ['score' => 50, 'issues' => ['No performance data available - website not yet scanned']];
         }
 
         $loadTime = $analytics->load_time;
@@ -102,7 +102,7 @@ class HealthScoreService
         }
 
         // Check for performance optimizations
-        if ($analytics->page_size && $analytics->page_size > 3000) { // 3MB
+        if (isset($analytics->page_size) && $analytics->page_size && $analytics->page_size > 3000) { // 3MB
             $score -= 15;
             $issues[] = 'Large page size affecting performance';
         }
@@ -173,17 +173,17 @@ class HealthScoreService
         $issues = [];
 
         if (!$analytics) {
-            return ['score' => 50, 'issues' => ['No maintenance data available']];
+            return ['score' => 50, 'issues' => ['No maintenance data available - website not yet scanned']];
         }
 
         // Check for WordPress updates
-        if ($analytics->wp_updates_available) {
+        if (isset($analytics->wp_updates_available) && $analytics->wp_updates_available) {
             $score -= 20;
             $issues[] = 'WordPress core updates available';
         }
 
         // Check for outdated plugins
-        if ($analytics->outdated_plugins && $analytics->outdated_plugins > 0) {
+        if (isset($analytics->outdated_plugins) && $analytics->outdated_plugins && $analytics->outdated_plugins > 0) {
             $score -= min(30, $analytics->outdated_plugins * 5);
             $issues[] = "{$analytics->outdated_plugins} plugins need updates";
         }
@@ -208,16 +208,19 @@ class HealthScoreService
         $issues = [];
 
         if (!$analytics) {
-            return ['score' => 50, 'issues' => ['No SEO data available']];
+            return ['score' => 50, 'issues' => ['No SEO data available - website not yet scanned']];
         }
 
-        if ($analytics->seo_score) {
+        if (isset($analytics->seo_score) && $analytics->seo_score) {
             $score = $analytics->seo_score;
             if ($score < 70) {
                 $issues[] = 'Poor SEO optimization';
             } elseif ($score < 85) {
                 $issues[] = 'SEO improvements needed';
             }
+        } else {
+            $score = 75; // Default score when no SEO data available
+            $issues[] = 'SEO analysis not yet performed';
         }
 
         return ['score' => $score, 'issues' => $issues];

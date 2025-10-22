@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Website extends Model
@@ -99,6 +100,11 @@ class Website extends Model
     public function analytics(): HasMany
     {
         return $this->hasMany(WebsiteAnalytics::class);
+    }
+
+    public function latestAnalytics()
+    {
+        return $this->hasOne(WebsiteAnalytics::class)->latest('scanned_at');
     }
 
     public function securityAudits(): HasMany
