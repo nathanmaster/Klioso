@@ -25,8 +25,9 @@ jobs:
       uses: shivammathur/setup-php@v2
       with:
         php-version: '8.3'
-        extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, pdo_mysql, zip, gd, curl
+        extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, pdo_mysql, zip, gd, curl, fileinfo, tokenizer
         coverage: none
+        tools: composer:v2
         
     - name: Setup Node.js
       uses: actions/setup-node@v4
@@ -44,16 +45,32 @@ jobs:
         
     - name: Install PHP dependencies
       run: |
+        # Verify PHP setup
+        php --version
+        composer --version
+        
         # Create .env file for build process
         cp .env.example .env
         echo "APP_ENV=production" >> .env
         echo "APP_DEBUG=false" >> .env
         echo "DB_CONNECTION=sqlite" >> .env
         echo "DB_DATABASE=:memory:" >> .env
+        echo "BROADCAST_DRIVER=log" >> .env
+        echo "CACHE_DRIVER=array" >> .env
+        echo "QUEUE_CONNECTION=sync" >> .env
+        echo "SESSION_DRIVER=array" >> .env
+        
+        # Clear composer cache to prevent issues
+        composer clear-cache
         
         # Install dependencies with error handling
-        composer install --optimize-autoloader --no-dev --no-interaction --prefer-dist
-        composer dump-autoloader --optimize
+        composer install --optimize-autoloader --no-dev --no-interaction --prefer-dist --no-progress
+        
+        # Verify installation
+        composer show
+        
+        # Optimize autoloader
+        composer dump-autoload --optimize --no-dev
       
     - name: Install Node dependencies and build assets
       run: |
