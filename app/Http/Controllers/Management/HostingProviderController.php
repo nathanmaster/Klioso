@@ -38,6 +38,14 @@ class HostingProviderController extends Controller
         // Pagination
         $hostingProviders = $query->paginate($request->get('per_page', 15))
             ->withQueryString();
+            
+        // Calculate statistics for the overview cards
+        $totalProviders = HostingProvider::count();
+        $hostingProviders_count = HostingProvider::where('provides_hosting', true)->count();
+        $dnsProviders_count = HostingProvider::where('provides_dns', true)->count();
+        $emailProviders_count = HostingProvider::where('provides_email', true)->count();
+        $domainProviders_count = HostingProvider::where('provides_domain_registration', true)->count();
+        $providersWithWebsites = HostingProvider::whereNotNull('website')->count();
         
         $providerData = $hostingProviders->getCollection()->map(function ($provider) {
             return [
@@ -73,6 +81,14 @@ class HostingProviderController extends Controller
             'sortBy' => $sortBy,
             'sortDirection' => $sortDirection,
             'filters' => $request->only('search'),
+            'statistics' => [
+                'totalProviders' => $totalProviders,
+                'hostingProviders' => $hostingProviders_count,
+                'dnsProviders' => $dnsProviders_count,
+                'emailProviders' => $emailProviders_count,
+                'domainProviders' => $domainProviders_count,
+                'providersWithWebsites' => $providersWithWebsites,
+            ],
         ]);
     }
 

@@ -206,8 +206,8 @@ export default function Show({ auth, group }) {
                                                         className="mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded"
                                                     />
                                                     <div className="flex-1">
-                                                        <div className="font-medium text-gray-900 dark:text-gray-100">{website.domain_name}</div>
-                                                        <div className="text-sm text-gray-500 dark:text-gray-400">{website.domain_name}</div>
+                                                        <div className="font-medium text-gray-900 dark:text-gray-100">{website.name || website.domain_name}</div>
+                                                        <div className="text-sm text-gray-500 dark:text-gray-400">{website.url || website.domain_name}</div>
                                                         {website.client && (
                                                             <div className="text-xs text-gray-400 dark:text-gray-500">Client: {website.client}</div>
                                                         )}
@@ -253,8 +253,8 @@ export default function Show({ auth, group }) {
                                             <div className="flex items-center gap-3">
                                                 <ComputerDesktopIcon className="h-8 w-8 text-gray-400 dark:text-gray-500" />
                                                 <div>
-                                                    <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">{website.domain_name}</h3>
-                                                    <p className="text-sm text-gray-500 dark:text-gray-400">{website.domain_name}</p>
+                                                    <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">{website.name || website.domain_name}</h3>
+                                                    <p className="text-sm text-gray-500 dark:text-gray-400">{website.url || website.domain_name}</p>
                                                 </div>
                                             </div>
                                             <div className="flex gap-1">

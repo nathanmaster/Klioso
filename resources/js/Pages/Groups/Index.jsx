@@ -200,7 +200,7 @@ export default function Index({ auth, groups, availableColors, availableIcons, f
                     </div>
                     <div className="flex gap-1">
                         <Link
-                            href={route('groups.show', group.id)}
+                            href={safeRoute('groups.show', group.id)}
                             className="p-1 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
                         >
                             <EyeIcon className="h-4 w-4" />

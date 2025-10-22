@@ -1,9 +1,17 @@
 {
-    "version": "1.10.002",
+    "version": "1.10.023",
     "release_date": "2025-10-22",
     "release_timestamp": 1761134400,
-    "codename": "Bug Fix & Enhancement Release",
-    "description": "Development version: Major bug fixes, dashboard improvements, UI consistency updates, and enhanced functionality",
+    "codename": "Documentation Organization & Known Issues Documentation",
+    "description": "Documentation restructure and organization. IMPORTANT: Previous bug fix claims were inaccurate - see KNOWN_ISSUES.md for actual status of unresolved problems including Groups/Websites reload issues, Client sidebar problems, and missing Hosting Provider statistics.",
     "type": "patch",
-    "stability": "unstable"
+    "stability": "unstable",
+    "critical_issues": [
+        "Groups/Websites table constant reloading causing 500 errors",
+        "Client views still have unwanted sidebar (not fixed as claimed)",
+        "Hosting Providers missing statistics cards (not implemented as claimed)",
+        "Debug code still present in production components"
+    ],
+    "documentation_status": "organized",
+    "functional_status": "requires_critical_fixes"
 }

@@ -1,6 +1,6 @@
 # Klioso - WordPress Management System
 
-[![Version](https://img.shields.io/badge/Version-v0.9.72--beta-blue.svg)](https://github.com/nathanmaster/Klioso)
+[![Version](https://img.shields.io/badge/Version-v1.10.023-blue.svg)](https://github.com/nathanmaster/Klioso)
 [![Laravel](https://img.shields.io/badge/Laravel-v12.x-red.svg)](https://laravel.com)
 [![PHP](https://img.shields.io/badge/PHP-8.2+-blue.svg)](https://php.net)
 [![React](https://img.shields.io/badge/React-18.x-blue.svg)](https://reactjs.org)
@@ -80,6 +80,98 @@ The primary goal is to create a **single source of truth** for all client, websi
 - **Security vulnerability scanning**: Check for known security issues
 - **Automated plugin database integration**: Automatically match discovered plugins with your database
 - **Real-time results**: Live scanning with progress indicators
+
+## 📚 Documentation
+
+Klioso now features comprehensive, well-organized documentation:
+
+- **📋 [Complete Setup Guide](docs/setup/COMPLETE_INSTALLATION_GUIDE.md)** - Platform-specific installation instructions
+- **🔌 [API Reference](docs/api/API_REFERENCE.md)** - Full REST API documentation with examples  
+- **🔧 [Development Guide](docs/development/DEVELOPMENT_GUIDE.md)** - Coding standards and workflows
+- **🛠️ [Troubleshooting](docs/setup/TROUBLESHOOTING.md)** - Common issues and solutions
+- **📖 [Documentation Index](docs/README.md)** - Complete guide to all documentation
+
+### Quick Links for Common Tasks
+
+| Task | Documentation |
+|------|---------------|
+| **First-time Setup** | [Installation Guide](docs/setup/COMPLETE_INSTALLATION_GUIDE.md) |
+| **WPScan API Setup** | [External Services Setup](docs/setup/COMPLETE_INSTALLATION_GUIDE.md#wpscan-api-key-required-for-security-scanning) |
+| **API Usage** | [API Reference](docs/api/API_REFERENCE.md) |
+| **Contributing** | [Development Guide](docs/development/DEVELOPMENT_GUIDE.md) |
+| **Deployment** | [Production Deployment](docs/deployment/PRODUCTION_DEPLOYMENT_GUIDE.md) |
+
+## 🆕 Recent Updates - v1.10.023 "Documentation & Codebase Organization Release"
+
+### Major Improvements & Bug Fixes
+
+#### ✨ New Semantic Versioning System
+
+- **GitHub-Sortable Versions**: Updated from v0.9.x to v1.10.x format for proper chronological ordering
+- **Enhanced Version Management**: Centralized version tracking with automated release processes
+- **Consistent Documentation**: Updated all version references across the codebase
+
+#### 🔧 Critical Bug Fixes
+- **Dashboard Statistics Restoration**: Fixed hardcoded "0" values, now displays real website/client counts
+- **Client Views Consistency**: Migrated all client pages (Show, Edit, Create) to UniversalPageLayout
+- **Groups Service Improvements**: 
+  - Fixed route inconsistencies (safeRoute vs route)
+  - Resolved website name display issues - now shows proper titles instead of duplicate domain names
+  - Enhanced list/grid view switching functionality
+- **Hosting Providers Enhancement**: Updated backend statistics integration (temporary workaround for frontend issues)
+
+#### 🎨 UI/UX Enhancements
+- **Consistent Layout System**: All major views now use UniversalPageLayout for unified experience
+- **Responsive Navigation**: Removed deprecated sidebar components in favor of modern navigation
+- **Improved Data Display**: Enhanced website name rendering with fallbacks (name → domain_name → url)
+- **Better Statistics Cards**: Dynamic data loading with proper error handling
+
+#### 🔧 Technical Improvements
+- **Route Consistency**: Standardized safeRoute usage across all components
+- **Data Flow Optimization**: Enhanced backend-frontend integration for statistics
+- **Error Handling**: Improved component error boundaries and fallback displays
+- **Performance**: Added database indexes and optimized query performance
+
+#### 📝 Documentation & Organization Updates
+- **Complete Documentation Restructure**: Organized docs into logical categories (setup/, development/, api/, deployment/)
+- **Comprehensive Installation Guide**: Platform-specific setup instructions with WPScan API configuration
+- **Full API Documentation**: Complete REST API reference with authentication and examples
+- **Enhanced Troubleshooting Guide**: Common issues with step-by-step solutions
+- **Development Workflows**: Coding standards, testing guidelines, and contribution processes
+- **Codebase Organization**: Improved file structure and documentation index
+
+### Commit Highlights
+
+Recent commits have focused on:
+
+1. **System-Wide Versioning Overhaul** (v1.10.002)
+   - Major version bump for GitHub compatibility
+   - Updated package.json and version.json synchronization
+   - Enhanced semantic versioning structure
+
+2. **Dashboard Functionality Restoration**
+   - Fixed hardcoded statistics display
+   - Implemented dynamic data fetching from backend
+   - Enhanced card components with real-time data
+
+3. **Client Management Modernization**
+   - Complete migration to UniversalPageLayout
+   - Removed deprecated sidebar navigation
+   - Added consistent breadcrumb navigation
+
+4. **Groups Service Stabilization**
+   - Fixed route handling inconsistencies
+   - Improved website name display logic
+   - Enhanced view switching capabilities
+
+5. **Hosting Providers Backend Integration**
+   - Added comprehensive statistics calculation
+   - Updated controller with proper data provision
+   - Enhanced Inertia response structure
+
+### Next Steps & Testing
+
+The current release focuses on stability and consistency. All major UI components now use the unified layout system, ensuring a consistent user experience across the platform. Future updates will continue to enhance the scanner functionality and add new features as outlined in the roadmap.
 
 ## 🛠️ Technology Stack
 
@@ -521,7 +613,16 @@ POST   /scanner/add-plugin         # Add discovered plugin to database
 - [x] **Documentation Standards**: ✅ Comprehensive docs and development guides (v0.9.71+)
 - [x] **Quality Analysis**: ✅ Automated code quality monitoring (v0.9.70+)
 
-### Upcoming Priorities (v0.9.75+)
+### Upcoming Priorities (v1.10.003+)
+
+#### Immediate Fixes & Enhancements
+- [ ] **Complete Hosting Providers UI**: Resolve frontend file corruption issues and implement UniversalPageLayout
+- [ ] **Enhanced Group Management**: Add drag-and-drop website organization
+- [ ] **Client Portal Foundations**: Basic client-facing dashboard with limited access
+- [ ] **Advanced Search**: Global search functionality across all entities
+- [ ] **Performance Monitoring**: Real-time website uptime and speed tracking
+
+#### Version 1.11.x - Enhanced Integration
 
 #### Phase 5: Advanced Integration Features
 - [ ] **WordPress Multisite Support**: Enhanced scanning for network installations
