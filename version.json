@@ -1,8 +1,8 @@
 {
-    "version": "1.10.052",
+    "version": "1.10.053",
     "release_date": "2025-10-22",
     "release_timestamp": 1761134400,
-    "codename": "Migration System Complete with Documentation",
+    "codename": "Security Scanner Fatal Error Fix",
     "description": "Revolutionary migration management system with optimized installation paths. Fresh installations now use single comprehensive schema instead of 35+ individual migrations. Includes automated installation commands and cross-platform setup scripts.",
     "type": "major",
     "stability": "stable",
