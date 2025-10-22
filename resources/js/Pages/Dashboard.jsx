@@ -36,12 +36,6 @@ export default function Dashboard({ stats = {}, recentScans = [], healthOverview
                     <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
                         Klioso Dashboard
                     </h2>
-                    <Link href="/analytics">
-                        <Button aria-label="View Analytics Dashboard">
-                            <BarChart3 className="h-4 w-4 mr-2" aria-hidden="true" />
-                            View Analytics
-                        </Button>
-                    </Link>
                 </div>
             }
         >
@@ -87,13 +81,13 @@ export default function Dashboard({ stats = {}, recentScans = [], healthOverview
                             </Card>
                         </Link>
 
-                        <Link href="/analytics/security" aria-label="Go to Security Monitor">
+                        <Link href="/security" aria-label="Go to Security Scanner">
                             <Card className="hover:shadow-lg transition-shadow cursor-pointer hover:shadow-gray-300 dark:hover:shadow-gray-700">
                                 <CardHeader className="flex flex-row items-center space-y-0 pb-2">
                                     <Shield className="h-8 w-8 text-red-600 dark:text-red-400" aria-hidden="true" />
                                     <div className="ml-4">
-                                        <CardTitle className="text-lg">Security Monitor</CardTitle>
-                                        <CardDescription>Track security status and alerts</CardDescription>
+                                        <CardTitle className="text-lg">Security Scanner</CardTitle>
+                                        <CardDescription>Scan for vulnerabilities and security issues</CardDescription>
                                     </div>
                                 </CardHeader>
                             </Card>
@@ -140,7 +134,7 @@ export default function Dashboard({ stats = {}, recentScans = [], healthOverview
                                 </div>
                                 <p className="text-xs text-red-600 dark:text-red-400 mt-1">
                                     {stats.totalSecurityIssues || 0} total issues • 
-                                    <Link href="/analytics/security" className="underline ml-1">Review</Link>
+                                    <Link href="/security" className="underline ml-1">Review</Link>
                                 </p>
                             </CardContent>
                         </Card>
