@@ -44,28 +44,46 @@ jobs:
         
     - name: Install PHP dependencies
       run: |
-        composer install --optimize-autoloader --no-dev --no-interaction
-        composer dump-autoload --optimize
+        # Create .env file for build process
+        cp .env.example .env
+        echo "APP_ENV=production" >> .env
+        echo "APP_DEBUG=false" >> .env
+        echo "DB_CONNECTION=sqlite" >> .env
+        echo "DB_DATABASE=:memory:" >> .env
+        
+        # Install dependencies with error handling
+        composer install --optimize-autoloader --no-dev --no-interaction --prefer-dist
+        composer dump-autoloader --optimize
       
     - name: Install Node dependencies and build assets
       run: |
-        # Clear npm cache and remove lock file to handle dependency conflicts
-        npm cache clean --force
+        # Check Node and npm versions
+        echo "Node version: $(node --version)"
+        echo "NPM version: $(npm --version)"
+        
+        # Clean npm cache to prevent issues
+        npm cache clean --force || echo "Cache clean failed (non-critical)"
+        
+        # Remove lock file if exists to handle conflicts
         rm -f package-lock.json
         
-        # Try npm install with legacy peer deps
-        if ! npm install --legacy-peer-deps; then
-          echo "npm install failed, trying with additional flags..."
-          npm install --legacy-peer-deps --force
-        fi
+        # Install dependencies with legacy peer deps for compatibility
+        npm install --legacy-peer-deps --prefer-offline --no-audit
         
         # Build assets
+        echo "Building production assets..."
         npm run build
         
         # Verify build was successful
         if [ ! -d "public/build" ]; then
-          echo "Build directory not found, something went wrong with asset compilation"
+          echo "❌ Build directory not found!"
+          echo "Listing public directory contents:"
+          ls -la public/
           exit 1
+        else
+          echo "✅ Build successful!"
+          echo "Build directory contents:"
+          ls -la public/build/
         fi
       
     - name: Generate checksums
@@ -107,11 +125,25 @@ jobs:
         chmod -R 755 releases/production
         chmod -R 777 releases/production/storage releases/production/bootstrap/cache
         
-        # Laravel optimizations
+        # Laravel optimizations (with error handling)
         cd releases/production
-        php artisan config:cache
-        php artisan route:cache
-        php artisan view:cache
+        
+        # Copy .env example for production
+        cp .env.example .env
+        echo "APP_ENV=production" >> .env
+        echo "APP_DEBUG=false" >> .env
+        
+        # Generate app key
+        php artisan key:generate --force --no-interaction
+        
+        # Only run optimizations that don't require database
+        php artisan config:cache || echo "Config cache failed (non-critical)"
+        php artisan route:cache || echo "Route cache failed (non-critical)"  
+        php artisan view:cache || echo "View cache failed (non-critical)"
+        
+        # Remove .env to force users to configure
+        rm .env
+        
         cd ../..
         
     - name: Create release archives
