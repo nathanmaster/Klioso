@@ -8,6 +8,7 @@ Our documentation is organized into logical categories for easy navigation:
 
 ### 📋 **Setup & Installation**
 - **[Complete Installation Guide](setup/COMPLETE_INSTALLATION_GUIDE.md)** - Platform-specific setup instructions
+- **[Migration Management Guide](MIGRATION_MANAGEMENT_GUIDE.md)** - ⚡ **NEW! Optimized migration strategy**
 - **[Troubleshooting Guide](troubleshooting/)** - Common issues and solutions
   - **[Known Issues](troubleshooting/KNOWN_ISSUES.md)** - ⚠️ **Current critical issues requiring attention**
   - **[Quick Fix Guide](troubleshooting/QUICK_FIX_GUIDE.md)** - Rapid resolution steps
@@ -29,6 +30,7 @@ Our documentation is organized into logical categories for easy navigation:
 ### 🔌 **API Documentation**
 - **[API Reference](api/API_REFERENCE.md)** - Complete REST API documentation
 - **[WordPress Scanner Docs](api/WORDPRESS_SCANNER_DOCS.md)** - Scanner API specifics
+- **[WPScan Integration Guide](WPSCAN_HEALTH_SCORING_IMPLEMENTATION.md)** - ⚡ **NEW! Security scanning & health scoring**
 
 ### 🚀 **Deployment**
 - **[Production Deployment Guide](deployment/PRODUCTION_DEPLOYMENT_GUIDE.md)** - Production setup

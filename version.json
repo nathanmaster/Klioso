@@ -1,17 +1,31 @@
 {
-    "version": "1.10.024",
+    "version": "1.10.045",
     "release_date": "2025-10-22",
     "release_timestamp": 1761134400,
-    "codename": "GitHub Actions Composer Command Fix",
-    "description": "Fixed GitHub Actions workflow composer dump-autoload command error with debugging output. Previous documentation organization complete with individual version folders.",
-    "type": "patch",
-    "stability": "unstable",
-    "critical_issues": [
-        "Groups/Websites table constant reloading causing 500 errors",
-        "Client views still have unwanted sidebar (not fixed as claimed)",
-        "Hosting Providers missing statistics cards (not implemented as claimed)",
-        "Debug code still present in production components"
+    "codename": "WPScan Integration & Health Scoring System",
+    "description": "Comprehensive WPScan vulnerability scanning integration with advanced health scoring algorithm, enhanced security audit storage, and visual health dashboard. Includes CVE tracking, risk assessment, and actionable security recommendations.",
+    "type": "minor",
+    "stability": "stable",
+    "critical_issues": [],
+    "new_features": [
+        "WPScan API integration for comprehensive vulnerability detection",
+        "Advanced health scoring algorithm with component-based scoring",
+        "Enhanced SecurityAudit model with WPScan data tracking",
+        "Visual health dashboard with grade distribution and trends",
+        "CVE and WPVulnDB vulnerability tracking",
+        "Risk assessment and actionable security recommendations",
+        "Comprehensive audit history with scan session tracking",
+        "Database migrations for health scoring fields",
+        "Feature and unit tests for WPScan integration"
     ],
-    "documentation_status": "organized",
-    "functional_status": "requires_critical_fixes"
+    "improvements": [
+        "Enhanced vulnerability scanning with external API data",
+        "Quantified security metrics with 0-100 health scores",
+        "Professional grade-based reporting system (A-F grades)",
+        "Color-coded health indicators and progress visualization",
+        "False positive handling and manual verification workflow",
+        "Performance indexes for optimal query performance"
+    ],
+    "documentation_status": "comprehensive",
+    "functional_status": "production_ready"
 }
