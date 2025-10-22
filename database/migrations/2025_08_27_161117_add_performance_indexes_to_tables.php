@@ -39,7 +39,7 @@ return new class extends Migration
         });
 
         // Add composite indexes for common query patterns
-        Schema::table('scan_history', function (Blueprint $table) {
+        Schema::table('scan_histories', function (Blueprint $table) {
             $table->index(['website_id', 'status', 'created_at'], 'idx_scan_history_composite');
             $table->index(['scan_type', 'status'], 'idx_scan_history_type_status');
         });
@@ -79,7 +79,7 @@ return new class extends Migration
             $table->dropIndex('idx_users_created_at');
         });
 
-        Schema::table('scan_history', function (Blueprint $table) {
+        Schema::table('scan_histories', function (Blueprint $table) {
             $table->dropIndex('idx_scan_history_composite');
             $table->dropIndex('idx_scan_history_type_status');
         });

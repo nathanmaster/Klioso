@@ -172,12 +172,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/security', [SecurityScannerController::class, 'index'])->name('security.index');
     Route::post('/security/scan/{website}', [SecurityScannerController::class, 'scanWebsite'])->name('security.scan-website');
     Route::post('/security/bulk-scan', [SecurityScannerController::class, 'bulkScan'])->name('security.bulk-scan');
-
-    // Security Scanner routes
-    Route::get('/security', [SecurityScanController::class, 'index'])->name('security.index');
-    Route::post('/security/scan/{website}', [SecurityScanController::class, 'scanWebsite'])->name('security.scan-website');
-    Route::post('/security/bulk-scan', [SecurityScanController::class, 'bulkScan'])->name('security.bulk-scan');
-    Route::get('/security/report/{website}', [SecurityScanController::class, 'getVulnerabilityReport'])->name('security.report');
     Route::get('/security/api-status', [SecurityScanController::class, 'getApiStatus'])->name('security.api-status');
 
     // Bulk Website Operations
@@ -205,6 +199,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/analytics', [AnalyticsController::class, 'dashboard'])->name('analytics.dashboard');
     Route::get('/analytics/website/{website}', [AnalyticsController::class, 'website'])->name('analytics.website');
     Route::get('/analytics/security', [AnalyticsController::class, 'security'])->name('analytics.security');
+    Route::post('/analytics/security/scan', [AnalyticsController::class, 'runSecurityScan'])->name('analytics.security.scan');
+    Route::post('/analytics/security/bulk-scan', [AnalyticsController::class, 'runBulkSecurityScan'])->name('analytics.security.bulk-scan');
     Route::get('/analytics/performance', [AnalyticsController::class, 'performance'])->name('analytics.performance');
     Route::post('/analytics/export', [AnalyticsController::class, 'exportReport'])->name('analytics.export');
     Route::get('/analytics/realtime', [AnalyticsController::class, 'realtime'])->name('analytics.realtime');

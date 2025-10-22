@@ -71,9 +71,7 @@ class TemplateController extends Controller
 
     public function create()
     {
-        return Inertia::render('Templates/Create', [
-            'layout' => 'AuthenticatedLayout',
-        ]);
+        return Inertia::render('Templates/Create');
     }
 
     public function store(Request $request)
@@ -96,8 +94,9 @@ class TemplateController extends Controller
                 'description' => $template->description,
                 'source_url' => $template->source_url,
                 'notes' => $template->notes,
+                'created_at' => $template->created_at,
+                'updated_at' => $template->updated_at,
             ],
-            'layout' => 'AuthenticatedLayout',
         ]);
     }
 
@@ -111,7 +110,6 @@ class TemplateController extends Controller
                 'source_url' => $template->source_url,
                 'notes' => $template->notes,
             ],
-            'layout' => 'AuthenticatedLayout',
         ]);
     }
 

@@ -29,10 +29,15 @@ class Website extends Model
         'last_scan',
         'credential_id',
         'group_id',
+        'health_score',
+        'security_grade',
+        'risk_level',
+        'last_health_check',
     ];
 
     protected $casts = [
         'last_scan' => 'datetime',
+        'last_health_check' => 'datetime',
     ];
 
     public function client(): BelongsTo

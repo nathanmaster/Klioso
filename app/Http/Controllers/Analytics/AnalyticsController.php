@@ -458,7 +458,17 @@ class AnalyticsController extends Controller
             ->dateRange($dateRange['start'], $dateRange['end'])
             ->count();
         
+        $criticalIssues = SecurityAudit::where('severity', 'critical')
+            ->where('status', 'open')
+            ->dateRange($dateRange['start'], $dateRange['end'])
+            ->count();
+        
         $riskScore = $this->calculateRiskScore();
+        $monitoredWebsites = Website::count();
+        
+        // Get last scan timestamp
+        $lastScan = SecurityAudit::latest('detected_at')->first();
+        $lastScanDate = $lastScan ? $lastScan->detected_at->toISOString() : null;
         
         // Security trend data for chart (last 30 days)
         $securityTrends = [];
@@ -476,6 +486,9 @@ class AnalyticsController extends Controller
             'totalVulnerabilities' => $totalVulnerabilities,
             'activeAlerts' => $activeAlerts,
             'resolvedIssues' => $resolvedIssues,
+            'critical_issues' => $criticalIssues,
+            'monitored_websites' => $monitoredWebsites,
+            'last_scan' => $lastScanDate,
             'riskScore' => $riskScore,
             'trends' => $securityTrends,
         ];
@@ -631,5 +644,154 @@ class AnalyticsController extends Controller
             ],
             'timestamp' => now()->toISOString(),
         ]);
+    }
+
+    /**
+     * Run security scan on a specific website from analytics page
+     */
+    public function runSecurityScan(Request $request)
+    {
+        $request->validate([
+            'website_id' => 'required|exists:websites,id',
+            'scan_type' => 'in:quick,comprehensive',
+        ]);
+
+        try {
+            $website = Website::findOrFail($request->website_id);
+            $scanType = $request->scan_type ?? 'comprehensive';
+            
+            // Use the WordPressScanService to perform the scan
+            $scanService = app(\App\Services\WordPressScanService::class);
+            $results = $scanService->scanWebsite($website->url, $scanType);
+            
+            // Store scan results
+            $scanHistory = \App\Models\ScanHistory::create([
+                'website_id' => $website->id,
+                'scan_type' => 'security_' . $scanType,
+                'scan_data' => $results,
+                'status' => 'completed',
+                'scan_duration' => $results['scan_duration'] ?? null,
+            ]);
+
+            // Process security issues into SecurityAudit records
+            if (isset($results['security_issues']) && !empty($results['security_issues'])) {
+                foreach ($results['security_issues'] as $issue) {
+                    \App\Models\SecurityAudit::create([
+                        'website_id' => $website->id,
+                        'audit_type' => $issue['type'] ?? 'vulnerability',
+                        'severity' => $issue['severity'] ?? 'medium',
+                        'status' => 'open',
+                        'details' => $issue['description'] ?? '',
+                        'recommendations' => $issue['recommendation'] ?? '',
+                        'detected_at' => now(),
+                    ]);
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Security scan completed successfully',
+                'scan_id' => $scanHistory->id,
+                'issues_found' => count($results['security_issues'] ?? []),
+                'results' => $results,
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Security scan failed: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Security scan failed: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Run bulk security scan on multiple websites
+     */
+    public function runBulkSecurityScan(Request $request)
+    {
+        $request->validate([
+            'website_ids' => 'required|array',
+            'website_ids.*' => 'exists:websites,id',
+            'scan_type' => 'in:quick,comprehensive',
+        ]);
+
+        try {
+            $websiteIds = $request->website_ids;
+            $scanType = $request->scan_type ?? 'comprehensive';
+            $scanService = app(\App\Services\WordPressScanService::class);
+            
+            $results = [];
+            $totalIssues = 0;
+            
+            foreach ($websiteIds as $websiteId) {
+                $website = Website::find($websiteId);
+                if (!$website) continue;
+                
+                try {
+                    $scanResults = $scanService->scanWebsite($website->url, $scanType);
+                    
+                    // Store scan results
+                    $scanHistory = \App\Models\ScanHistory::create([
+                        'website_id' => $website->id,
+                        'scan_type' => 'security_bulk_' . $scanType,
+                        'scan_data' => $scanResults,
+                        'status' => 'completed',
+                        'scan_duration' => $scanResults['scan_duration'] ?? null,
+                    ]);
+
+                    // Process security issues
+                    if (isset($scanResults['security_issues']) && !empty($scanResults['security_issues'])) {
+                        foreach ($scanResults['security_issues'] as $issue) {
+                            \App\Models\SecurityAudit::create([
+                                'website_id' => $website->id,
+                                'audit_type' => $issue['type'] ?? 'vulnerability',
+                                'severity' => $issue['severity'] ?? 'medium',
+                                'status' => 'open',
+                                'details' => $issue['description'] ?? '',
+                                'recommendations' => $issue['recommendation'] ?? '',
+                                'detected_at' => now(),
+                            ]);
+                        }
+                        $totalIssues += count($scanResults['security_issues']);
+                    }
+                    
+                    $results[] = [
+                        'website_id' => $website->id,
+                        'website_name' => $website->name,
+                        'status' => 'completed',
+                        'issues_found' => count($scanResults['security_issues'] ?? []),
+                        'scan_id' => $scanHistory->id,
+                    ];
+                    
+                } catch (\Exception $e) {
+                    \Log::error("Bulk scan failed for website {$website->id}: " . $e->getMessage());
+                    
+                    $results[] = [
+                        'website_id' => $website->id,
+                        'website_name' => $website->name,
+                        'status' => 'failed',
+                        'error' => $e->getMessage(),
+                    ];
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Bulk security scan completed',
+                'total_scanned' => count($websiteIds),
+                'total_issues' => $totalIssues,
+                'results' => $results,
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Bulk security scan failed: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Bulk security scan failed: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 }

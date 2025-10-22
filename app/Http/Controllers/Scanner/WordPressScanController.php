@@ -584,6 +584,12 @@ class WordPressScanController extends Controller
      */
     public function bulkScan(Request $request)
     {
+        Log::info('Bulk scan initiated', [
+            'user_id' => auth()->id(),
+            'request_data' => $request->all(),
+            'timestamp' => now()->toISOString()
+        ]);
+
         $validated = $request->validate([
             'website_ids' => 'required|array',
             'website_ids.*' => 'exists:websites,id',
@@ -593,6 +599,11 @@ class WordPressScanController extends Controller
         $websiteIds = $validated['website_ids'];
         $scanConfig = $validated['scan_config'];
         
+        Log::info('Bulk scan validation passed', [
+            'website_count' => count($websiteIds),
+            'scan_config' => $scanConfig
+        ]);
+        
         // Set execution time limit for bulk operations
         set_time_limit(300); // 5 minutes max
         
@@ -601,6 +612,11 @@ class WordPressScanController extends Controller
         $errorCount = 0;
         $startTime = microtime(true);
         $maxExecutionTime = 240; // 4 minutes to leave buffer
+
+        Log::info('Starting bulk scan processing', [
+            'total_websites' => count($websiteIds),
+            'max_execution_time' => $maxExecutionTime
+        ]);
 
         foreach ($websiteIds as $index => $websiteId) {
             // Check if we're approaching time limit
@@ -614,8 +630,26 @@ class WordPressScanController extends Controller
                 break;
             }
             
+            Log::info('Processing website', [
+                'website_id' => $websiteId,
+                'index' => $index + 1,
+                'total' => count($websiteIds),
+                'elapsed_time' => $elapsedTime
+            ]);
+            
             try {
                 $website = Website::find($websiteId);
+                
+                if (!$website) {
+                    Log::error('Website not found', ['website_id' => $websiteId]);
+                    $errorCount++;
+                    continue;
+                }
+                
+                Log::info('Found website', [
+                    'website_id' => $websiteId,
+                    'domain' => $website->domain_name ?? $website->url
+                ]);
                 
                 // Determine the URL to scan
                 $url = $website->url ?? $website->domain_name;
@@ -623,7 +657,19 @@ class WordPressScanController extends Controller
                     $url = 'https://' . $url;
                 }
 
+                Log::info('Starting scan for website', [
+                    'website_id' => $websiteId,
+                    'url' => $url
+                ]);
+
                 $scanResult = $this->scanService->scanWordPressSite($website);
+
+                Log::info('Scan completed for website', [
+                    'website_id' => $websiteId,
+                    'plugins_found' => count($scanResult['plugins'] ?? []),
+                    'themes_found' => count($scanResult['themes'] ?? []),
+                    'vulnerabilities_found' => count($scanResult['vulnerabilities'] ?? [])
+                ]);
 
                 // Save scan history
                 $historyData = [
@@ -716,8 +762,31 @@ class WordPressScanController extends Controller
         }
 
         $totalWebsites = count($websiteIds);
+        $endTime = microtime(true);
+        $totalDuration = round(($endTime - $startTime) * 1000);
+        
         $message = "Bulk scan completed: {$successCount} successful, {$errorCount} failed out of {$totalWebsites} websites.";
 
-        return back()->with('success', $message);
+        Log::info('Bulk scan completed', [
+            'total_websites' => $totalWebsites,
+            'successful' => $successCount,
+            'failed' => $errorCount,
+            'total_duration_ms' => $totalDuration
+        ]);
+
+        // Return JSON response for API calls
+        return response()->json([
+            'success' => true,
+            'message' => $message,
+            'data' => [
+                'results' => $results,
+                'summary' => [
+                    'total' => $totalWebsites,
+                    'successful' => $successCount,
+                    'failed' => $errorCount,
+                    'duration_ms' => $totalDuration
+                ]
+            ]
+        ]);
     }
 }

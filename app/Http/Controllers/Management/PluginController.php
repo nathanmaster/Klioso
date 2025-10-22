@@ -77,9 +77,7 @@ class PluginController extends Controller
 
     public function create()
     {
-        return Inertia::render('Plugins/Create', [
-            'layout' => 'AuthenticatedLayout',
-        ]);
+        return Inertia::render('Plugins/Create');
     }
 
     public function store(Request $request)
@@ -97,15 +95,8 @@ class PluginController extends Controller
     public function show(Plugin $plugin)
     {
         return Inertia::render('Plugins/Show', [
-            'plugin' => [
-                'id' => $plugin->id,
-                'name' => $plugin->name,
-                'description' => $plugin->description,
-                'is_paid' => $plugin->is_paid,
-                'purchase_url' => $plugin->purchase_url,
-                'install_source' => $plugin->install_source,
-            ],
-            'websites' => $plugin->websites()->withPivot('version', 'is_active')->get()->map(function ($website) {
+            'plugin' => $plugin,
+            'websites' => $plugin->websites->map(function ($website) {
                 return [
                     'id' => $website->id,
                     'domain_name' => $website->domain_name,
@@ -115,7 +106,6 @@ class PluginController extends Controller
                     ],
                 ];
             }),
-            'layout' => 'AuthenticatedLayout',
         ]);
     }
 
@@ -130,7 +120,6 @@ class PluginController extends Controller
                 'purchase_url' => $plugin->purchase_url,
                 'install_source' => $plugin->install_source,
             ],
-            'layout' => 'AuthenticatedLayout',
         ]);
     }
 

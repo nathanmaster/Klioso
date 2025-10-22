@@ -72,9 +72,7 @@ class ClientController extends Controller
 
     public function create()
     {
-        return Inertia::render('Clients/Create', [
-            'layout' => 'AuthenticatedLayout',
-        ]);
+        return Inertia::render('Clients/Create');
     }
 
     public function store(Request $request)
@@ -96,7 +94,6 @@ class ClientController extends Controller
     {
         return Inertia::render('Clients/Show', [
             'client' => $client,
-            'layout' => 'AuthenticatedLayout',
         ]);
     }
 
@@ -110,7 +107,6 @@ class ClientController extends Controller
                 'contact_phone' => $client->contact_phone,
                 'notes' => $client->notes,
             ],
-            'layout' => 'AuthenticatedLayout',
         ]);
     }
 

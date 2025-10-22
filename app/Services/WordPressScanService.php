@@ -10,6 +10,12 @@ class WordPressScanService
     protected $timeout = 30;
     protected $concurrentRequestTimeout = 8; // Configurable timeout for concurrent requests
     protected $userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36';
+    protected $wpscanApiKey = null; // WPScan API key for enhanced vulnerability detection
+
+    public function __construct()
+    {
+        $this->wpscanApiKey = config('services.wpscan.api_key');
+    }
 
     /**
      * Scan a WordPress website for plugins, themes, and vulnerabilities
@@ -547,34 +553,266 @@ class WordPressScanService
     }
 
     /**
-     * Scan for vulnerabilities
+     * Enhanced vulnerability scanning with WPScan integration
      */
     protected function scanVulnerabilities($url)
     {
         $vulnerabilities = [];
         
         try {
-            // Check WordPress version vulnerabilities
+            Log::info('Starting vulnerability scan', ['url' => $url]);
+            
+            // Get WordPress version first
             $wpVersion = $this->getWordPressVersion($url);
+            Log::info('WordPress version detected', ['version' => $wpVersion]);
+            
+            // 1. Check WordPress core vulnerabilities
             if ($wpVersion) {
                 $wpVulns = $this->checkWordPressVulnerabilities($wpVersion);
                 $vulnerabilities = array_merge($vulnerabilities, $wpVulns);
+                Log::info('WordPress core vulnerabilities checked', ['count' => count($wpVulns)]);
             }
             
-            // Check for common security issues
-            $securityIssues = $this->checkCommonSecurityIssues($url);
-            $vulnerabilities = array_merge($vulnerabilities, $securityIssues);
+            // 2. WPScan API integration for comprehensive vulnerability data
+            if ($this->wpscanApiKey) {
+                $wpscanVulns = $this->runWPScanAPI($url, $wpVersion);
+                $vulnerabilities = array_merge($vulnerabilities, $wpscanVulns);
+                Log::info('WPScan API vulnerabilities retrieved', ['count' => count($wpscanVulns)]);
+            }
             
-            // Check plugins for known vulnerabilities
+            // 3. Check plugins for vulnerabilities
             $plugins = $this->scanPlugins($url);
             foreach ($plugins as $plugin) {
                 $pluginVulns = $this->checkPluginVulnerabilities($plugin);
                 $vulnerabilities = array_merge($vulnerabilities, $pluginVulns);
             }
+            Log::info('Plugin vulnerabilities checked', ['plugin_count' => count($plugins)]);
+            
+            // 4. Check themes for vulnerabilities
+            $themes = $this->scanThemes($url);
+            foreach ($themes as $theme) {
+                $themeVulns = $this->checkThemeVulnerabilities($theme);
+                $vulnerabilities = array_merge($vulnerabilities, $themeVulns);
+            }
+            Log::info('Theme vulnerabilities checked', ['theme_count' => count($themes)]);
+            
+            // 5. Check for common security issues
+            $securityIssues = $this->checkCommonSecurityIssues($url);
+            $vulnerabilities = array_merge($vulnerabilities, $securityIssues);
+            Log::info('Common security issues checked', ['count' => count($securityIssues)]);
+            
+            // 6. Calculate overall risk score
+            $vulnerabilities = $this->calculateVulnerabilityRiskScores($vulnerabilities);
+            
+            Log::info('Vulnerability scan completed', [
+                'url' => $url,
+                'total_vulnerabilities' => count($vulnerabilities),
+                'critical' => count(array_filter($vulnerabilities, fn($v) => $v['severity'] === 'critical')),
+                'high' => count(array_filter($vulnerabilities, fn($v) => $v['severity'] === 'high')),
+                'medium' => count(array_filter($vulnerabilities, fn($v) => $v['severity'] === 'medium')),
+                'low' => count(array_filter($vulnerabilities, fn($v) => $v['severity'] === 'low'))
+            ]);
             
         } catch (\Exception $e) {
-            Log::warning("Vulnerability scan failed for {$url}: " . $e->getMessage());
+            Log::error("Vulnerability scan failed for {$url}", [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            $vulnerabilities[] = [
+                'type' => 'scan_error',
+                'severity' => 'medium',
+                'title' => 'Vulnerability Scan Error',
+                'description' => 'Failed to complete vulnerability scan: ' . $e->getMessage(),
+                'risk_score' => 30,
+                'detected_at' => now()->toISOString()
+            ];
         }
+        
+        return $vulnerabilities;
+    }
+
+    /**
+     * Integrate with WPScan API for comprehensive vulnerability detection
+     */
+    protected function runWPScanAPI($url, $wpVersion = null)
+    {
+        if (!$this->wpscanApiKey) {
+            Log::info('WPScan API key not configured, skipping WPScan integration');
+            return [];
+        }
+
+        $vulnerabilities = [];
+        
+        try {
+            // WPScan API endpoint for WordPress vulnerabilities
+            $apiUrl = config('services.wpscan.api_url');
+            
+            // Check WordPress core vulnerabilities via API
+            if ($wpVersion) {
+                $response = Http::timeout(30)
+                    ->withHeaders([
+                        'Authorization' => 'Token token=' . $this->wpscanApiKey,
+                        'User-Agent' => 'Klioso WordPress Management System'
+                    ])
+                    ->get("{$apiUrl}/wordpresses/{$wpVersion}");
+                
+                if ($response->successful()) {
+                    $data = $response->json();
+                    if (isset($data[$wpVersion]['vulnerabilities'])) {
+                        foreach ($data[$wpVersion]['vulnerabilities'] as $vuln) {
+                            $vulnerabilities[] = [
+                                'type' => 'wordpress_core',
+                                'source' => 'wpscan_api',
+                                'severity' => $this->mapWPScanSeverity($vuln),
+                                'title' => $vuln['title'] ?? 'WordPress Core Vulnerability',
+                                'description' => $this->sanitizeVulnDescription($vuln),
+                                'cve' => $vuln['references']['cve'] ?? null,
+                                'wpvulndb_id' => $vuln['id'] ?? null,
+                                'published' => $vuln['published_date'] ?? null,
+                                'fixed_in' => $vuln['fixed_in'] ?? null,
+                                'risk_score' => $this->calculateRiskScore($vuln),
+                                'references' => $vuln['references'] ?? [],
+                                'detected_at' => now()->toISOString()
+                            ];
+                        }
+                    }
+                }
+            }
+            
+            // TODO: Add plugin and theme vulnerability checks via WPScan API
+            // This would require detecting plugins/themes first, then querying their specific vulnerabilities
+            
+        } catch (\Exception $e) {
+            Log::warning('WPScan API request failed', [
+                'url' => $url,
+                'error' => $e->getMessage()
+            ]);
+        }
+        
+        return $vulnerabilities;
+    }
+
+    /**
+     * Map WPScan severity to our severity levels
+     */
+    protected function mapWPScanSeverity($vulnerability)
+    {
+        // WPScan doesn't always provide severity, so we infer it
+        $title = strtolower($vulnerability['title'] ?? '');
+        $references = $vulnerability['references'] ?? [];
+        
+        // Check for critical indicators
+        if (str_contains($title, 'rce') || 
+            str_contains($title, 'remote code execution') ||
+            str_contains($title, 'sql injection') ||
+            str_contains($title, 'privilege escalation')) {
+            return 'critical';
+        }
+        
+        // Check for high indicators
+        if (str_contains($title, 'xss') ||
+            str_contains($title, 'csrf') ||
+            str_contains($title, 'authentication bypass') ||
+            str_contains($title, 'arbitrary file')) {
+            return 'high';
+        }
+        
+        // Check CVE score if available
+        if (isset($references['cve'])) {
+            // For now, default to medium for CVE entries
+            return 'medium';
+        }
+        
+        return 'medium'; // Default severity
+    }
+
+    /**
+     * Sanitize and format vulnerability description
+     */
+    protected function sanitizeVulnDescription($vulnerability)
+    {
+        $description = $vulnerability['title'] ?? 'No description available';
+        
+        // Add additional context if available
+        if (isset($vulnerability['fixed_in'])) {
+            $description .= " (Fixed in version: {$vulnerability['fixed_in']})";
+        }
+        
+        if (isset($vulnerability['published_date'])) {
+            $description .= " (Published: {$vulnerability['published_date']})";
+        }
+        
+        return $description;
+    }
+
+    /**
+     * Calculate risk score based on vulnerability data
+     */
+    protected function calculateRiskScore($vulnerability)
+    {
+        $baseScore = 50; // Default medium risk
+        
+        $severity = $this->mapWPScanSeverity($vulnerability);
+        
+        switch ($severity) {
+            case 'critical':
+                $baseScore = 90;
+                break;
+            case 'high':
+                $baseScore = 75;
+                break;
+            case 'medium':
+                $baseScore = 50;
+                break;
+            case 'low':
+                $baseScore = 25;
+                break;
+        }
+        
+        // Adjust based on age (older vulnerabilities are more likely to be exploited)
+        if (isset($vulnerability['published_date'])) {
+            $publishedDate = strtotime($vulnerability['published_date']);
+            $ageInDays = (time() - $publishedDate) / (24 * 60 * 60);
+            
+            if ($ageInDays > 365) {
+                $baseScore += 10; // Very old vulnerability
+            } elseif ($ageInDays > 180) {
+                $baseScore += 5; // Old vulnerability
+            }
+        }
+        
+        // Check if it's a known exploit
+        $title = strtolower($vulnerability['title'] ?? '');
+        if (str_contains($title, 'exploit') || str_contains($title, 'poc')) {
+            $baseScore += 15;
+        }
+        
+        return min(100, max(0, $baseScore));
+    }
+
+    /**
+     * Calculate risk scores for all vulnerabilities
+     */
+    protected function calculateVulnerabilityRiskScores($vulnerabilities)
+    {
+        foreach ($vulnerabilities as &$vuln) {
+            if (!isset($vuln['risk_score'])) {
+                $vuln['risk_score'] = $this->calculateRiskScore($vuln);
+            }
+        }
+        
+        return $vulnerabilities;
+    }
+
+    /**
+     * Check theme vulnerabilities
+     */
+    protected function checkThemeVulnerabilities($theme)
+    {
+        $vulnerabilities = [];
+        
+        // This would integrate with WPScan API or vulnerability databases
+        // For now, return basic theme security checks
         
         return $vulnerabilities;
     }
@@ -807,6 +1045,356 @@ class WordPressScanService
             'low' => 3,
             default => 5,
         };
+    }
+
+    /**
+     * Calculate comprehensive health score for a website
+     */
+    public function calculateHealthScore($scanResults)
+    {
+        try {
+            $healthScore = 100; // Start with perfect score
+            $deductions = [];
+            $recommendations = [];
+            
+            // 1. WordPress Core Health (25% weight)
+            $coreScore = $this->calculateCoreHealthScore($scanResults);
+            $coreDeduction = (100 - $coreScore) * 0.25;
+            $healthScore -= $coreDeduction;
+            $deductions['core'] = $coreDeduction;
+            
+            // 2. Security Vulnerabilities (35% weight)
+            $securityScore = $this->calculateSecurityScore($scanResults);
+            $securityDeduction = (100 - $securityScore) * 0.35;
+            $healthScore -= $securityDeduction;
+            $deductions['security'] = $securityDeduction;
+            
+            // 3. Plugin Health (25% weight)
+            $pluginScore = $this->calculatePluginHealthScore($scanResults);
+            $pluginDeduction = (100 - $pluginScore) * 0.25;
+            $healthScore -= $pluginDeduction;
+            $deductions['plugins'] = $pluginDeduction;
+            
+            // 4. Configuration & Best Practices (15% weight)
+            $configScore = $this->calculateConfigurationScore($scanResults);
+            $configDeduction = (100 - $configScore) * 0.15;
+            $healthScore -= $configDeduction;
+            $deductions['configuration'] = $configDeduction;
+            
+            // Generate recommendations based on issues found
+            $recommendations = $this->generateHealthRecommendations($scanResults);
+            
+            // Ensure score doesn't go below 0
+            $healthScore = max(0, round($healthScore, 1));
+            
+            $healthData = [
+                'overall_score' => $healthScore,
+                'grade' => $this->getHealthGrade($healthScore),
+                'component_scores' => [
+                    'core' => round($coreScore, 1),
+                    'security' => round($securityScore, 1),
+                    'plugins' => round($pluginScore, 1),
+                    'configuration' => round($configScore, 1)
+                ],
+                'deductions' => $deductions,
+                'recommendations' => $recommendations,
+                'risk_level' => $this->getRiskLevel($healthScore),
+                'calculated_at' => now()->toISOString()
+            ];
+            
+            Log::info('Health score calculated', [
+                'score' => $healthScore,
+                'grade' => $healthData['grade'],
+                'components' => $healthData['component_scores']
+            ]);
+            
+            return $healthData;
+            
+        } catch (\Exception $e) {
+            Log::error('Health score calculation failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return [
+                'overall_score' => 0,
+                'grade' => 'F',
+                'error' => 'Failed to calculate health score: ' . $e->getMessage(),
+                'calculated_at' => now()->toISOString()
+            ];
+        }
+    }
+
+    /**
+     * Calculate WordPress core health score
+     */
+    protected function calculateCoreHealthScore($scanResults)
+    {
+        $score = 100;
+        $wpVersion = $scanResults['wordpress']['version'] ?? null;
+        
+        if (!$wpVersion) {
+            return 0; // Can't determine WordPress version
+        }
+        
+        // Check if WordPress is up to date
+        $latestVersion = $this->getLatestWordPressVersion();
+        if ($latestVersion && version_compare($wpVersion, $latestVersion, '<')) {
+            $versionAge = $this->getVersionAge($wpVersion, $latestVersion);
+            if ($versionAge > 365) {
+                $score -= 40; // Very outdated
+            } elseif ($versionAge > 180) {
+                $score -= 25; // Moderately outdated
+            } elseif ($versionAge > 90) {
+                $score -= 15; // Slightly outdated
+            } else {
+                $score -= 5; // Recent but not latest
+            }
+        }
+        
+        // Check for core vulnerabilities
+        $coreVulns = array_filter($scanResults['vulnerabilities'] ?? [], function($vuln) {
+            return $vuln['type'] === 'wordpress_core';
+        });
+        
+        foreach ($coreVulns as $vuln) {
+            switch ($vuln['severity']) {
+                case 'critical':
+                    $score -= 30;
+                    break;
+                case 'high':
+                    $score -= 20;
+                    break;
+                case 'medium':
+                    $score -= 10;
+                    break;
+                case 'low':
+                    $score -= 5;
+                    break;
+            }
+        }
+        
+        return max(0, $score);
+    }
+
+    /**
+     * Calculate security score based on vulnerabilities
+     */
+    protected function calculateSecurityScore($scanResults)
+    {
+        $score = 100;
+        $vulnerabilities = $scanResults['vulnerabilities'] ?? [];
+        
+        // Deduct points based on vulnerability severity
+        foreach ($vulnerabilities as $vuln) {
+            switch ($vuln['severity']) {
+                case 'critical':
+                    $score -= 25;
+                    break;
+                case 'high':
+                    $score -= 15;
+                    break;
+                case 'medium':
+                    $score -= 8;
+                    break;
+                case 'low':
+                    $score -= 3;
+                    break;
+            }
+        }
+        
+        // Additional deductions for security configuration issues
+        $securityIssues = array_filter($vulnerabilities, function($vuln) {
+            return in_array($vuln['type'], ['directory_listing', 'config_backup_exposed', 'debug_enabled', 'default_admin']);
+        });
+        
+        $score -= count($securityIssues) * 5;
+        
+        return max(0, $score);
+    }
+
+    /**
+     * Calculate plugin health score
+     */
+    protected function calculatePluginHealthScore($scanResults)
+    {
+        $score = 100;
+        $plugins = $scanResults['plugins'] ?? [];
+        
+        if (empty($plugins)) {
+            return 90; // Slightly deduct for having no plugins detected
+        }
+        
+        $outdatedPlugins = 0;
+        $vulnerablePlugins = 0;
+        
+        foreach ($plugins as $plugin) {
+            // Check if plugin is outdated (this would require version checking)
+            if (isset($plugin['outdated']) && $plugin['outdated']) {
+                $outdatedPlugins++;
+            }
+            
+            // Check for plugin vulnerabilities
+            $pluginVulns = array_filter($scanResults['vulnerabilities'] ?? [], function($vuln) use ($plugin) {
+                return $vuln['type'] === 'plugin' && isset($vuln['plugin']) && $vuln['plugin'] === $plugin['slug'];
+            });
+            
+            if (!empty($pluginVulns)) {
+                $vulnerablePlugins++;
+                foreach ($pluginVulns as $vuln) {
+                    switch ($vuln['severity']) {
+                        case 'critical':
+                            $score -= 20;
+                            break;
+                        case 'high':
+                            $score -= 12;
+                            break;
+                        case 'medium':
+                            $score -= 6;
+                            break;
+                        case 'low':
+                            $score -= 3;
+                            break;
+                    }
+                }
+            }
+        }
+        
+        // Deduct for outdated plugins
+        $score -= $outdatedPlugins * 3;
+        
+        // Deduct for having too many plugins (potential attack surface)
+        if (count($plugins) > 30) {
+            $score -= 10;
+        } elseif (count($plugins) > 20) {
+            $score -= 5;
+        }
+        
+        return max(0, $score);
+    }
+
+    /**
+     * Calculate configuration score
+     */
+    protected function calculateConfigurationScore($scanResults)
+    {
+        $score = 100;
+        
+        // Check for security best practices
+        $securityIssues = [
+            'debug_enabled' => -15,
+            'directory_listing' => -10,
+            'xmlrpc_enabled' => -5,
+            'user_enumeration' => -8,
+            'default_admin' => -10
+        ];
+        
+        foreach ($scanResults['vulnerabilities'] ?? [] as $vuln) {
+            if (isset($securityIssues[$vuln['type']])) {
+                $score += $securityIssues[$vuln['type']];
+            }
+        }
+        
+        return max(0, $score);
+    }
+
+    /**
+     * Generate health recommendations
+     */
+    protected function generateHealthRecommendations($scanResults)
+    {
+        $recommendations = [];
+        
+        // WordPress core recommendations
+        $wpVersion = $scanResults['wordpress']['version'] ?? null;
+        if ($wpVersion) {
+            $latestVersion = $this->getLatestWordPressVersion();
+            if ($latestVersion && version_compare($wpVersion, $latestVersion, '<')) {
+                $recommendations[] = [
+                    'category' => 'core',
+                    'priority' => 'high',
+                    'title' => 'Update WordPress Core',
+                    'description' => "WordPress {$wpVersion} is outdated. Update to {$latestVersion}",
+                    'action' => 'Update WordPress to the latest version'
+                ];
+            }
+        }
+        
+        // Security recommendations based on vulnerabilities
+        $criticalVulns = array_filter($scanResults['vulnerabilities'] ?? [], function($vuln) {
+            return $vuln['severity'] === 'critical';
+        });
+        
+        if (!empty($criticalVulns)) {
+            $recommendations[] = [
+                'category' => 'security',
+                'priority' => 'critical',
+                'title' => 'Fix Critical Security Issues',
+                'description' => count($criticalVulns) . ' critical security vulnerabilities found',
+                'action' => 'Address all critical security vulnerabilities immediately'
+            ];
+        }
+        
+        // Plugin recommendations
+        $plugins = $scanResults['plugins'] ?? [];
+        if (count($plugins) > 30) {
+            $recommendations[] = [
+                'category' => 'plugins',
+                'priority' => 'medium',
+                'title' => 'Reduce Plugin Count',
+                'description' => 'Large number of plugins increases attack surface',
+                'action' => 'Review and remove unnecessary plugins'
+            ];
+        }
+        
+        return $recommendations;
+    }
+
+    /**
+     * Get health grade based on score
+     */
+    protected function getHealthGrade($score)
+    {
+        if ($score >= 90) return 'A';
+        if ($score >= 80) return 'B';
+        if ($score >= 70) return 'C';
+        if ($score >= 60) return 'D';
+        return 'F';
+    }
+
+    /**
+     * Get risk level based on score
+     */
+    protected function getRiskLevel($score)
+    {
+        if ($score >= 80) return 'low';
+        if ($score >= 60) return 'medium';
+        if ($score >= 40) return 'high';
+        return 'critical';
+    }
+
+    /**
+     * Get latest WordPress version (simplified - in production would call WordPress API)
+     */
+    protected function getLatestWordPressVersion()
+    {
+        // This could call the WordPress API to get the latest version
+        // For now, return a static recent version
+        return '6.4.2';
+    }
+
+    /**
+     * Calculate version age in days
+     */
+    protected function getVersionAge($currentVersion, $latestVersion)
+    {
+        // Simplified calculation - in production would track release dates
+        $versionDiff = version_compare($latestVersion, $currentVersion);
+        if ($versionDiff > 0) {
+            // Rough estimation: each minor version is ~90 days apart
+            return 90; // Simplified for demo
+        }
+        return 0;
     }
 
     /**

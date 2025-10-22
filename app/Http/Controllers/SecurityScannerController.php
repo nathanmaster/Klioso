@@ -24,10 +24,47 @@ class SecurityScannerController extends Controller
      */
     public function index(Request $request)
     {
-        // Get all websites for scanning
-        $websites = Website::select('id', 'name', 'url')
-            ->orderBy('name')
-            ->get();
+        // Get all websites for scanning with proper relationships
+        $websites = Website::with(['client:id,name'])
+            ->select('id', 'name', 'domain_name', 'url', 'client_id', 'platform', 'status', 'last_scan')
+            ->orderBy('domain_name')
+            ->get()
+            ->map(function ($website) {
+                // Create a proper display name with fallbacks
+                $displayName = $website->name && $website->name !== 'name' 
+                    ? $website->name 
+                    : ($website->domain_name 
+                        ? (str_starts_with($website->domain_name, 'http') 
+                            ? parse_url($website->domain_name, PHP_URL_HOST) ?? $website->domain_name
+                            : $website->domain_name)
+                        : ($website->url 
+                            ? (str_starts_with($website->url, 'http') 
+                                ? parse_url($website->url, PHP_URL_HOST) ?? $website->url
+                                : $website->url)
+                            : 'Website #' . $website->id));
+                
+                // Create display label with client info
+                $displayLabel = $displayName;
+                if ($website->client) {
+                    $displayLabel .= " ({$website->client->name})";
+                }
+                
+                return [
+                    'id' => $website->id,
+                    'name' => $website->name,
+                    'domain_name' => $website->domain_name,
+                    'url' => $website->url,
+                    'display_name' => $displayName,
+                    'display_label' => $displayLabel,
+                    'platform' => $website->platform,
+                    'status' => $website->status,
+                    'last_scan' => $website->last_scan ? $website->last_scan->format('Y-m-d H:i:s') : null,
+                    'client' => $website->client ? [
+                        'id' => $website->client->id,
+                        'name' => $website->client->name,
+                    ] : null,
+                ];
+            });
 
         // Calculate security overview
         $securityOverview = $this->calculateSecurityOverview();
@@ -206,94 +243,212 @@ class SecurityScannerController extends Controller
     private function processSecurityResults(Website $website, array $scanResults): array
     {
         $vulnerabilities = [];
+        
+        try {
+            Log::info('Processing security results', [
+                'website_id' => $website->id,
+                'website_name' => $website->name
+            ]);
 
-        // Extract WordPress version vulnerability
-        if (isset($scanResults['wordpress']['version']) && isset($scanResults['wordpress']['vulnerabilities'])) {
-            foreach ($scanResults['wordpress']['vulnerabilities'] as $vuln) {
-                $audit = SecurityAudit::updateOrCreate([
-                    'website_id' => $website->id,
-                    'audit_type' => 'wordpress_core',
-                    'affected_file' => 'wp-includes/version.php',
-                ], [
-                    'severity' => $this->mapSeverity($vuln['severity'] ?? 'medium'),
-                    'title' => $vuln['title'] ?? 'WordPress Core Vulnerability',
-                    'description' => $vuln['description'] ?? 'Outdated WordPress version detected',
-                    'recommendation' => $vuln['recommendation'] ?? 'Update WordPress to the latest version',
-                    'detected_at' => now(),
-                    'status' => 'open',
-                    'risk_score' => $vuln['risk_score'] ?? 5,
-                ]);
+            // Generate unique scan ID for this scan session
+            $scanId = 'scan_' . time() . '_' . $website->id;
 
-                $vulnerabilities[] = [
-                    'id' => $audit->id,
-                    'title' => $audit->title,
-                    'description' => $audit->description,
-                    'severity' => $audit->severity,
-                    'recommendation' => $audit->recommendation,
-                    'type' => 'WordPress Core'
-                ];
+            // 1. Create audit entries from all vulnerabilities
+            if (isset($scanResults['vulnerabilities'])) {
+                foreach ($scanResults['vulnerabilities'] as $vuln) {
+                    $audit = SecurityAudit::createFromVulnerability($website->id, $vuln, $scanId);
+                    $vulnerabilities[] = $this->formatAuditForResponse($audit);
+                }
             }
-        }
 
-        // Extract plugin vulnerabilities
-        if (isset($scanResults['plugins'])) {
-            foreach ($scanResults['plugins'] as $pluginSlug => $pluginData) {
-                if (isset($pluginData['vulnerabilities'])) {
-                    foreach ($pluginData['vulnerabilities'] as $vuln) {
-                        $audit = SecurityAudit::updateOrCreate([
-                            'website_id' => $website->id,
-                            'audit_type' => 'plugin_vulnerability',
-                            'affected_file' => "wp-content/plugins/{$pluginSlug}",
-                        ], [
-                            'severity' => $this->mapSeverity($vuln['severity'] ?? 'medium'),
-                            'title' => $vuln['title'] ?? "Plugin Vulnerability: {$pluginData['name']}",
-                            'description' => $vuln['description'] ?? "Vulnerability in plugin {$pluginData['name']}",
-                            'recommendation' => $vuln['recommendation'] ?? "Update {$pluginData['name']} plugin to latest version",
-                            'detected_at' => now(),
-                            'status' => 'open',
-                            'risk_score' => $vuln['risk_score'] ?? 5,
-                        ]);
+            // 2. Process WordPress core vulnerabilities (legacy format support)
+            if (isset($scanResults['wordpress']['vulnerabilities'])) {
+                foreach ($scanResults['wordpress']['vulnerabilities'] as $vuln) {
+                    $audit = SecurityAudit::createFromVulnerability($website->id, array_merge($vuln, [
+                        'type' => 'wordpress_core'
+                    ]), $scanId);
+                    $vulnerabilities[] = $this->formatAuditForResponse($audit);
+                }
+            }
 
-                        $vulnerabilities[] = [
-                            'id' => $audit->id,
-                            'title' => $audit->title,
-                            'description' => $audit->description,
-                            'severity' => $audit->severity,
-                            'recommendation' => $audit->recommendation,
-                            'type' => 'Plugin'
-                        ];
+            // 3. Process plugin vulnerabilities (legacy format support)
+            if (isset($scanResults['plugins'])) {
+                foreach ($scanResults['plugins'] as $pluginSlug => $pluginData) {
+                    if (isset($pluginData['vulnerabilities'])) {
+                        foreach ($pluginData['vulnerabilities'] as $vuln) {
+                            $audit = SecurityAudit::createFromVulnerability($website->id, array_merge($vuln, [
+                                'type' => 'plugin',
+                                'plugin_slug' => $pluginSlug
+                            ]), $scanId);
+                            $vulnerabilities[] = $this->formatAuditForResponse($audit);
+                        }
                     }
                 }
             }
-        }
 
-        // Check for common security issues
-        $commonIssues = $this->checkCommonSecurityIssues($website, $scanResults);
-        foreach ($commonIssues as $issue) {
-            $audit = SecurityAudit::updateOrCreate([
+            // 4. Check for common security issues
+            $commonIssues = $this->checkCommonSecurityIssues($website, $scanResults);
+            foreach ($commonIssues as $issue) {
+                $audit = SecurityAudit::createFromVulnerability($website->id, $issue, $scanId);
+                $vulnerabilities[] = $this->formatAuditForResponse($audit);
+            }
+
+            // 5. Calculate health score using the new health scoring system
+            $healthData = $this->scanService->calculateHealthScore($scanResults);
+            
+            Log::info('Health score calculated', [
                 'website_id' => $website->id,
-                'audit_type' => $issue['type'],
-                'title' => $issue['title'],
-            ], [
-                'severity' => $issue['severity'],
-                'description' => $issue['description'],
-                'recommendation' => $issue['recommendation'],
-                'detected_at' => now(),
-                'status' => 'open',
-                'risk_score' => $issue['risk_score'],
+                'health_score' => $healthData['overall_score'],
+                'grade' => $healthData['grade']
             ]);
 
-            $vulnerabilities[] = [
-                'id' => $audit->id,
-                'title' => $audit->title,
-                'description' => $audit->description,
-                'severity' => $audit->severity,
-                'recommendation' => $audit->recommendation,
-                'type' => 'Security Configuration'
-            ];
+            // 6. Store comprehensive scan history with health data
+            $scanHistory = ScanHistory::create([
+                'website_id' => $website->id,
+                'scan_data' => array_merge($scanResults, [
+                    'health_data' => $healthData,
+                    'scan_metadata' => [
+                        'scan_id' => $scanId,
+                        'scan_timestamp' => now()->toISOString(),
+                        'scan_duration' => $scanResults['scan_duration'] ?? null,
+                        'total_vulnerabilities' => count($vulnerabilities),
+                        'wpscan_enabled' => !empty(config('services.wpscan.api_key')),
+                        'scan_scope' => $scanResults['scan_scope'] ?? 'security'
+                    ]
+                ]),
+                'scan_type' => 'security',
+                'status' => 'completed',
+            ]);
+
+            // 7. Update website health score and security info
+            $website->update([
+                'last_scan' => now(),
+                'health_score' => $healthData['overall_score'],
+                'security_grade' => $healthData['grade'],
+                'risk_level' => $healthData['risk_level']
+            ]);
+
+            // 8. Store health score impact in audit metadata
+            foreach ($vulnerabilities as $index => $vuln) {
+                if (isset($vuln['audit_id'])) {
+                    $audit = SecurityAudit::find($vuln['audit_id']);
+                    if ($audit) {
+                        $metadata = $audit->metadata ?? [];
+                        $metadata['health_impact'] = $this->calculateHealthImpact($audit, $healthData);
+                        $metadata['scan_session'] = $scanId;
+                        $audit->update(['metadata' => $metadata]);
+                    }
+                }
+            }
+
+            Log::info('Security scan processing completed', [
+                'website_id' => $website->id,
+                'vulnerabilities_count' => count($vulnerabilities),
+                'health_score' => $healthData['overall_score'],
+                'scan_id' => $scanId
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Failed to process security results', [
+                'website_id' => $website->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
         }
 
         return $vulnerabilities;
+    }
+
+    /**
+     * Format audit for response
+     */
+    private function formatAuditForResponse($audit)
+    {
+        return [
+            'audit_id' => $audit->id,
+            'id' => $audit->id,
+            'title' => $audit->title,
+            'description' => $audit->description,
+            'severity' => $audit->severity,
+            'recommendation' => $audit->recommendation,
+            'type' => ucwords(str_replace('_', ' ', $audit->audit_type)),
+            'risk_score' => $audit->risk_score,
+            'source' => $audit->source,
+            'cve_id' => $audit->cve_id,
+            'detected_at' => $audit->detected_at,
+            'status' => $audit->status
+        ];
+    }
+
+    /**
+     * Calculate health impact of a specific vulnerability
+     */
+    private function calculateHealthImpact($audit, $healthData)
+    {
+        $impact = 'low';
+        
+        // Determine impact based on severity and component affected
+        if ($audit->severity === 'critical') {
+            $impact = 'critical';
+        } elseif ($audit->severity === 'high') {
+            $impact = 'high';
+        } elseif ($audit->severity === 'medium') {
+            $impact = 'medium';
+        }
+
+        // Additional factors
+        $factors = [];
+        if ($audit->audit_type === 'wordpress_core') {
+            $factors[] = 'core_system';
+        }
+        if ($audit->exploitable) {
+            $factors[] = 'exploitable';
+        }
+        if ($audit->risk_score > 70) {
+            $factors[] = 'high_risk_score';
+        }
+
+        return [
+            'impact_level' => $impact,
+            'contributing_factors' => $factors,
+            'health_deduction' => $this->calculateHealthDeduction($audit),
+            'component_affected' => $this->getComponentFromAuditType($audit->audit_type)
+        ];
+    }
+
+    /**
+     * Calculate health score deduction for an audit
+     */
+    private function calculateHealthDeduction($audit)
+    {
+        $deduction = match($audit->severity) {
+            'critical' => 25,
+            'high' => 15,
+            'medium' => 8,
+            'low' => 3,
+            default => 5
+        };
+
+        // Increase deduction for exploitable vulnerabilities
+        if ($audit->exploitable) {
+            $deduction *= 1.5;
+        }
+
+        return round($deduction, 1);
+    }
+
+    /**
+     * Get component name from audit type
+     */
+    private function getComponentFromAuditType($auditType)
+    {
+        return match($auditType) {
+            'wordpress_core' => 'core',
+            'plugin_vulnerability', 'plugin' => 'plugins',
+            'theme_vulnerability', 'theme' => 'themes',
+            'config_backup_exposed', 'debug_enabled', 'directory_listing' => 'configuration',
+            default => 'security'
+        };
     }
 
     /**
