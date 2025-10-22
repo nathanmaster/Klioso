@@ -850,7 +850,7 @@ class WordPressScanService
                     'title' => $vuln['title'],
                     'description' => "WordPress version {$version} is vulnerable to {$vuln['cve']}",
                     'recommendation' => 'Update WordPress to the latest version immediately',
-                    'risk_score' => $this->calculateRiskScore($vuln['severity']),
+                    'risk_score' => $this->calculateRiskScoreFromSeverity($vuln['severity']),
                     'affected_version' => $version,
                 ];
             }
@@ -970,7 +970,7 @@ class WordPressScanService
                         'title' => $vuln['title'],
                         'description' => "Plugin {$plugin['name']} version {$pluginVersion} is vulnerable to {$vuln['cve']}",
                         'recommendation' => "Update {$plugin['name']} plugin to the latest version",
-                        'risk_score' => $this->calculateRiskScore($vuln['severity']),
+                        'risk_score' => $this->calculateRiskScoreFromSeverity($vuln['severity']),
                         'plugin_name' => $plugin['name'],
                         'plugin_version' => $pluginVersion,
                     ];
@@ -1036,7 +1036,7 @@ class WordPressScanService
     /**
      * Calculate risk score based on severity
      */
-    protected function calculateRiskScore($severity)
+    protected function calculateRiskScoreFromSeverity($severity)
     {
         return match(strtolower($severity)) {
             'critical' => 10,
