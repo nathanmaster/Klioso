@@ -62,10 +62,10 @@ class WPScanSecurityCheck extends Command
         $this->table(
             ['Metric', 'Value'],
             [
-                ['Requests Remaining', $status['requests_remaining'] ?? 'Unknown'],
-                ['Plan', $status['plan'] ?? 'Unknown'],
-                ['Start Date', $status['start_date'] ?? 'Unknown'],
-                ['End Date', $status['end_date'] ?? 'Unknown'],
+                ['Requests Remaining', isset($status['requests_remaining']) ? $status['requests_remaining'] : 'Unknown'],
+                ['Plan', isset($status['plan']) ? $status['plan'] : 'Unknown'],
+                ['Start Date', isset($status['start_date']) ? $status['start_date'] : 'Unknown'],
+                ['End Date', isset($status['end_date']) ? $status['end_date'] : 'Unknown'],
             ]
         );
 
@@ -224,7 +224,8 @@ class WPScanSecurityCheck extends Command
         if (!empty($securityReport['wordpress_vulnerabilities']['vulnerabilities'])) {
             $this->warn('WordPress Core Vulnerabilities:');
             foreach ($securityReport['wordpress_vulnerabilities']['vulnerabilities'] as $vuln) {
-                $this->line("  • {$vuln['title']} ({$vuln['severity'] ?? 'Unknown'})");
+                $severity = isset($vuln['severity']) ? $vuln['severity'] : 'Unknown';
+                $this->line("  • {$vuln['title']} ({$severity})");
             }
             $this->newLine();
         }
@@ -234,7 +235,8 @@ class WPScanSecurityCheck extends Command
             if (!empty($pluginVulns['vulnerabilities'])) {
                 $this->warn("Plugin Vulnerabilities ({$pluginVulns['plugin']}):");
                 foreach ($pluginVulns['vulnerabilities'] as $vuln) {
-                    $this->line("  • {$vuln['title']} ({$vuln['severity'] ?? 'Unknown'})");
+                    $severity = isset($vuln['severity']) ? $vuln['severity'] : 'Unknown';
+                    $this->line("  • {$vuln['title']} ({$severity})");
                 }
                 $this->newLine();
             }
@@ -245,7 +247,8 @@ class WPScanSecurityCheck extends Command
             if (!empty($themeVulns['vulnerabilities'])) {
                 $this->warn("Theme Vulnerabilities ({$themeVulns['theme']}):");
                 foreach ($themeVulns['vulnerabilities'] as $vuln) {
-                    $this->line("  • {$vuln['title']} ({$vuln['severity'] ?? 'Unknown'})");
+                    $severity = isset($vuln['severity']) ? $vuln['severity'] : 'Unknown';
+                    $this->line("  • {$vuln['title']} ({$severity})");
                 }
                 $this->newLine();
             }

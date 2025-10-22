@@ -91,6 +91,11 @@ class FeatureService
         $frontend = [];
         
         foreach ($config as $category => $features) {
+            // Skip non-array values like 'is_dev' boolean
+            if (!is_array($features)) {
+                continue;
+            }
+            
             foreach ($features as $feature => $isEnabled) {
                 $frontend["{$category}_{$feature}"] = $isEnabled;
             }
