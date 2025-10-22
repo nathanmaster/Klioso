@@ -69,7 +69,12 @@ jobs:
         # Verify installation
         composer show
         
-        # Optimize autoloader
+        # Debug composer commands before running
+        echo "Available composer commands:"
+        composer list | grep -i dump
+        echo "Running dump-autoload..."
+        
+        # Optimize autoloader with explicit path
         composer dump-autoload --optimize --no-dev
       
     - name: Install Node dependencies and build assets
