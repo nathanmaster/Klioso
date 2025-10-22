@@ -27,7 +27,25 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
+    // Get basic stats for dashboard
+    $totalWebsites = \App\Models\Website::count();
+    $totalClients = \App\Models\Client::count();
+    $totalScans = \App\Models\ScanHistory::count();
+    $recentScans = \App\Models\ScanHistory::with('website')->latest()->limit(5)->get();
+    
+    return Inertia::render('Dashboard', [
+        'stats' => [
+            'totalWebsites' => $totalWebsites,
+            'totalClients' => $totalClients,
+            'totalScans' => $totalScans,
+            'healthyWebsites' => \App\Models\Website::whereHas('analytics', function($query) {
+                $query->where('health_score', '>=', 80);
+            })->count(),
+            'criticalIssues' => \App\Models\SecurityAudit::where('severity', 'critical')
+                ->where('status', 'open')->count() ?? 0,
+        ],
+        'recentScans' => $recentScans,
+    ]);
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 // Test route

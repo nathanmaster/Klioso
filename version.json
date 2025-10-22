@@ -1,9 +1,9 @@
 {
-    "version": "0.11.1-dev",
-    "release_date": "2025-01-21",
-    "release_timestamp": 1737508800,
-    "codename": "Infrastructure Improvements",
-    "description": "Development version: Bug fixes, feature flag infrastructure, deployment automation, and production safety improvements",
+    "version": "1.10.002",
+    "release_date": "2025-10-22",
+    "release_timestamp": 1761134400,
+    "codename": "Bug Fix & Enhancement Release",
+    "description": "Development version: Major bug fixes, dashboard improvements, UI consistency updates, and enhanced functionality",
     "type": "patch",
     "stability": "unstable"
 }

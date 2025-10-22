@@ -4,7 +4,7 @@ import { BarChart3, Shield, TrendingUp, Globe, Activity, Users } from 'lucide-re
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Button } from '@/Components/ui/button';
 
-export default function Dashboard() {
+export default function Dashboard({ stats = {}, recentScans = [] }) {
     return (
         <AuthenticatedLayout
             header={
@@ -84,35 +84,35 @@ export default function Dashboard() {
                                 <Globe className="h-4 w-4 text-gray-500 dark:text-gray-400" aria-hidden="true" />
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">0</div>
+                                <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">{stats.totalWebsites || 0}</div>
                                 <p className="text-xs text-gray-600 dark:text-gray-400">
-                                    Add your first website to get started
+                                    {stats.totalWebsites > 0 ? `${stats.healthyWebsites || 0} healthy websites` : 'Add your first website to get started'}
                                 </p>
                             </CardContent>
                         </Card>
 
                         <Card>
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium text-gray-700 dark:text-gray-300">Active Scans</CardTitle>
+                                <CardTitle className="text-sm font-medium text-gray-700 dark:text-gray-300">Total Scans</CardTitle>
                                 <Activity className="h-4 w-4 text-gray-500 dark:text-gray-400" aria-hidden="true" />
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">0</div>
+                                <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">{stats.totalScans || 0}</div>
                                 <p className="text-xs text-gray-600 dark:text-gray-400">
-                                    No active scans running
+                                    {stats.totalScans > 0 ? `${recentScans.length} recent scans` : 'No scans performed yet'}
                                 </p>
                             </CardContent>
                         </Card>
 
                         <Card>
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium text-gray-700 dark:text-gray-300">Health Score</CardTitle>
-                                <TrendingUp className="h-4 w-4 text-gray-500 dark:text-gray-400" aria-hidden="true" />
+                                <CardTitle className="text-sm font-medium text-gray-700 dark:text-gray-300">Security Issues</CardTitle>
+                                <Shield className="h-4 w-4 text-gray-500 dark:text-gray-400" aria-hidden="true" />
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">--</div>
+                                <div className="text-2xl font-bold text-red-600 dark:text-red-400">{stats.criticalIssues || 0}</div>
                                 <p className="text-xs text-gray-600 dark:text-gray-400">
-                                    Add websites to see health metrics
+                                    {stats.criticalIssues > 0 ? 'Critical issues found' : 'No critical security issues'}
                                 </p>
                             </CardContent>
                         </Card>
@@ -123,9 +123,9 @@ export default function Dashboard() {
                                 <Users className="h-4 w-4 text-gray-500 dark:text-gray-400" aria-hidden="true" />
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">0</div>
+                                <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">{stats.totalClients || 0}</div>
                                 <p className="text-xs text-gray-600 dark:text-gray-400">
-                                    No clients added yet
+                                    {stats.totalClients > 0 ? `Managing ${stats.totalClients} clients` : 'No clients added yet'}
                                 </p>
                             </CardContent>
                         </Card>
