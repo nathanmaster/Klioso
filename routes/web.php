@@ -27,24 +27,74 @@ Route::get('/', function () {
 });
 
 Route::get('/dashboard', function () {
-    // Get basic stats for dashboard
+    // Get comprehensive dashboard data using new services
+    $healthScoreService = app(\App\Services\HealthScoreService::class);
+    
     $totalWebsites = \App\Models\Website::count();
     $totalClients = \App\Models\Client::count();
     $totalScans = \App\Models\ScanHistory::count();
     $recentScans = \App\Models\ScanHistory::with('website')->latest()->limit(5)->get();
+    
+    // Calculate overall health metrics
+    $websites = \App\Models\Website::with('latestAnalytics')->get();
+    $healthScores = [];
+    $totalHealthScore = 0;
+    $healthyWebsites = 0;
+    $criticalWebsites = 0;
+    
+    foreach ($websites as $website) {
+        $healthData = $healthScoreService->calculateHealthScore($website);
+        $healthScores[] = $healthData;
+        $totalHealthScore += $healthData['overall_score'];
+        
+        if ($healthData['overall_score'] >= 80) {
+            $healthyWebsites++;
+        } elseif ($healthData['overall_score'] < 50) {
+            $criticalWebsites++;
+        }
+    }
+    
+    $averageHealthScore = $websites->count() > 0 ? round($totalHealthScore / $websites->count()) : 0;
+    
+    // Security metrics
+    $criticalSecurityIssues = \App\Models\SecurityAudit::where('severity', 'critical')
+        ->where('status', 'open')->count();
+    $totalSecurityIssues = \App\Models\SecurityAudit::where('status', 'open')->count();
+    
+    // Performance metrics
+    $avgLoadTime = \App\Models\WebsiteAnalytics::whereNotNull('load_time')
+        ->avg('load_time');
+    
+    // Maintenance alerts
+    $outdatedWebsites = \App\Models\WebsiteAnalytics::where('wp_updates_available', true)
+        ->distinct('website_id')->count();
+    $pluginUpdatesNeeded = \App\Models\WebsiteAnalytics::whereNotNull('outdated_plugins')
+        ->where('outdated_plugins', '>', 0)->sum('outdated_plugins');
     
     return Inertia::render('Dashboard', [
         'stats' => [
             'totalWebsites' => $totalWebsites,
             'totalClients' => $totalClients,
             'totalScans' => $totalScans,
-            'healthyWebsites' => \App\Models\Website::whereHas('analytics', function($query) {
-                $query->where('health_score', '>=', 80);
-            })->count(),
-            'criticalIssues' => \App\Models\SecurityAudit::where('severity', 'critical')
-                ->where('status', 'open')->count() ?? 0,
+            'healthyWebsites' => $healthyWebsites,
+            'criticalWebsites' => $criticalWebsites,
+            'averageHealthScore' => $averageHealthScore,
+            'criticalSecurityIssues' => $criticalSecurityIssues,
+            'totalSecurityIssues' => $totalSecurityIssues,
+            'avgLoadTime' => round($avgLoadTime, 2),
+            'outdatedWebsites' => $outdatedWebsites,
+            'pluginUpdatesNeeded' => $pluginUpdatesNeeded,
         ],
         'recentScans' => $recentScans,
+        'healthOverview' => [
+            'averageScore' => $averageHealthScore,
+            'distribution' => [
+                'excellent' => $websites->filter(fn($w) => ($healthScores[array_search($w->id, $websites->pluck('id')->toArray())] ?? ['overall_score' => 0])['overall_score'] >= 90)->count(),
+                'good' => $websites->filter(fn($w) => ($healthScores[array_search($w->id, $websites->pluck('id')->toArray())] ?? ['overall_score' => 0])['overall_score'] >= 80 && ($healthScores[array_search($w->id, $websites->pluck('id')->toArray())] ?? ['overall_score' => 0])['overall_score'] < 90)->count(),
+                'fair' => $websites->filter(fn($w) => ($healthScores[array_search($w->id, $websites->pluck('id')->toArray())] ?? ['overall_score' => 0])['overall_score'] >= 60 && ($healthScores[array_search($w->id, $websites->pluck('id')->toArray())] ?? ['overall_score' => 0])['overall_score'] < 80)->count(),
+                'poor' => $websites->filter(fn($w) => ($healthScores[array_search($w->id, $websites->pluck('id')->toArray())] ?? ['overall_score' => 0])['overall_score'] < 60)->count(),
+            ]
+        ],
     ]);
 })->middleware(['auth', 'verified'])->name('dashboard');
 
