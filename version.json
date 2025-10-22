@@ -1,9 +1,9 @@
 {
-    "version": "1.10.023",
+    "version": "1.10.024",
     "release_date": "2025-10-22",
     "release_timestamp": 1761134400,
-    "codename": "Documentation Organization & Known Issues Documentation",
-    "description": "Documentation restructure and organization. IMPORTANT: Previous bug fix claims were inaccurate - see KNOWN_ISSUES.md for actual status of unresolved problems including Groups/Websites reload issues, Client sidebar problems, and missing Hosting Provider statistics.",
+    "codename": "GitHub Actions Composer Command Fix",
+    "description": "Fixed GitHub Actions workflow composer dump-autoload command error with debugging output. Previous documentation organization complete with individual version folders.",
     "type": "patch",
     "stability": "unstable",
     "critical_issues": [
