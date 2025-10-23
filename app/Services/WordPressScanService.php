@@ -61,6 +61,7 @@ class WordPressScanService
                     $results['themes'] = $this->scanThemes($url);
                     break;
                 case 'vulnerabilities':
+                case 'security':
                     $results['vulnerabilities'] = $this->scanVulnerabilities($url);
                     break;
                 case 'all':

@@ -29,8 +29,8 @@ return [
     ],
 
     'wpscan' => [
-        'api_key' => env('WPSCAN_API_KEY'),
-        'api_url' => 'https://wpscan.com/api/v3',
+        'api_key' => env('WPSCAN_API_KEY', env('WPSCAN_API_TOKEN')),
+        'api_url' => env('WPSCAN_BASE_URL', 'https://wpscan.com/api/v3'),
     ],
 
     'slack' => [
@@ -38,11 +38,6 @@ return [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
-    ],
-
-    'wpscan' => [
-        'api_token' => env('WPSCAN_API_TOKEN'),
-        'base_url' => env('WPSCAN_BASE_URL', 'https://wpscan.com/api/v3'),
     ],
 
 ];

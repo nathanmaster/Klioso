@@ -109,8 +109,22 @@ class SecurityScannerController extends Controller
     public function scanWebsite(Request $request, Website $website)
     {
         try {
+            Log::info('Starting security scan', [
+                'website_id' => $website->id,
+                'website_url' => $website->url,
+                'wpscan_api_configured' => !empty(config('services.wpscan.api_key'))
+            ]);
+            
             // Perform comprehensive WordPress security scan
-            $scanResults = $this->scanService->scanWebsite($website->url, 'security');
+            $scanResults = $this->scanService->scanWebsite($website->url, 'all');
+            
+            Log::info('Scan completed, processing results', [
+                'website_id' => $website->id,
+                'scan_keys' => array_keys($scanResults),
+                'vulnerabilities_count' => isset($scanResults['vulnerabilities']) ? count($scanResults['vulnerabilities']) : 0,
+                'plugins_count' => isset($scanResults['plugins']) ? count($scanResults['plugins']) : 0,
+                'themes_count' => isset($scanResults['themes']) ? count($scanResults['themes']) : 0
+            ]);
             
             // Store scan history
             $scanHistory = ScanHistory::create([
@@ -156,7 +170,7 @@ class SecurityScannerController extends Controller
 
             foreach ($websites as $website) {
                 try {
-                    $scanResults = $this->scanService->scanWebsite($website->url, 'security');
+                    $scanResults = $this->scanService->scanWebsite($website->url, 'all');
                     
                     // Store scan history
                     $scanHistory = ScanHistory::create([
