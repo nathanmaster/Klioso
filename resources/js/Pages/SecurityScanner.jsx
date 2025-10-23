@@ -152,6 +152,10 @@ export default function SecurityScanner({
                     logScanStep(`Scan completed successfully`);
                     if (result.data) {
                         logScanStep(`Results contain ${Object.keys(result.data).length} data points`);
+                        logScanStep(`Website: ${result.data.website || 'Unknown'}`);
+                        logScanStep(`Vulnerabilities found: ${result.data.vulnerabilities?.length || 0}`);
+                        logScanStep(`Health score: ${result.data.health_score || 'Not calculated'}`);
+                        console.log('Full scan results:', result.data);
                     }
                     
                     updateProgress(100, 'Refreshing page data...');
@@ -348,9 +352,10 @@ export default function SecurityScanner({
                         </CardHeader>
                         <CardContent>
                             <Tabs defaultValue="overview" className="w-full">
-                                <TabsList className="grid w-full grid-cols-3">
+                                <TabsList className="grid w-full grid-cols-4">
                                     <TabsTrigger value="overview">Health Overview</TabsTrigger>
                                     <TabsTrigger value="sites">Site Health</TabsTrigger>
+                                    <TabsTrigger value="vulnerabilities">Vulnerabilities</TabsTrigger>
                                     <TabsTrigger value="history">Health History</TabsTrigger>
                                 </TabsList>
                                 
@@ -507,6 +512,62 @@ export default function SecurityScanner({
                                             </Card>
                                         ))}
                                     </div>
+                                </TabsContent>
+                                
+                                <TabsContent value="vulnerabilities" className="space-y-4">
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle>Recent Vulnerabilities</CardTitle>
+                                            <CardDescription>
+                                                Latest security vulnerabilities found across all websites
+                                            </CardDescription>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <div className="space-y-4">
+                                                {recentVulnerabilities && recentVulnerabilities.length > 0 ? (
+                                                    recentVulnerabilities.map((vuln, index) => (
+                                                        <div key={index} className="border rounded-lg p-4">
+                                                            <div className="flex items-start justify-between">
+                                                                <div className="flex-1">
+                                                                    <div className="flex items-center gap-2 mb-2">
+                                                                        {getSeverityIcon(vuln.severity)}
+                                                                        <h4 className="font-medium">{vuln.title}</h4>
+                                                                        <Badge className={getSeverityColor(vuln.severity)}>
+                                                                            {vuln.severity}
+                                                                        </Badge>
+                                                                        {vuln.website && (
+                                                                            <Badge variant="outline">
+                                                                                {vuln.website.name || vuln.website.domain_name}
+                                                                            </Badge>
+                                                                        )}
+                                                                    </div>
+                                                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                                                                        {vuln.description}
+                                                                    </p>
+                                                                    {vuln.recommendation && (
+                                                                        <p className="text-sm text-blue-600 dark:text-blue-400">
+                                                                            <strong>Recommendation:</strong> {vuln.recommendation}
+                                                                        </p>
+                                                                    )}
+                                                                    {vuln.created_at && (
+                                                                        <p className="text-xs text-gray-500 mt-2">
+                                                                            Found: {new Date(vuln.created_at).toLocaleString()}
+                                                                        </p>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    ))
+                                                ) : (
+                                                    <div className="text-center py-8">
+                                                        <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
+                                                        <h3 className="text-lg font-medium text-green-600">No Vulnerabilities Found</h3>
+                                                        <p className="text-gray-600">Run security scans to check for vulnerabilities</p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </CardContent>
+                                    </Card>
                                 </TabsContent>
                                 
                                 <TabsContent value="history" className="space-y-4">
@@ -710,12 +771,47 @@ export default function SecurityScanner({
                     {scanResults && (
                         <Card>
                             <CardHeader>
-                                <CardTitle>Latest Scan Results</CardTitle>
+                                <CardTitle className="flex items-center justify-between">
+                                    <span>Latest Scan Results</span>
+                                    {scanResults.website && (
+                                        <Badge variant="outline">
+                                            {scanResults.website}
+                                        </Badge>
+                                    )}
+                                </CardTitle>
                                 <CardDescription>
                                     Results from the most recent security scan
+                                    {scanResults.scan_date && (
+                                        <span className="block text-xs mt-1">
+                                            Scanned: {new Date(scanResults.scan_date).toLocaleString()}
+                                        </span>
+                                    )}
                                 </CardDescription>
                             </CardHeader>
                             <CardContent>
+                                {/* Health Score Summary */}
+                                {scanResults.health_score !== undefined && (
+                                    <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <h4 className="font-medium">Health Score</h4>
+                                                <p className="text-sm text-gray-600 dark:text-gray-400">
+                                                    Overall website security health
+                                                </p>
+                                            </div>
+                                            <div className="text-right">
+                                                <div className="text-2xl font-bold">
+                                                    {scanResults.health_score}/100
+                                                </div>
+                                                <Badge className={getGradeBadgeColor(getHealthGrade(scanResults.health_score))}>
+                                                    Grade: {getHealthGrade(scanResults.health_score)}
+                                                </Badge>
+                                            </div>
+                                        </div>
+                                        <Progress value={scanResults.health_score} className="mt-3 h-3" />
+                                    </div>
+                                )}
+                                
                                 <div className="space-y-4">
                                     {scanResults.vulnerabilities?.length > 0 ? (
                                         scanResults.vulnerabilities.map((vuln, index) => (
