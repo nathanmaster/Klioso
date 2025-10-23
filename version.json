@@ -1,8 +1,8 @@
 {
-    "version": "1.10.056",
+    "version": "1.10.057",
     "release_date": "2025-10-23",
     "release_timestamp": 1761220800,
-    "codename": "Security Scanner Results Display Fix",
+    "codename": "Critical Security Scanner Fixes",
     "description": "Revolutionary migration management system with optimized installation paths. Fresh installations now use single comprehensive schema instead of 35+ individual migrations. Includes automated installation commands and cross-platform setup scripts.",
     "type": "major",
     "stability": "stable",
